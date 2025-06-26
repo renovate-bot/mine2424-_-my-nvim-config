@@ -138,6 +138,25 @@ config.keys = {
     mods = 'CMD|SHIFT',
     action = wezterm.action.SendString 'flutter run --hot-reload\r',
   },
+
+  -- Quick access to common development commands
+  {
+    key = 'g',
+    mods = 'CMD|SHIFT',
+    action = wezterm.action.SendString 'git status\r',
+  },
+  {
+    key = 'l',
+    mods = 'CMD|SHIFT',
+    action = wezterm.action.SendString 'ls -la\r',
+  },
+
+  -- Clear terminal
+  {
+    key = 'k',
+    mods = 'CMD',
+    action = wezterm.action.SendString '\x0c',
+  },
 }
 
 -- ===============================================
@@ -180,6 +199,31 @@ config.max_fps = 60
 
 -- Memory management
 config.scrollback_lines = 10000
+
+-- ===============================================
+-- Terminal Bell and Notifications
+-- ===============================================
+
+-- Audio bell configuration (視覚的フィードバック)
+config.audible_bell = 'Disabled'
+config.visual_bell = {
+  fade_in_function = 'EaseIn',
+  fade_in_duration_ms = 150,
+  fade_out_function = 'EaseOut',
+  fade_out_duration_ms = 150,
+}
+
+-- Window background settings (作業効率向上のため)
+config.window_padding = {
+  left = 8,
+  right = 8,
+  top = 8,
+  bottom = 8,
+}
+
+-- Terminal cursor settings (視認性向上)
+config.default_cursor_style = 'BlinkingBlock'
+config.cursor_blink_rate = 800
 
 -- ===============================================
 -- Advanced Features
@@ -246,6 +290,34 @@ wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_wid
     return process
   end
 end)
+
+-- ===============================================
+-- SSH and Remote Development
+-- ===============================================
+
+-- SSH connection helper (リモート開発支援)
+config.ssh_domains = {
+  {
+    name = 'server',
+    remote_address = 'your-server.example.com',
+    username = 'your-username',
+  },
+}
+
+-- Unix domain socket for local development
+config.unix_domains = {
+  {
+    name = 'unix',
+  },
+}
+
+-- ===============================================
+-- Text Selection and Copy Behavior
+-- ===============================================
+
+-- Copy behavior settings (効率的なコピー操作)
+config.selection_word_boundary = ' \t\n{}[]()"\'-.,;:'
+config.bypass_mouse_reporting_modifiers = 'SHIFT'
 
 -- ===============================================
 -- Workspace Configuration for Projects

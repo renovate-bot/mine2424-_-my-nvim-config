@@ -59,6 +59,8 @@ brew install --cask flutter
 - **GPU加速**: WebGPU使用
 - **高フレームレート**: 60fps設定
 - **効率的なスクロールバック**: 10,000行保持
+- **視覚的ベル**: 音声ベルを無効化し、視覚的フィードバックを使用
+- **カーソル設定**: 点滅ブロックカーソルで視認性向上
 
 ### 🔧 tmux統合
 - **自動tmuxセッション**: 起動時に`main`セッションを開始
@@ -95,6 +97,13 @@ brew install --cask flutter
 |-------------|------|
 | `Cmd + Shift + R` | `flutter run` を実行 |
 | `Cmd + Shift + H` | `flutter run --hot-reload` を実行 |
+
+### 開発効率化コマンド
+| キーバインド | 機能 |
+|-------------|------|
+| `Cmd + Shift + G` | `git status` を実行 |
+| `Cmd + Shift + L` | `ls -la` を実行 |
+| `Cmd + K` | ターミナルをクリア |
 
 ## 🎯 Flutter開発機能
 
@@ -158,6 +167,29 @@ table.insert(config.keys, {
 })
 ```
 
+## 🌐 リモート開発とSSH接続
+
+### SSH接続設定
+WezTermではSSH接続を簡単に管理できます：
+
+```lua
+config.ssh_domains = {
+  {
+    name = 'server',
+    remote_address = 'your-server.example.com',
+    username = 'your-username',
+  },
+}
+```
+
+### リモート接続の使用方法
+1. **新しいSSH接続**: `Cmd + Shift + P` → "SSH to server"
+2. **既存接続の再利用**: 設定したドメイン名で接続
+
+### テキスト選択の最適化
+- **単語境界設定**: プログラミングに適した単語選択
+- **マウス操作**: Shiftキーでマウスレポート回避
+
 ## 🔧 開発ワークフロー最適化
 
 ### 推奨tmux設定
@@ -183,13 +215,33 @@ set -sg escape-time 0
 
 ### よくある問題と解決方法
 
-#### 1. フォントが表示されない
+#### 1. 視覚的ベルが気になる場合
+```lua
+-- 視覚的ベルを無効化
+config.visual_bell = {
+  fade_in_duration_ms = 0,
+  fade_out_duration_ms = 0,
+}
+```
+
+#### 2. ウィンドウパディングの調整
+```lua
+-- パディングを変更
+config.window_padding = {
+  left = 4,   -- 左側のパディング
+  right = 4,  -- 右側のパディング
+  top = 4,    -- 上側のパディング
+  bottom = 4, -- 下側のパディング
+}
+```
+
+#### 3. フォントが表示されない
 ```bash
 # フォントの再インストール
 brew reinstall --cask font-jetbrains-mono
 ```
 
-#### 2. tmuxセッションが自動開始されない
+#### 4. tmuxセッションが自動開始されない
 ```bash
 # tmuxのパスを確認
 which tmux
@@ -198,7 +250,7 @@ which tmux
 config.default_prog = { '/usr/local/bin/tmux', 'new-session', '-A', '-s', 'main' }
 ```
 
-#### 3. Flutter環境変数が認識されない
+#### 5. Flutter環境変数が認識されない
 ```bash
 # Flutter SDKのパスを確認
 which flutter
@@ -207,7 +259,7 @@ which flutter
 FLUTTER_ROOT = '/path/to/your/flutter',
 ```
 
-#### 4. GPU加速が効かない
+#### 6. GPU加速が効かない
 ```lua
 -- フォールバック設定
 config.front_end = 'OpenGL'  -- WebGpuの代わりに使用
@@ -228,7 +280,7 @@ tail -f ~/.local/share/wezterm/wezterm.log
 
 2. **設定の再読み込み**
    - WezTermを再起動
-   - または `Cmd + Shift + L` で設定をリロード
+   - または設定を変更後、WezTermが自動的に検出して適用
 
 3. **変更の確認**
    - 新しいタブまたはウィンドウで動作確認
