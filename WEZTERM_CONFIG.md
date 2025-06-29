@@ -1,6 +1,23 @@
-# WezTerm Configuration for tmux + Neovim + Flutter Development
+# WezTerm Configuration for tmux + Neovim + Flutter Development (Claude Code統合版)
 
-このドキュメントでは、tmux + Neovim + Flutter開発環境に最適化されたWezTerm設定について説明します。
+このドキュメントでは、Claude Code統合機能を含む、tmux + Neovim + Flutter開発環境に最適化されたWezTerm設定について説明します。
+
+## 🚀 新機能ハイライト
+
+### Claude Code統合機能
+- **リアルタイムステータス表示**: Claude Codeの実行状態をステータスバーに表示（🤖待機中・⚡実行中）
+- **高精度プロセス監視**: CPU使用率・プロセス状態・ファイルディスクリプタ数による判定
+- **完了通知システム**: Claudeタスク完了時の音声・視覚通知
+
+### Git情報表示
+- **リポジトリ名自動表示**: remote URL・toplevel・ディレクトリ名から自動抽出
+- **ブランチ情報**: 現在のブランチ名をカラー表示
+- **worktree対応**: bare/gitリポジトリでの適切な名前抽出
+
+### 開発効率化機能
+- **Leader機能**: Ctrl+Space でのtmux風操作（`Ctrl+Space` → `w` で3ペイン自動分割）
+- **タブアイコン**: プロセス別の視覚的識別
+- **OS自動最適化**: macOS/Linux/Windows対応の設定分岐
 
 ## 📋 目次
 
@@ -69,6 +86,21 @@ brew install --cask flutter
 
 ## ⌨️ キーバインド
 
+### 🎯 Leader機能（新機能）
+**Leader Key**: `Ctrl + Space`
+
+| キーバインド | 機能 |
+|-------------|------|
+| `Ctrl+Space` → `s` | 垂直分割 |
+| `Ctrl+Space` → `v` | 水平分割 |
+| `Ctrl+Space` → `q` | 現在のペインを閉じる |
+| `Ctrl+Space` → `h` | 左のペインに移動 |
+| `Ctrl+Space` → `j` | 下のペインに移動 |
+| `Ctrl+Space` → `k` | 上のペインに移動 |
+| `Ctrl+Space` → `l` | 右のペインに移動 |
+| `Ctrl+Space` → `c` | コピーモード開始 |
+| `Ctrl+Space` → `w` | **3ペイン自動分割レイアウト** |
+
 ### 基本操作
 | キーバインド | 機能 |
 |-------------|------|
@@ -76,8 +108,9 @@ brew install --cask flutter
 | `Cmd + W` | 現在のタブを閉じる |
 | `Cmd + D` | 水平分割 |
 | `Cmd + Shift + D` | 垂直分割 |
+| `Shift + Ctrl + N` | フルスクリーン切り替え |
 
-### ペイン操作
+### ペイン操作（レガシー・互換性維持）
 | キーバインド | 機能 |
 |-------------|------|
 | `Shift + Ctrl + ←` | 左のペインに移動 |
@@ -85,12 +118,41 @@ brew install --cask flutter
 | `Shift + Ctrl + ↑` | 上のペインに移動 |
 | `Shift + Ctrl + ↓` | 下のペインに移動 |
 
+### スクロール・ナビゲーション
+| キーバインド | 機能 |
+|-------------|------|
+| `Shift + Ctrl + U` | 半ページ上スクロール |
+| `Shift + Ctrl + D` | 半ページ下スクロール |
+| `Shift + Ctrl + G` | 最下部にジャンプ |
+| `Ctrl + H/J/K/L` | Vim風カーソル移動 |
+
 ### フォント調整
 | キーバインド | 機能 |
 |-------------|------|
 | `Cmd + =` | フォントサイズを大きく |
 | `Cmd + -` | フォントサイズを小さく |
 | `Cmd + 0` | フォントサイズをリセット |
+| `Ctrl + Shift + +` | フォントサイズを大きく（代替） |
+| `Ctrl + Shift + _` | フォントサイズを小さく（代替） |
+| `Ctrl + Shift + Backspace` | フォントサイズをリセット（代替） |
+
+### 🤖 Claude Code統合機能
+
+#### ステータス表示
+WezTermの右下に以下の情報が表示されます：
+
+**Git情報**:
+- ` repo-name  branch-name`
+- 例: ` my-nvim-config  main`
+
+**Claude状態**:
+- `🤖` : Claude待機中
+- `⚡` : Claude実行中
+- `🧔` : 非Claudeタブ
+
+#### 通知機能
+- **音声通知**: Claudeタスク完了時に音声再生（OS別サウンド）
+- **トースト通知**: ウィンドウに完了メッセージ表示（3秒間）
 
 ### Flutter開発専用
 | キーバインド | 機能 |

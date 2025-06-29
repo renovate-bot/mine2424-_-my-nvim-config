@@ -124,3 +124,41 @@ keymap.set('n', '<Leader>co', ':copen<Return>', { desc = 'Open quickfix' })
 keymap.set('n', '<Leader>cc', ':cclose<Return>', { desc = 'Close quickfix' })
 keymap.set('n', '<Leader>cn', ':cnext<Return>', { desc = 'Next quickfix item' })
 keymap.set('n', '<Leader>cp', ':cprev<Return>', { desc = 'Previous quickfix item' })
+
+-- ===============================================
+-- Flutter開発専用キーマップ
+-- ===============================================
+
+-- Flutter プロジェクト管理
+keymap.set('n', '<Leader>Fr', ':!flutter run<Return>', { desc = 'Flutter run' })
+keymap.set('n', '<Leader>Fh', ':!flutter run --hot-reload<Return>', { desc = 'Flutter hot reload' })
+keymap.set('n', '<Leader>Fc', ':!flutter clean<Return>', { desc = 'Flutter clean' })
+keymap.set('n', '<Leader>Fb', ':!flutter build apk<Return>', { desc = 'Flutter build APK' })
+keymap.set('n', '<Leader>Ft', ':!flutter test<Return>', { desc = 'Flutter test' })
+keymap.set('n', '<Leader>Fd', ':!flutter devices<Return>', { desc = 'Flutter devices' })
+keymap.set('n', '<Leader>Fe', ':!flutter emulators<Return>', { desc = 'Flutter emulators' })
+
+-- Dart分析・フォーマット
+keymap.set('n', '<Leader>Da', ':!dart analyze<Return>', { desc = 'Dart analyze' })
+keymap.set('n', '<Leader>Df', ':!dart format .<Return>', { desc = 'Dart format' })
+keymap.set('n', '<Leader>Dp', ':!dart pub get<Return>', { desc = 'Dart pub get' })
+keymap.set('n', '<Leader>Du', ':!dart pub upgrade<Return>', { desc = 'Dart pub upgrade' })
+
+-- Flutter開発用ターミナル
+keymap.set('n', '<Leader>FT', ':tabnew | terminal flutter run<Return>', { desc = 'Flutter run in new tab' })
+keymap.set('n', '<Leader>FL', ':split | terminal flutter logs<Return>', { desc = 'Flutter logs in split' })
+
+-- ===============================================
+-- IDE風レイアウト
+-- ===============================================
+
+-- IDE風レイアウト起動
+keymap.set('n', '<Leader>ide', ':StartSmartIDE<Return>', { desc = 'Start smart IDE layout' })
+keymap.set('n', '<Leader>I', ':StartIDE<Return>', { desc = 'Start full IDE layout' })
+keymap.set('n', '<Leader>is', ':StartSimpleIDE<Return>', { desc = 'Start simple IDE layout' })
+keymap.set('n', '<Leader>if', ':StartFlutterIDE<Return>', { desc = 'Start Flutter IDE layout' })
+keymap.set('n', '<Leader>ir', ':ResetLayout<Return>', { desc = 'Reset window layout' })
+
+-- ファイルツリー操作
+keymap.set('n', '<Leader>e', ':Lexplore<Return>', { desc = 'Toggle file explorer' })
+keymap.set('n', '<Leader>E', ':Explore<Return>', { desc = 'Open file explorer in current window' })
