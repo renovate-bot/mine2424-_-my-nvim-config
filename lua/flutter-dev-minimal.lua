@@ -364,6 +364,23 @@ require("lazy").setup({
     ft = 'yaml',
   },
 
+  -- フォーマッタ設定
+  {
+    'stevearc/conform.nvim',
+    event = { "BufWritePre" },
+    config = function()
+      require('conform').setup({
+        formatters_by_ft = {
+          dart = { 'dart_format' },
+        },
+        format_on_save = {
+          timeout_ms = 500,
+          lsp_fallback = true,
+        },
+      })
+    end,
+  },
+
   -- Lint検知強化
   {
     'mfussenegger/nvim-lint',
@@ -445,6 +462,17 @@ require("lazy").setup({
 })
 
 -- ===============================================
+-- ファイルタイプ検出の追加
+-- ===============================================
+
+-- Flutter国際化ファイル(.arb)をJSON形式として認識
+vim.filetype.add {
+  extension = {
+    arb = 'json',
+  },
+}
+
+-- ===============================================
 -- Flutter開発用自動コマンド
 -- ===============================================
 
@@ -483,15 +511,21 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   group = flutter_group,
   pattern = "*.dart",
   callback = function()
-    -- 保存時に自動フォーマット（LSPが利用可能な場合）
-    local clients = vim.lsp.get_clients({ bufnr = 0 })
-    if #clients > 0 then
-      vim.lsp.buf.format({ 
-        timeout_ms = 3000,
-        filter = function(client)
-          return client.name == "dartls"
-        end 
-      })
+    -- 保存時に自動フォーマット（conform.nvimまたはLSPを使用）
+    local conform_ok, conform = pcall(require, 'conform')
+    if conform_ok then
+      conform.format({ bufnr = 0, timeout_ms = 1000 })
+    else
+      -- フォールバック: LSPフォーマット
+      local clients = vim.lsp.get_clients({ bufnr = 0 })
+      if #clients > 0 then
+        vim.lsp.buf.format({ 
+          timeout_ms = 3000,
+          filter = function(client)
+            return client.name == "dartls"
+          end 
+        })
+      end
     end
   end,
 })
