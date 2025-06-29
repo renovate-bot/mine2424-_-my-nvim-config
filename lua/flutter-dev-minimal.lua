@@ -119,18 +119,71 @@ require("lazy").setup({
             vim.keymap.set('n', '<Leader>fo', '<cmd>FlutterOutlineToggle<cr>', opts)
             vim.keymap.set('n', '<Leader>ft', '<cmd>FlutterDevTools<cr>', opts)
             vim.keymap.set('n', '<Leader>fc', '<cmd>FlutterLogClear<cr>', opts)
+            
+            -- 診断設定のカスタマイズ
+            vim.diagnostic.config({
+              virtual_text = {
+                prefix = '●',
+                spacing = 4,
+                source = "if_many",
+                format = function(diagnostic)
+                  if diagnostic.severity == vim.diagnostic.severity.ERROR then
+                    return string.format("🚨 %s", diagnostic.message)
+                  elseif diagnostic.severity == vim.diagnostic.severity.WARN then
+                    return string.format("⚠️  %s", diagnostic.message)
+                  elseif diagnostic.severity == vim.diagnostic.severity.INFO then
+                    return string.format("💡 %s", diagnostic.message)
+                  else
+                    return string.format("💭 %s", diagnostic.message)
+                  end
+                end,
+              },
+              float = {
+                focusable = false,
+                close_events = { "BudLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+                border = 'rounded',
+                source = 'always',
+                prefix = '',
+                scope = 'cursor',
+              },
+              signs = {
+                text = {
+                  [vim.diagnostic.severity.ERROR] = '🚨',
+                  [vim.diagnostic.severity.WARN] = '⚠️',
+                  [vim.diagnostic.severity.INFO] = '💡',
+                  [vim.diagnostic.severity.HINT] = '💭',
+                },
+                linehl = {},
+                numhl = {},
+              },
+              underline = true,
+              update_in_insert = false,
+              severity_sort = true,
+            })
           end,
-          capabilities = vim.tbl_deep_extend(
-            "force",
-            {},
-            vim.lsp.protocol.make_client_capabilities(),
-            require('cmp_nvim_lsp').default_capabilities()
-          ),
+          capabilities = (function()
+            local capabilities = vim.lsp.protocol.make_client_capabilities()
+            local cmp_ok, cmp_nvim_lsp = pcall(require, 'cmp_nvim_lsp')
+            if cmp_ok then
+              capabilities = vim.tbl_deep_extend("force", capabilities, cmp_nvim_lsp.default_capabilities())
+            end
+            return capabilities
+          end)(),
           settings = {
             dart = {
               completeFunctionCalls = true,
               showTodos = true,
               lineLength = 120,
+              enableSdkFormatter = true,
+              analysisExcludedFolders = {
+                vim.fn.expand("$HOME/fvm"),
+                vim.fn.expand("$HOME/.pub-cache"),
+              },
+              updateImportsOnRename = true,
+              includeDependenciesInWorkspaceSymbols = true,
+              enableSnippets = true,
+              includeDependenciesInWorkspaceSymbols = true,
+              renameFilesWithClasses = "prompt",
             }
           }
         }
@@ -310,6 +363,81 @@ require("lazy").setup({
     'stephpy/vim-yaml',
     ft = 'yaml',
   },
+
+  -- Lint検知強化
+  {
+    'mfussenegger/nvim-lint',
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      local lint = require('lint')
+      
+      -- Dartファイル用のlinter設定
+      lint.linters_by_ft = {
+        dart = { 'dart_analyze' }
+      }
+      
+      -- カスタムDart Analyzer linter
+      lint.linters.dart_analyze = {
+        cmd = 'dart',
+        stdin = false,
+        args = { 'analyze', '--fatal-infos', '.' },
+        stream = 'both',
+        ignore_exitcode = true,
+        parser = function(output, bufnr)
+          local diagnostics = {}
+          local current_file = vim.api.nvim_buf_get_name(bufnr)
+          
+          for line in output:gmatch('[^\r\n]+') do
+            -- Dart analyzeの出力形式: "  error • message • file:line:col • rule_name"
+            local severity, message, file, row, col = line:match('%s*(%w+)%s*•%s*(.-)%s*•%s*([^:]+):(%d+):(%d+)')
+            
+            if not severity then
+              -- 別の形式: "file:line:col - severity - message"
+              file, row, col, severity, message = line:match('([^:]+):(%d+):(%d+)%s*-%s*(%w+)%s*-%s*(.+)')
+            end
+            
+            if not severity then
+              -- さらに別の形式: "severity at file:line:col • message"
+              severity, file, row, col, message = line:match('(%w+)%s+at%s+([^:]+):(%d+):(%d+)%s*•%s*(.+)')
+            end
+            
+            if severity and file and row and col and message and vim.fn.fnamemodify(file, ':p') == current_file then
+              local diagnostic_severity = vim.diagnostic.severity.INFO
+              local sev_lower = severity:lower()
+              if sev_lower == 'error' then
+                diagnostic_severity = vim.diagnostic.severity.ERROR
+              elseif sev_lower == 'warning' then
+                diagnostic_severity = vim.diagnostic.severity.WARN
+              elseif sev_lower == 'info' then
+                diagnostic_severity = vim.diagnostic.severity.INFO
+              elseif sev_lower == 'hint' then
+                diagnostic_severity = vim.diagnostic.severity.HINT
+              end
+              
+              table.insert(diagnostics, {
+                lnum = tonumber(row) - 1,
+                col = tonumber(col) - 1,
+                message = message:gsub('^%s+', ''):gsub('%s+$', ''),
+                severity = diagnostic_severity,
+                source = 'dart_analyze'
+              })
+            end
+          end
+          return diagnostics
+        end,
+      }
+      
+      -- 自動lint実行の設定
+      local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
+      vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+        group = lint_augroup,
+        pattern = "*.dart",
+        callback = function()
+          lint.try_lint()
+        end,
+      })
+    end,
+  },
 }, {
   ui = {
     border = "rounded",
@@ -355,8 +483,34 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   group = flutter_group,
   pattern = "*.dart",
   callback = function()
-    -- 保存時に自動フォーマット
-    vim.lsp.buf.format({ timeout_ms = 2000 })
+    -- 保存時に自動フォーマット（LSPが利用可能な場合）
+    local clients = vim.lsp.get_clients({ bufnr = 0 })
+    if #clients > 0 then
+      vim.lsp.buf.format({ 
+        timeout_ms = 3000,
+        filter = function(client)
+          return client.name == "dartls"
+        end 
+      })
+    end
+  end,
+})
+
+-- 保存後にlint実行
+vim.api.nvim_create_autocmd("BufWritePost", {
+  group = flutter_group,
+  pattern = "*.dart",
+  callback = function()
+    -- nvim-lintが利用可能な場合にlint実行
+    local lint_ok, lint = pcall(require, 'lint')
+    if lint_ok then
+      lint.try_lint()
+    end
+    
+    -- 診断の再表示
+    vim.defer_fn(function()
+      vim.diagnostic.show()
+    end, 100)
   end,
 })
 
