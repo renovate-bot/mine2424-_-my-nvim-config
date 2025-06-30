@@ -580,6 +580,244 @@ local plugins = {
       vim.keymap.set('n', '<Leader>vc', ':OverseerClose<CR>', { desc = 'Close Task List' })
     end,
   },
+
+  -- hlchunk.nvim - インデント・チャンクハイライト
+  {
+    'shellRaining/hlchunk.nvim',
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      -- Flutter開発に最適化されたhlchunk設定は init.lua で設定済み
+      -- プラグイン管理のためにここでもrequireを追加
+      require("hlchunk")
+    end,
+  },
+
+  -- lualine.nvim - 高度なステータスライン
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    event = "VeryLazy",
+    config = function()
+      -- Flutter開発用カスタムコンポーネント
+      local function flutter_device()
+        local handle = io.popen("flutter devices --machine 2>/dev/null")
+        if handle then
+          local result = handle:read("*a")
+          handle:close()
+          if result and result ~= "" then
+            local devices = vim.fn.json_decode(result)
+            if devices and #devices > 0 then
+              for _, device in ipairs(devices) do
+                if device.category == "mobile" or device.category == "desktop" then
+                  return "📱 " .. (device.name or "Device")
+                end
+              end
+              return "📱 " .. #devices .. " devices"
+            end
+          end
+        end
+        return ""
+      end
+      
+      local function flutter_status()
+        if _G.is_flutter_project and _G.is_flutter_project() then
+          return "🎯 Flutter"
+        end
+        return ""
+      end
+      
+      local function dart_version()
+        if vim.bo.filetype == "dart" then
+          local handle = io.popen("dart --version 2>&1")
+          if handle then
+            local result = handle:read("*a")
+            handle:close()
+            local version = result:match("Dart SDK version: ([%d%.]+)")
+            if version then
+              return "🔷 " .. version
+            end
+          end
+        end
+        return ""
+      end
+      
+      local function lsp_status()
+        local clients = vim.lsp.get_clients({ bufnr = 0 })
+        if #clients == 0 then
+          return ""
+        end
+        
+        local client_names = {}
+        for _, client in ipairs(clients) do
+          table.insert(client_names, client.name)
+        end
+        return "⚡ " .. table.concat(client_names, ", ")
+      end
+      
+      local function git_blame()
+        local git_blame = vim.fn.system("git log -1 --pretty=format:'%an' " .. vim.fn.expand('%') .. " 2>/dev/null")
+        if vim.v.shell_error == 0 and git_blame ~= "" then
+          return "👤 " .. git_blame
+        end
+        return ""
+      end
+      
+      local function copilot_status()
+        local ok, api = pcall(require, "copilot.api")
+        if ok then
+          local status = api.status.data
+          if status and status.status then
+            if status.status == "Ready" then
+              return "🤖 Ready"
+            elseif status.status == "InProgress" then
+              return "🤖 ..."
+            else
+              return "🤖 " .. status.status
+            end
+          end
+        end
+        return ""
+      end
+      
+      require('lualine').setup {
+        options = {
+          icons_enabled = true,
+          theme = 'auto',
+          component_separators = { left = '', right = ''},
+          section_separators = { left = '', right = ''},
+          disabled_filetypes = {
+            statusline = {},
+            winbar = {},
+          },
+          ignore_focus = {},
+          always_divide_middle = true,
+          globalstatus = true,
+          refresh = {
+            statusline = 1000,
+            tabline = 1000,
+            winbar = 1000,
+          }
+        },
+        sections = {
+          lualine_a = {
+            {
+              'mode',
+              fmt = function(str)
+                return str:sub(1,1)
+              end
+            }
+          },
+          lualine_b = {
+            {
+              'branch',
+              icon = '',
+              color = { fg = '#8FBCBB' }
+            },
+            {
+              'diff',
+              symbols = {added = ' ', modified = ' ', removed = ' '},
+              diff_color = {
+                added = { fg = '#A3BE8C' },
+                modified = { fg = '#EBCB8B' },
+                removed = { fg = '#BF616A' }
+              },
+            }
+          },
+          lualine_c = {
+            {
+              'filename',
+              file_status = true,
+              newfile_status = false,
+              path = 1, -- 相対パス表示
+              shorting_target = 40,
+              symbols = {
+                modified = '[+]',
+                readonly = '[RO]',
+                unnamed = '[No Name]',
+                newfile = '[New]',
+              }
+            },
+            {
+              flutter_status,
+              color = { fg = '#81A1C1', gui = 'bold' },
+            }
+          },
+          lualine_x = {
+            {
+              copilot_status,
+              color = { fg = '#A3BE8C' },
+            },
+            {
+              'diagnostics',
+              sources = { 'nvim_diagnostic', 'nvim_lsp' },
+              sections = { 'error', 'warn', 'info', 'hint' },
+              diagnostics_color = {
+                error = { fg = '#BF616A' },
+                warn  = { fg = '#EBCB8B' },
+                info  = { fg = '#88C0D0' },
+                hint  = { fg = '#A3BE8C' },
+              },
+              symbols = {error = ' ', warn = ' ', info = ' ', hint = ' '},
+            },
+            {
+              lsp_status,
+              color = { fg = '#D08770' },
+            },
+            {
+              dart_version,
+              color = { fg = '#5E81AC' },
+            }
+          },
+          lualine_y = {
+            {
+              'encoding',
+              fmt = string.upper,
+            },
+            {
+              'fileformat',
+              symbols = {
+                unix = '',
+                dos = '',
+                mac = '',
+              }
+            },
+            {
+              'filetype',
+              colored = true,
+              icon_only = false,
+              icon = { align = 'right' },
+            }
+          },
+          lualine_z = {
+            {
+              'progress',
+            },
+            {
+              'location',
+              padding = { left = 0, right = 1 }
+            }
+          }
+        },
+        inactive_sections = {
+          lualine_a = {},
+          lualine_b = {},
+          lualine_c = {'filename'},
+          lualine_x = {'location'},
+          lualine_y = {},
+          lualine_z = {}
+        },
+        tabline = {},
+        winbar = {},
+        inactive_winbar = {},
+        extensions = {
+          'nvim-tree',
+          'toggleterm',
+          'fugitive',
+          'quickfix'
+        }
+      }
+    end,
+  },
 }
 
 -- デバッグ機能が有効な場合のみDAPプラグインを追加
@@ -606,12 +844,14 @@ if enable_debug then
     config = function()
       local dap = require('dap')
       
-      -- Enhanced VSCode launch.json support with project root detection
-      local function find_launch_json()
+      -- Project root and launch.json detection utilities
+      local function find_project_root()
         local cwd = vim.fn.getcwd()
         local markers = {
           'pubspec.yaml',  -- Flutter/Dart
           'package.json',  -- Node.js
+          'Cargo.toml',    -- Rust
+          'go.mod',        -- Go
           '.git',          -- Git repository
           '.vscode'        -- VSCode workspace
         }
@@ -619,10 +859,7 @@ if enable_debug then
         -- Check current directory first
         for _, marker in ipairs(markers) do
           if vim.fn.filereadable(cwd .. '/' .. marker) == 1 or vim.fn.isdirectory(cwd .. '/' .. marker) == 1 then
-            local launch_json = cwd .. '/.vscode/launch.json'
-            if vim.fn.filereadable(launch_json) == 1 then
-              return launch_json
-            end
+            return cwd
           end
         end
         
@@ -631,21 +868,26 @@ if enable_debug then
         while path ~= '/' do
           for _, marker in ipairs(markers) do
             if vim.fn.filereadable(path .. '/' .. marker) == 1 or vim.fn.isdirectory(path .. '/' .. marker) == 1 then
-              local launch_json = path .. '/.vscode/launch.json'
-              if vim.fn.filereadable(launch_json) == 1 then
-                return launch_json
-              end
+              return path
             end
           end
           path = vim.fn.fnamemodify(path, ':h')
         end
         
+        return cwd
+      end
+      
+      local function find_launch_json()
+        local project_root = find_project_root()
+        local launch_json = project_root .. '/.vscode/launch.json'
+        if vim.fn.filereadable(launch_json) == 1 then
+          return launch_json
+        end
         return nil
       end
       
-      -- Load launch.json with enhanced type mapping
-      local launch_json_path = find_launch_json()
-      require('dap.ext.vscode').load_launchjs(launch_json_path, {
+      -- Enhanced type mapping for launch.json
+      local launch_json_type_map = {
         dart = {'dart', 'flutter'},
         flutter = {'dart', 'flutter'},
         node = {'javascript', 'typescript'},
@@ -654,7 +896,24 @@ if enable_debug then
         rust = {'rust'},
         cpp = {'cpp', 'c'},
         java = {'java'}
-      })
+      }
+      
+      -- Load launch.json with error handling
+      local function load_launch_json(path)
+        if path then
+          local success, error = pcall(require('dap.ext.vscode').load_launchjs, path, launch_json_type_map)
+          if not success then
+            vim.notify("Failed to load launch.json: " .. tostring(error), vim.log.levels.ERROR)
+            return false
+          end
+          return true
+        end
+        return false
+      end
+      
+      -- Initial load of launch.json
+      local launch_json_path = find_launch_json()
+      load_launch_json(launch_json_path)
       
       -- Flutter debug adapter configuration
       dap.adapters.dart = {
@@ -808,17 +1067,9 @@ if enable_debug then
       vim.keymap.set('n', '<Leader>dl', function()
         local launch_json_path = find_launch_json()
         if launch_json_path then
-          require('dap.ext.vscode').load_launchjs(launch_json_path, {
-            dart = {'dart', 'flutter'},
-            flutter = {'dart', 'flutter'},
-            node = {'javascript', 'typescript'},
-            python = {'python'},
-            go = {'go'},
-            rust = {'rust'},
-            cpp = {'cpp', 'c'},
-            java = {'java'}
-          })
-          vim.notify("VSCode launch.json reloaded: " .. vim.fn.fnamemodify(launch_json_path, ':t'), vim.log.levels.INFO)
+          if load_launch_json(launch_json_path) then
+            vim.notify("VSCode launch.json reloaded: " .. vim.fn.fnamemodify(launch_json_path, ':t'), vim.log.levels.INFO)
+          end
         else
           vim.notify("No launch.json found in project", vim.log.levels.WARN)
         end
@@ -833,17 +1084,10 @@ if enable_debug then
             pattern = "launch.json",
             callback = function()
               vim.defer_fn(function()
-                require('dap.ext.vscode').load_launchjs(launch_json_path, {
-                  dart = {'dart', 'flutter'},
-                  flutter = {'dart', 'flutter'},
-                  node = {'javascript', 'typescript'},
-                  python = {'python'},
-                  go = {'go'},
-                  rust = {'rust'},
-                  cpp = {'cpp', 'c'},
-                  java = {'java'}
-                })
-                vim.notify("Auto-reloaded launch.json configurations", vim.log.levels.INFO)
+                local current_launch_json = find_launch_json()
+                if current_launch_json and load_launch_json(current_launch_json) then
+                  vim.notify("Auto-reloaded launch.json configurations", vim.log.levels.INFO)
+                end
               end, 500)  -- Small delay to ensure file is written
             end,
             desc = "Auto-reload VSCode launch.json on save"
@@ -1071,56 +1315,29 @@ vim.keymap.set('n', '<Leader>vs', function()
   end
 end, { desc = 'Show VSCode configurations' })
 
--- Project root detection function
-local function find_project_root()
-  local cwd = vim.fn.getcwd()
-  local markers = {
-    'pubspec.yaml',  -- Flutter/Dart
-    'package.json',  -- Node.js
-    'Cargo.toml',    -- Rust
-    'go.mod',        -- Go
-    '.git',          -- Git repository
-    '.vscode'        -- VSCode workspace
-  }
-  
-  -- Check current directory first
-  for _, marker in ipairs(markers) do
-    if vim.fn.filereadable(cwd .. '/' .. marker) == 1 or vim.fn.isdirectory(cwd .. '/' .. marker) == 1 then
-      return cwd
-    end
-  end
-  
-  -- Walk up the directory tree
-  local path = cwd
-  while path ~= '/' do
-    for _, marker in ipairs(markers) do
-      if vim.fn.filereadable(path .. '/' .. marker) == 1 or vim.fn.isdirectory(path .. '/' .. marker) == 1 then
-        return path
-      end
-    end
-    path = vim.fn.fnamemodify(path, ':h')
-  end
-  
-  return cwd
-end
+-- Project root detection function is defined in the DAP configuration above
 
 vim.keymap.set('n', '<Leader>vl', function()
   -- Enhanced configuration selector with better error handling
-  local function find_project_root()
+  local function get_project_root()
     local cwd = vim.fn.getcwd()
     local markers = {
-      'pubspec.yaml',
-      'package.json',
-      '.git',
-      '.vscode'
+      'pubspec.yaml',  -- Flutter/Dart
+      'package.json',  -- Node.js
+      'Cargo.toml',    -- Rust
+      'go.mod',        -- Go
+      '.git',          -- Git repository
+      '.vscode'        -- VSCode workspace
     }
     
+    -- Check current directory first
     for _, marker in ipairs(markers) do
       if vim.fn.filereadable(cwd .. '/' .. marker) == 1 or vim.fn.isdirectory(cwd .. '/' .. marker) == 1 then
         return cwd
       end
     end
     
+    -- Walk up the directory tree
     local path = cwd
     while path ~= '/' do
       for _, marker in ipairs(markers) do
@@ -1134,7 +1351,30 @@ vim.keymap.set('n', '<Leader>vl', function()
     return cwd
   end
   
-  local project_root = find_project_root()
+  local function load_launch_json_with_type_map(path)
+    local type_map = {
+      dart = {'dart', 'flutter'},
+      flutter = {'dart', 'flutter'},
+      node = {'javascript', 'typescript'},
+      python = {'python'},
+      go = {'go'},
+      rust = {'rust'},
+      cpp = {'cpp', 'c'},
+      java = {'java'}
+    }
+    
+    if path then
+      local success, error = pcall(require('dap.ext.vscode').load_launchjs, path, type_map)
+      if not success then
+        vim.notify("Failed to load launch.json: " .. tostring(error), vim.log.levels.ERROR)
+        return false
+      end
+      return true
+    end
+    return false
+  end
+  
+  local project_root = get_project_root()
   local launch_json_path = project_root .. '/.vscode/launch.json'
   
   if vim.fn.filereadable(launch_json_path) == 0 then
@@ -1150,16 +1390,7 @@ vim.keymap.set('n', '<Leader>vl', function()
   
   -- Reload configurations
   local dap = require('dap')
-  require('dap.ext.vscode').load_launchjs(launch_json_path, {
-    dart = {'dart', 'flutter'},
-    flutter = {'dart', 'flutter'},
-    node = {'javascript', 'typescript'},
-    python = {'python'},
-    go = {'go'},
-    rust = {'rust'},
-    cpp = {'cpp', 'c'},
-    java = {'java'}
-  })
+  load_launch_json_with_type_map(launch_json_path)
   
   -- Get all available configurations with better sorting
   local current_ft = vim.bo.filetype

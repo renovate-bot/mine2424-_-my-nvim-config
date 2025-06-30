@@ -303,11 +303,37 @@ Flutter開発環境で使用可能な全キーバインドの完全リファレ�
 ## VSCode統合（Neovim内）
 
 ### 🚀 .vscode/launch.json デバッグ実行
-| キー | 機能 | 説明 | ファイル参照 |
+| キー | 機能 | 説明 | 実装ファイル |
 |------|------|------|-------------|
-| `<leader>vl` | launch設定選択実行 | VSCodeのlaunch.json設定を選択してデバッグ実行 | lua/flutter-dev-with-dap.lua:948 |
-| `<leader>dl` | launch.json再読み込み | VSCodeのlaunch.json設定を再読み込み | lua/flutter-dev-with-dap.lua:726 |
-| `<F5>` | デバッグ開始/継続 | 現在のデバッグ設定で開始または継続 | lua/flutter-dev-with-dap.lua:715 |
+| `<leader>vl` | launch設定選択実行 | VSCodeのlaunch.json設定を選択してデバッグ実行 | lua/flutter-dev-with-dap.lua:1082 |
+| `<leader>dl` | launch.json再読み込み | VSCodeのlaunch.json設定を再読み込み | lua/flutter-dev-with-dap.lua:829 |
+| `<F5>` | デバッグ開始/継続 | 現在のデバッグ設定で開始または継続 | lua/flutter-dev-with-dap.lua:818 |
+
+### ✨ 最新の機能強化（2024年更新）
+
+**自動設定検出と読み込み**
+- プロジェクトルートの自動検出（pubspec.yaml、package.json、.git等）
+- `.vscode/launch.json`の自動発見と読み込み
+- エラーハンドリングの改善（不正なJSONファイルの処理）
+
+**多言語対応の拡張**
+- Dart/Flutter（dart、flutter）
+- Node.js（javascript、typescript）
+- Python（python）
+- Go（go）
+- Rust（rust）
+- C++（cpp、c）
+- Java（java）
+
+**インテリジェントな環境対応**
+- mise/asdf版本管理ツールの自動検出
+- プロジェクト固有のSDKパス解決
+- グローバル設定へのフォールバック
+
+**リアルタイム設定管理**
+- launch.json変更時の自動再読み込み
+- 設定選択時のUIフィードバック
+- 設定作成の対話的サポート
 
 ### 🔨 .vscode/tasks.json タスク実行
 | キー | 機能 | 説明 | ファイル参照 |

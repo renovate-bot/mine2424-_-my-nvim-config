@@ -54,6 +54,15 @@
 - ✅ Dart LSP
 - ✅ プラグインの正常動作
 
+### 📊 ステータスライン情報の確認
+
+lualine.nvimによる開発状況の監視：
+- **🎯 Flutter**: プロジェクトタイプの確認
+- **⚡ dartls**: LSPクライアントの動作状況
+- **🔷 3.7.0**: Dartバージョンの確認
+- **🤖 Ready**: Copilot利用可能状況
+- **🚨 ⚠️ 💡**: 診断情報（エラー・警告・情報）
+
 ---
 
 ## 新規プロジェクト開発
@@ -234,13 +243,19 @@ lib/
    <leader>fo      # Flutterアウトライン表示
    ```
 
-2. **ウィジェット操作**
+2. **視覚的コード構造の活用**
+   - **hlchunk.nvim機能**: カーソル位置に応じた自動インデント・チャンクハイライト
+   - **階層化表示**: Flutterの深いネスト構造を6段階のカラーで可視化
+   - **コードチャンク**: 現在のコードブロックの範囲を明確に表示
+   - **エラー検知**: 不正なブロック構造を視覚的にハイライト
+
+3. **ウィジェット操作**
    ```
    <leader>Fw      # ウィジェットをラップ
    <leader>ca      # リファクタリングアクション
    ```
 
-3. **DevToolsの活用**
+4. **DevToolsの活用**
    ```
    <leader>ft      # DevTools起動
    ```
@@ -250,6 +265,8 @@ lib/
 ## デバッグ・テスト
 
 ### 🐛 デバッグワークフロー
+
+#### 🎯 基本的なデバッグ手順
 
 1. **ブレークポイントの設定**
    ```
@@ -270,6 +287,56 @@ lib/
    <leader>du      # デバッグUI表示
    <leader>dr      # デバッグREPL
    ```
+
+#### 🚀 VSCode launch.json統合デバッグ
+
+**自動設定読み込み**
+- プロジェクトの`.vscode/launch.json`ファイルを自動検出・読み込み
+- 複数の言語（Dart、Flutter、Node.js、Python、Go、Rust、C++、Java）をサポート
+- ファイル変更時の自動再読み込み機能
+
+**高度なデバッグ操作**
+1. **VSCode設定選択実行**
+   ```
+   <leader>vl      # launch.json設定を選択してデバッグ実行
+   ```
+
+2. **設定の再読み込み**
+   ```
+   <leader>dl      # launch.json設定を手動で再読み込み
+   ```
+
+3. **プロジェクト固有の設定**
+   - プロジェクトルート自動検出（pubspec.yaml、package.json等）
+   - mise/asdf版本管理ツールとの統合
+   - SDKパスの自動解決
+
+**launch.json設定例**
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Flutter",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "Launch Dart Script",
+      "type": "dart",
+      "request": "launch",
+      "program": "${file}"
+    }
+  ]
+}
+```
+
+**デバッグワークフロー例**
+1. プロジェクトに`.vscode/launch.json`を作成
+2. `<leader>vl`で設定を選択
+3. 設定された環境でデバッグ開始
+4. 通常のデバッグ操作（F5、F10等）で実行制御
 
 ### 🧪 テスト実行
 

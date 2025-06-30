@@ -29,7 +29,7 @@ autocmd('FileType', {
     vim.opt_local.shiftwidth = 4
     vim.opt_local.tabstop = 4
   end,
-  desc = 'Python specific settings'  
+  desc = 'Python specific settings'
 })
 
 autocmd('FileType', {
@@ -133,7 +133,6 @@ autocmd('FileType', {
   pattern = 'markdown',
   callback = function()
     vim.opt_local.wrap = true
-    vim.opt_local.spell = true
     vim.opt_local.conceallevel = 2
   end,
   desc = 'Markdown settings'
@@ -178,27 +177,27 @@ end)
 function _G.custom_statusline()
   local mode_map = {
     n = 'NORMAL',
-    i = 'INSERT', 
+    i = 'INSERT',
     v = 'VISUAL',
     V = 'V-LINE',
     c = 'COMMAND',
     t = 'TERMINAL'
   }
-  
+
   local mode = mode_map[vim.api.nvim_get_mode().mode] or 'UNKNOWN'
   local file = vim.fn.expand('%:t')
   local filetype = vim.bo.filetype
   local line = vim.fn.line('.')
   local col = vim.fn.col('.')
   local total = vim.fn.line('$')
-  
+
   -- LSPクライアント情報を追加
   local lsp_clients = {}
   for _, client in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
     table.insert(lsp_clients, client.name)
   end
   local lsp_info = #lsp_clients > 0 and ('LSP:' .. table.concat(lsp_clients, ',')) or 'No LSP'
-  
+
   -- 診断情報を追加
   local diagnostics = vim.diagnostic.get(0)
   local errors = #vim.tbl_filter(function(d) return d.severity == vim.diagnostic.severity.ERROR end, diagnostics)
@@ -206,8 +205,8 @@ function _G.custom_statusline()
   local diag_info = errors > 0 and ('E:' .. errors) or ''
   diag_info = diag_info .. (warnings > 0 and (diag_info ~= '' and ' W:' or 'W:') .. warnings or '')
   diag_info = diag_info ~= '' and (' | ' .. diag_info) or ''
-  
-  return string.format(' %s | %s | %s | %s | %d:%d/%d%s ', 
+
+  return string.format(' %s | %s | %s | %s | %d:%d/%d%s ',
     mode, file, filetype, lsp_info, line, col, total, diag_info)
 end
 

@@ -8,6 +8,7 @@
 - **Flutter Tools**: フルサポートのFlutter開発環境
 - **Dart LSP**: 完全なコード補完・診断・リファクタリング
 - **デバッグサポート**: DAP統合によるフルデバッグ機能
+- **VSCode統合**: launch.json自動読み込み・実行（2024年最適化済み）
 - **ホットリロード**: `<leader>fh`でリアルタイム更新
 - **デバイス管理**: エミュレータ・デバイス管理
 - **カラープレビュー**: Flutterカラーのインライン表示
@@ -34,7 +35,8 @@
 - **ステータスライン**: Lualineによる情報豊富な表示
 - **タブライン**: Bufferlineによる美しいタブ管理
 - **ファイルツリー**: NvimTreeによるプロジェクト探索
-- **インデントガイド**: 視覚的コード構造表示
+- **インデントガイド**: hlchunk.nvimによる高度なコードチャンク・インデント表示
+- **コードハイライト**: 階層化されたインデントラインとコードブロック可視化
 
 ### ⚡ 効率化機能
 - **高速移動**: Hop.nvimによるジャンプ
@@ -135,6 +137,9 @@ nvim .
 
 - [📋 キーバインド一覧](./FLUTTER_KEYBINDINGS.md)
 - [🔄 開発ワークフロー](./FLUTTER_WORKFLOW.md)
+- [📊 lualine.nvim 設定ガイド](./LUALINE_GUIDE.md) **NEW!**
+- [🌈 hlchunk.nvim 使用ガイド](./HLCHUNK_GUIDE.md)
+- [🚀 VSCode統合アップデート](./VSCODE_INTEGRATION_UPDATE.md)
 - [🔧 トラブルシューティング](./TROUBLESHOOTING.md)
 - [⚙️ 設定ガイド](./CONFIG_GUIDE.md)
 
