@@ -211,6 +211,47 @@ vim.opt.background = "dark"
 -- require('personal')
 ```
 
+### 🆕 VSCode統合の設定
+
+#### launch.json と tasks.json の作成
+
+```bash
+# プロジェクトのルートで実行
+mkdir -p .vscode
+
+# launch.json のサンプルをコピー
+cp ~/.config/nvim/.vscode/launch.json .vscode/
+cp ~/.config/nvim/.vscode/tasks.json .vscode/
+
+# 必要に応じて編集
+nvim .vscode/launch.json
+nvim .vscode/tasks.json
+```
+
+#### mise/asdf環境での自動パス検出
+
+```bash
+# mise を使用している場合
+mise install dart@latest flutter@latest
+mise local dart@latest flutter@latest
+
+# asdf を使用している場合  
+asdf install dart latest
+asdf install flutter latest
+asdf local dart latest
+asdf local flutter latest
+
+# Neovimが自動的にパスを検出します
+# 手動設定は不要です
+```
+
+#### VSCode統合機能の使用方法
+
+1. **タスク実行**: `<Leader>vr` でVSCodeタスク選択
+2. **Launch設定**: `<Leader>vl` で起動設定選択
+3. **デバッグ**: F5キーでVSCode launch.json基準のデバッグ開始
+4. **タスクリスト**: `<Leader>vt` でタスク管理UI表示
+
 ---
 
 ## 🆘 トラブルシューティング

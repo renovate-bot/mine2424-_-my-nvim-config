@@ -194,7 +194,7 @@ function _G.custom_statusline()
   
   -- LSPクライアント情報を追加
   local lsp_clients = {}
-  for _, client in pairs(vim.lsp.get_active_clients({ bufnr = 0 })) do
+  for _, client in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
     table.insert(lsp_clients, client.name)
   end
   local lsp_info = #lsp_clients > 0 and ('LSP:' .. table.concat(lsp_clients, ',')) or 'No LSP'

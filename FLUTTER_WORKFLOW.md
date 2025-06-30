@@ -1,395 +1,624 @@
-# Flutter開発環境 - WezTerm + Neovim
+# Flutter開発ワークフロー完全ガイド 🔄
 
-WezTermとNeovimを使用した効率的なFlutter開発環境の構築と使用方法について説明します。
+このガイドでは、Neovim + Flutter環境での効率的な開発ワークフローを詳しく説明します。
 
 ## 📋 目次
 
-- [環境構成](#環境構成)
-- [セットアップ手順](#セットアップ手順)
-- [使用方法](#使用方法)
-- [キーバインド一覧](#キーバインド一覧)
-- [ワークフロー](#ワークフロー)
+- [開発環境の起動](#開発環境の起動)
+- [新規プロジェクト開発](#新規プロジェクト開発)
+- [既存プロジェクト開発](#既存プロジェクト開発)
+- [日常的な開発作業](#日常的な開発作業)
+- [デバッグ・テスト](#デバッグテスト)
+- [リファクタリング](#リファクタリング)
+- [Git操作](#git操作)
+- [パフォーマンス最適化](#パフォーマンス最適化)
 - [トラブルシューティング](#トラブルシューティング)
-
-## 🏗️ 環境構成
-
-### 前提条件
-
-- **Flutter SDK**: 3.0以上
-- **Dart SDK**: 3.0以上
-- **Neovim**: 0.8以上
-- **WezTerm**: 最新版
-- **Git**: 2.0以上
-
-### 主要コンポーネント
-
-```
-Flutter開発環境
-├── Neovim + flutter-tools.nvim     # エディタ + Flutter LSP
-├── WezTerm                         # ターミナル + ワークスペース管理
-├── 自動化スクリプト                  # プロジェクト管理
-└── 統合ワークフロー                  # 開発〜デプロイ
-```
-
-## 🚀 セットアップ手順
-
-### 1. Flutter開発環境の有効化
-
-```bash
-# init.luaでFlutter設定を有効化
-cd ~/.config/nvim  # または your-nvim-config-path
-nvim init.lua
-
-# 以下の行のコメントアウトを外す
-require('flutter-dev')
-```
-
-### 2. 新規Flutterプロジェクトの作成
-
-```bash
-# セットアップスクリプトを使用
-./scripts/flutter-dev-setup.sh my_flutter_app
-
-# 詳細オプション付きで作成
-./scripts/flutter-dev-setup.sh my_flutter_app --org com.mycompany --ios --android --web
-```
-
-### 3. 既存プロジェクトの設定
-
-```bash
-# 既存プロジェクトの最適化
-cd existing_flutter_project
-/path/to/scripts/flutter-dev-setup.sh existing_flutter_project --existing
-```
-
-## 💻 使用方法
-
-### Neovimでの開発
-
-#### 1. プロジェクトを開く
-
-```bash
-cd your_flutter_project
-nvim .
-```
-
-#### 2. Flutter LSPの自動起動
-
-Dartファイルを開くと自動的にflutter-tools.nvimが起動し、以下が利用可能になります：
-
-- **コード補完**: インテリセンス機能
-- **エラー検出**: リアルタイム構文チェック
-- **ホバー情報**: 関数・クラスの詳細表示
-- **定義ジャンプ**: `gd`でコード定義に移動
-- **リファクタリング**: `<Leader>rn`で変数リネーム
-
-#### 3. デバッグ機能
-
-```vim
-" ブレークポイント設定
-<F5>        # デバッグ開始/継続
-<F10>       # ステップオーバー
-<F11>       # ステップイン
-<F12>       # ステップアウト
-<Leader>b   # ブレークポイント切り替え
-<Leader>du  # デバッグUI表示/非表示
-```
-
-### WezTermワークスペース
-
-#### 1. 自動ワークスペース
-
-WezTermがFlutterプロジェクト（pubspec.yamlがある）を検出すると、自動的に以下のレイアウトを作成：
-
-```
-┌─────────────────┬──────────────┐
-│                 │              │
-│   Neovim        │   Flutter    │
-│   (メインエディタ)  │   (実行環境)   │
-│                 │              │
-│                 ├──────────────┤
-│                 │              │
-│                 │   Logs       │
-│                 │   (ログ表示)   │
-└─────────────────┴──────────────┘
-```
-
-#### 2. 手動ワークスペース作成
-
-```bash
-# Cmd+Alt+F でFlutterワークスペースを手動作成
-```
-
-### 開発ユーティリティスクリプト
-
-```bash
-# プロジェクト管理
-./scripts/flutter-utils.sh setup          # 依存関係セットアップ
-./scripts/flutter-utils.sh clean          # プロジェクトクリーン
-./scripts/flutter-utils.sh doctor         # 環境診断
-
-# 開発・テスト
-./scripts/flutter-utils.sh run            # アプリ実行
-./scripts/flutter-utils.sh test           # テスト実行
-./scripts/flutter-utils.sh analyze        # コード解析
-
-# ビルド・デプロイ
-./scripts/flutter-utils.sh build --release  # リリースビルド
-./scripts/flutter-utils.sh build --ios      # iOS用ビルド
-```
-
-## ⌨️ キーバインド一覧
-
-### Neovim - Flutter専用キーマップ
-
-| キー | 機能 | 説明 |
-|------|------|------|
-| `<Leader>Fr` | Flutter Run | アプリを実行 |
-| `<Leader>Fh` | Hot Reload | ホットリロード |
-| `<Leader>FR` | Hot Restart | ホットリスタート |
-| `<Leader>Fq` | Quit | Flutterアプリ終了 |
-| `<Leader>Fd` | Devices | デバイス一覧表示 |
-| `<Leader>Fe` | Emulators | エミュレータ一覧 |
-| `<Leader>Ft` | Test | テスト実行 |
-| `<Leader>Fc` | Clean | プロジェクトクリーン |
-| `<Leader>Fb` | Build APK | APKビルド |
-
-### Neovim - Dart専用キーマップ
-
-| キー | 機能 | 説明 |
-|------|------|------|
-| `<Leader>Da` | Dart Analyze | コード解析 |
-| `<Leader>Df` | Dart Format | コードフォーマット |
-| `<Leader>Dp` | Pub Get | 依存関係取得 |
-| `<Leader>Du` | Pub Upgrade | 依存関係更新 |
-
-### Neovim - LSPキーマップ
-
-| キー | 機能 | 説明 |
-|------|------|------|
-| `gd` | Go to Definition | 定義に移動 |
-| `K` | Hover | ホバー情報表示 |
-| `gr` | References | 参照箇所表示 |
-| `<Leader>rn` | Rename | 変数リネーム |
-| `<Leader>ca` | Code Action | コードアクション |
-| `[d` / `]d` | Diagnostics | 前/次のエラーに移動 |
-
-### WezTerm - Flutter専用ホットキー
-
-| キー | 機能 | 説明 |
-|------|------|------|
-| `Cmd+Shift+R` | Flutter Run | `flutter run`実行 |
-| `Cmd+Shift+H` | Hot Reload | `r`キー送信（ホットリロード） |
-| `Cmd+Shift+R` | Hot Restart | `R`キー送信（ホットリスタート） |
-| `Cmd+Shift+Q` | Quit App | `q`キー送信（アプリ終了） |
-| `Cmd+Alt+F` | Flutter Workspace | Flutter専用レイアウト作成 |
-
-## 🔄 ワークフロー
-
-### 1. 日常開発フロー
-
-```mermaid
-graph LR
-    A[プロジェクト開始] --> B[WezTerm起動]
-    B --> C[自動ワークスペース作成]
-    C --> D[Neovim起動]
-    D --> E[Flutter LSP起動]
-    E --> F[コーディング]
-    F --> G[保存時自動フォーマット]
-    G --> H[ホットリロード]
-    H --> F
-```
-
-#### 詳細手順
-
-1. **プロジェクト開始**
-   ```bash
-   cd your_flutter_project
-   wezterm  # 自動的にFlutterワークスペースが起動
-   ```
-
-2. **開発作業**
-   - 左ペイン: Neovimでコーディング
-   - 右上ペイン: `flutter run`でアプリ実行
-   - 右下ペイン: ログ監視
-
-3. **ホットリロード**
-   - ファイル保存後、`Cmd+Shift+H`でホットリロード
-   - 重大な変更時は`Cmd+Shift+R`でホットリスタート
-
-### 2. テスト・ビルドフロー
-
-```bash
-# 1. コード品質チェック
-./scripts/flutter-utils.sh analyze
-
-# 2. テスト実行
-./scripts/flutter-utils.sh test --coverage
-
-# 3. ビルド確認
-./scripts/flutter-utils.sh build --release
-```
-
-### 3. デバッグフロー
-
-1. **ブレークポイント設定**: `<Leader>b`
-2. **デバッグ開始**: `<F5>`
-3. **ステップ実行**: `<F10>`, `<F11>`, `<F12>`
-4. **変数監視**: デバッグUIで確認
-
-## 🛠️ カスタマイズ
-
-### プロジェクト固有設定
-
-各Flutterプロジェクトに`.nvimrc`を作成してプロジェクト固有の設定を追加：
-
-```lua
--- .nvimrc (プロジェクトルート)
--- プロジェクト固有のキーマップ
-vim.keymap.set('n', '<Leader>Fs', ':!flutter run --flavor staging<CR>')
-vim.keymap.set('n', '<Leader>Fp', ':!flutter run --flavor production<CR>')
-
--- プロジェクト固有の設定
-vim.opt_local.colorcolumn = "100"  -- 行長制限変更
-```
-
-### WezTerm設定のカスタマイズ
-
-プロジェクト固有のWezTerm設定を`.wezterm_workspace.lua`で作成：
-
-```lua
--- .wezterm_workspace.lua
-local wezterm = require 'wezterm'
-
-return {
-  -- プロジェクト固有のキーバインド
-  keys = {
-    { key = 's', mods = 'CMD|SHIFT', action = wezterm.action.SendString 'flutter run --flavor staging\r' },
-  }
-}
-```
-
-## 🔧 トラブルシューティング
-
-### よくある問題と解決方法
-
-#### 1. Flutter LSPが起動しない
-
-**症状**: Dartファイルを開いてもLSP機能が利用できない
-
-**解決方法**:
-```bash
-# Flutter SDKパスの確認
-which flutter
-echo $PATH
-
-# Neovim設定の確認
-nvim --version  # 0.8以上であることを確認
-
-# flutter-tools.nvimの再インストール
-rm -rf ~/.local/share/nvim/lazy/flutter-tools.nvim
-nvim  # lazy.nvimが自動的に再インストール
-```
-
-#### 2. ホットリロードが機能しない
-
-**症状**: `Cmd+Shift+H`を押してもホットリロードされない
-
-**解決方法**:
-```bash
-# Flutter実行状態を確認
-# 右上ペインでflutter runが実行中であることを確認
-
-# Flutter アプリを再起動
-# 右上ペインで 'R'（ホットリスタート）を実行
-
-# デバイス接続確認
-flutter devices
-```
-
-#### 3. WezTermのレイアウトが正しく作成されない
-
-**症状**: 自動ワークスペースが期待通りに動作しない
-
-**解決方法**:
-```bash
-# pubspec.yamlの存在確認
-ls -la pubspec.yaml
-
-# WezTerm設定の再読み込み
-# WezTermを再起動
-
-# 手動ワークスペース作成
-# Cmd+Alt+F でマニュアル作成
-```
-
-#### 4. プラグインのインストールエラー
-
-**症状**: lazy.nvimでプラグインインストールが失敗する
-
-**解決方法**:
-```bash
-# ネットワーク接続確認
-ping github.com
-
-# Git設定確認
-git config --global user.name
-git config --global user.email
-
-# プラグインキャッシュクリア
-rm -rf ~/.local/share/nvim/lazy
-nvim  # 再インストール実行
-```
-
-#### 5. パフォーマンス問題
-
-**症状**: Neovimの動作が重い
-
-**解決方法**:
-```lua
--- flutter-dev.luaで以下を調整
-require("flutter-tools").setup {
-  debugger = {
-    enabled = false,  -- デバッグ機能を無効化
-  },
-  dev_log = {
-    enabled = false,  # ログ機能を無効化
-  },
-}
-```
-
-### 環境診断コマンド
-
-```bash
-# 総合診断
-./scripts/flutter-utils.sh doctor
-
-# 個別確認
-flutter doctor -v
-nvim --version
-wezterm --version
-git --version
-```
-
-## 📚 追加リソース
-
-### 公式ドキュメント
-
-- [Flutter公式ドキュメント](https://docs.flutter.dev/)
-- [Neovim公式ドキュメント](https://neovim.io/doc/)
-- [WezTerm公式ドキュメント](https://wezfurlong.org/wezterm/)
-
-### プラグインドキュメント
-
-- [flutter-tools.nvim](https://github.com/akinsho/flutter-tools.nvim)
-- [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
-- [lazy.nvim](https://github.com/folke/lazy.nvim)
-
-### コミュニティ
-
-- [Flutter開発者フォーラム](https://flutter.dev/community)
-- [Neovim Subreddit](https://www.reddit.com/r/neovim/)
 
 ---
 
-**🎯 Happy Flutter Development with WezTerm + Neovim!**
+## 開発環境の起動
+
+### 🚀 基本的な起動手順
+
+1. **ターミナルを開く**
+   ```bash
+   # WezTermを使用する場合
+   open -a WezTerm
+   ```
+
+2. **プロジェクトディレクトリに移動**
+   ```bash
+   cd /path/to/your/flutter/project
+   ```
+
+3. **Neovimでプロジェクトを開く**
+   ```bash
+   nvim .
+   ```
+
+4. **Flutter環境の確認**
+   - 自動的にFlutter LSPが起動します
+   - ステータスラインでFlutter環境を確認
+
+### 📱 Flutter開発環境の確認
+
+初回起動時に以下を確認：
+
+```bash
+# Neovim内で実行
+:checkhealth
+```
+
+以下の項目をチェック：
+- ✅ Flutter SDK
+- ✅ Dart LSP
+- ✅ プラグインの正常動作
+
+---
+
+## 新規プロジェクト開発
+
+### 📦 新規プロジェクト作成
+
+1. **プロジェクト作成コマンド**
+   ```bash
+   # ターミナルまたはNeovim内で
+   flutter create my_awesome_app
+   cd my_awesome_app
+   nvim .
+   ```
+
+2. **または、Neovim内から**
+   ```
+   <leader>Fn  # Flutter新規プロジェクト作成
+   ```
+
+### 🎯 初期設定ワークフロー
+
+1. **ファイルツリーを表示**
+   ```
+   <leader>e
+   ```
+
+2. **プロジェクト構造を確認**
+   ```
+   lib/
+   ├── main.dart
+   └── [他のファイル]
+   ```
+
+3. **依存関係の確認**
+   ```
+   <leader>ff  # pubspec.yamlを検索・開く
+   ```
+
+4. **最初のビルド・実行**
+   ```
+   <leader>fr  # Flutter実行
+   ```
+
+### 📋 プロジェクトテンプレートの設定
+
+推奨されるプロジェクト構造：
+
+```
+lib/
+├── main.dart
+├── models/          # データモデル
+├── screens/         # 画面
+├── widgets/         # 再利用可能なウィジェット
+├── services/        # API・サービス層
+├── utils/           # ユーティリティ
+└── constants/       # 定数
+```
+
+---
+
+## 既存プロジェクト開発
+
+### 🔍 プロジェクト理解フロー
+
+1. **プロジェクトを開く**
+   ```bash
+   cd existing_project
+   nvim .
+   ```
+
+2. **プロジェクト構造を把握**
+   ```
+   <leader>e       # ファイルツリー表示
+   <leader>fs      # シンボル検索
+   <leader>fw      # ワークスペースシンボル検索
+   ```
+
+3. **エントリーポイントから理解**
+   ```
+   <leader>ff      # main.dartを検索
+   gd              # 定義へジャンプ
+   gr              # 参照箇所を確認
+   ```
+
+4. **依存関係の確認**
+   ```bash
+   flutter pub get  # 依存関係をインストール
+   ```
+
+### 📱 既存プロジェクトのセットアップ
+
+1. **環境の確認**
+   ```bash
+   flutter doctor
+   flutter pub get
+   ```
+
+2. **最初の実行**
+   ```
+   <leader>fd      # デバイス確認
+   <leader>fr      # 実行
+   ```
+
+3. **エラーがある場合**
+   ```
+   <leader>xx      # Troubleで診断確認
+   <leader>e       # 診断詳細表示
+   ```
+
+---
+
+## 日常的な開発作業
+
+### ✏️ 効率的なコーディング
+
+1. **ファイル間の移動**
+   ```
+   <leader>ff      # ファイル検索
+   <leader>fg      # テキスト検索
+   <Tab>/<S-Tab>   # バッファ切り替え
+   ```
+
+2. **コード編集**
+   ```
+   # 自動補完
+   <C-Space>       # 手動で補完表示
+   <Tab>           # 次の候補
+   <CR>            # 補完確定
+   
+   # LSP機能
+   K               # ホバー情報
+   gd              # 定義へジャンプ
+   gr              # 参照一覧
+   <leader>ca      # コードアクション
+   <leader>rn      # リネーム
+   ```
+
+3. **AI支援機能**
+   ```
+   <leader>cc      # Copilot Chat開く
+   <leader>ce      # コード説明
+   <leader>ct      # テスト生成
+   <leader>cr      # コードレビュー
+   <M-l>           # Copilot提案受け入れ
+   ```
+
+4. **コード整形**
+   ```
+   # 自動整形（保存時）
+   :w              # 保存時に自動フォーマット
+   ```
+
+### 🔄 ホットリロード開発
+
+1. **基本的なホットリロードフロー**
+   ```
+   <leader>fr      # Flutter実行
+   # コード編集
+   <leader>fh      # ホットリロード
+   ```
+
+2. **状態リセットが必要な場合**
+   ```
+   <leader>fR      # ホットリスタート
+   ```
+
+3. **ログの確認**
+   ```
+   <leader>fc      # ログクリア
+   <leader>tf      # Flutter専用ターミナル
+   <C-\>           # フローティングターミナル
+   ```
+
+### 🎨 UI開発ワークフロー
+
+1. **ウィジェット階層の理解**
+   ```
+   <leader>fo      # Flutterアウトライン表示
+   ```
+
+2. **ウィジェット操作**
+   ```
+   <leader>Fw      # ウィジェットをラップ
+   <leader>ca      # リファクタリングアクション
+   ```
+
+3. **DevToolsの活用**
+   ```
+   <leader>ft      # DevTools起動
+   ```
+
+---
+
+## デバッグ・テスト
+
+### 🐛 デバッグワークフロー
+
+1. **ブレークポイントの設定**
+   ```
+   <leader>b       # ブレークポイント切り替え
+   <leader>B       # 条件付きブレークポイント
+   ```
+
+2. **デバッグ実行**
+   ```
+   <F5>            # デバッグ開始
+   <F10>           # ステップオーバー
+   <F11>           # ステップイン
+   <F12>           # ステップアウト
+   ```
+
+3. **デバッグ情報の確認**
+   ```
+   <leader>du      # デバッグUI表示
+   <leader>dr      # デバッグREPL
+   ```
+
+### 🧪 テスト実行
+
+1. **単体テストの実行**
+   ```bash
+   # ターミナルから
+   flutter test
+   
+   # 特定のファイル
+   flutter test test/widget_test.dart
+   ```
+
+2. **統合テストの実行**
+   ```bash
+   flutter test integration_test/
+   ```
+
+3. **カバレッジの確認**
+   ```bash
+   flutter test --coverage
+   genhtml coverage/lcov.info -o coverage/html
+   ```
+
+### 📊 パフォーマンス分析
+
+1. **プロファイリング**
+   ```bash
+   flutter run --profile
+   ```
+
+2. **DevToolsでの分析**
+   ```
+   <leader>ft      # DevTools起動
+   # Performance、Memory、Networkタブを活用
+   ```
+
+---
+
+## リファクタリング
+
+### 🔧 安全なリファクタリング手順
+
+1. **リファクタリング前の準備**
+   ```
+   <leader>gg      # Gitステータス確認
+   # 変更をコミット
+   ```
+
+2. **LSPを活用したリファクタリング**
+   ```
+   <leader>rn      # シンボルリネーム
+   <leader>ca      # コードアクション
+   gd              # 定義確認
+   gr              # 影響範囲確認
+   ```
+
+3. **AI支援リファクタリング**
+   ```
+   <leader>cR      # Copilotリファクタリング
+   <leader>ce      # コード説明（理解のため）
+   ```
+
+4. **大規模リファクタリング**
+   ```
+   <leader>fg      # 全体検索
+   # 一括置換の検討
+   ```
+
+5. **リファクタリング後の確認**
+   ```
+   <leader>fr      # 実行確認
+   flutter test    # テスト実行
+   ```
+
+### 📋 リファクタリングチェックリスト
+
+- [ ] 影響範囲の特定（`gr`で参照確認）
+- [ ] テストの実行
+- [ ] 型安全性の確認
+- [ ] パフォーマンスへの影響確認
+- [ ] ドキュメントの更新
+
+---
+
+## Git操作
+
+### 📝 効率的なGitワークフロー
+
+1. **変更状況の確認**
+   ```
+   <leader>gg      # Neogitでステータス確認
+   <leader>gd      # Diffview表示
+   <leader>gh      # ファイル履歴表示
+   ```
+
+2. **Hunk単位での操作**
+   ```
+   ]c              # 次の変更箇所
+   [c              # 前の変更箇所
+   <leader>hp      # 変更内容プレビュー
+   <leader>hs      # Hunkステージング
+   <leader>hr      # Hunk取り消し
+   ```
+
+3. **ファイル単位での操作**
+   ```
+   <leader>hS      # ファイル全体ステージング
+   <leader>hR      # ファイル全体リセット
+   <leader>hu      # ステージング取り消し
+   ```
+
+4. **Blame・履歴確認**
+   ```
+   <leader>hb      # Git blame表示
+   <leader>tb      # Blame表示切り替え
+   <leader>td      # 削除行表示切り替え
+   ```
+
+### 🌿 ブランチ管理
+
+1. **ブランチ操作**
+   ```bash
+   # ターミナルから
+   git checkout -b feature/new-widget
+   git push -u origin feature/new-widget
+   ```
+
+2. **マージ・リベース**
+   ```
+   <leader>gd      # マージ時の競合解決に活用
+   ```
+
+### 📋 コミットベストプラクティス
+
+1. **コミット前チェック**
+   ```
+   <leader>xx      # エラー・警告の確認
+   flutter test    # テスト実行
+   flutter analyze # 静的解析
+   ```
+
+2. **コミットメッセージ**
+   ```
+   feat: add user authentication widget
+   fix: resolve memory leak in image cache
+   refactor: extract common utility functions
+   ```
+
+---
+
+## パフォーマンス最適化
+
+### 🚀 パフォーマンス分析ワークフロー
+
+1. **プロファイルビルドでの確認**
+   ```bash
+   flutter run --profile
+   flutter build apk --profile
+   ```
+
+2. **DevToolsでの分析**
+   ```
+   <leader>ft      # DevTools起動
+   # Performance、Memory、Networkタブを使用
+   ```
+
+3. **ホットスポットの特定**
+   ```
+   <leader>fg      # パフォーマンス問題のあるコード検索
+   # "setState", "build"等のキーワード検索
+   ```
+
+### 📊 最適化のポイント
+
+1. **ウィジェット最適化**
+   - const constructorの使用
+   - 不要なrebuildの回避
+   - ListView.builderの活用
+
+2. **状態管理の最適化**
+   - 適切なスコープでの状態管理
+   - 無駄な再計算の回避
+
+3. **アセット最適化**
+   - 画像サイズの最適化
+   - 不要なアセットの削除
+
+---
+
+## トラブルシューティング
+
+### 🔍 一般的な問題の解決手順
+
+1. **LSPが動作しない**
+   ```
+   :LspInfo        # LSP状態確認
+   :checkhealth    # 全体的な健康状態チェック
+   ```
+
+2. **ビルドエラー**
+   ```
+   <leader>xx      # Trouble表示
+   <leader>e       # 診断詳細
+   flutter clean   # キャッシュクリア
+   flutter pub get # 依存関係再取得
+   ```
+
+3. **プラグインエラー**
+   ```bash
+   # プラグインキャッシュクリア
+   rm -rf ~/.local/share/nvim/lazy/
+   # Neovim再起動
+   ```
+
+4. **Copilotが動作しない**
+   ```
+   :Copilot auth   # 認証確認
+   :Copilot status # ステータス確認
+   ```
+
+### 🆘 緊急時の対処法
+
+1. **設定をリセット**
+   ```bash
+   # 設定バックアップの復元
+   mv ~/.config/nvim.backup ~/.config/nvim
+   ```
+
+2. **最小構成での起動**
+   ```bash
+   nvim --clean
+   ```
+
+3. **ログの確認**
+   ```bash
+   tail -f ~/.local/share/nvim/log
+   ```
+
+---
+
+## 💡 生産性向上のヒント
+
+### ⚡ ショートカット活用
+
+1. **Which-keyの活用**
+   ```
+   <leader>        # Which-keyでヘルプ表示
+   ```
+
+2. **TODO管理**
+   ```
+   ]t              # 次のTODO
+   [t              # 前のTODO
+   <leader>xt      # TODO一覧（Trouble）
+   <leader>st      # TODO検索（Telescope）
+   ```
+
+3. **高速移動**
+   ```
+   <leader>hw      # 単語へジャンプ
+   <leader>hl      # 行へジャンプ
+   f/F/t/T         # 行内文字ジャンプ
+   ```
+
+### 📚 学習リソース
+
+1. **Flutter公式ドキュメント**
+   - [Flutter.dev](https://flutter.dev)
+   - [Dart Language Tour](https://dart.dev/guides/language/language-tour)
+
+2. **Neovim関連**
+   - `:help`でヘルプ確認
+   - コミュニティフォーラム
+
+### 🎯 継続的改善
+
+1. **定期的な設定見直し**
+   - 使わないプラグインの削除
+   - キーマップの最適化
+
+2. **新機能の学習**
+   - プラグインの更新確認
+   - 新しいワークフローの試行
+
+---
+
+## 📊 パフォーマンス指標
+
+### ⏱️ 開発効率の測定
+
+| 指標 | 目標値 |
+|------|---------|
+| プロジェクト起動時間 | < 5秒 |
+| ホットリロード時間 | < 2秒 |
+| LSP応答時間 | < 500ms |
+| ビルド時間（Debug） | < 30秒 |
+| ビルド時間（Release） | < 3分 |
+
+### 📈 品質指標
+
+| 指標 | 目標値 |
+|------|---------|
+| テストカバレッジ | > 80% |
+| 静的解析スコア | 100点 |
+| パフォーマンススコア | > 90点 |
+
+---
+
+## 🔧 高度な機能
+
+### 🤖 AI支援開発
+
+1. **Copilot Chat活用**
+   ```
+   <leader>cc      # チャット開始
+   <leader>ce      # コード説明
+   <leader>ct      # テスト生成
+   <leader>cR      # リファクタリング
+   ```
+
+2. **効果的なプロンプト**
+   ```
+   # コード説明の場合
+   "この関数の目的と動作を説明して"
+   
+   # テスト生成の場合
+   "このウィジェットのテストケースを作成して"
+   
+   # リファクタリングの場合
+   "このコードをより効率的にして"
+   ```
+
+### 📋 タスク管理
+
+1. **TODO統合**
+   ```dart
+   // TODO: ユーザー認証機能を実装
+   // FIXME: メモリリークを修正
+   // HACK: 一時的な回避策
+   // NOTE: 重要な仕様変更
+   ```
+
+2. **TODO検索・管理**
+   ```
+   <leader>xt      # Trouble表示
+   <leader>st      # Telescope検索
+   ]t / [t         # TODO間移動
+   ```
+
+---
+
+**🎯 このワークフローを参考に、あなた独自の効率的な開発スタイルを確立してください！**

@@ -63,19 +63,15 @@ cp -r "$CONFIG_DIR/lua"/* ~/.config/nvim/lua/
 
 echo -e "${GREEN}✅ Neovim設定を配置しました${NC}"
 
-# WezTerm設定（Claude Code統合機能付き）
-if command -v wezterm &> /dev/null; then
+# WezTerm設定（オプション）
+if [ -f "$CONFIG_DIR/wezterm.lua" ]; then
     if [ -f ~/.wezterm.lua ]; then
         echo -e "${YELLOW}既存のWezTerm設定をバックアップ中...${NC}"
         mv ~/.wezterm.lua ~/.wezterm.lua.backup.$TIMESTAMP
     fi
     
     cp "$CONFIG_DIR/wezterm.lua" ~/.wezterm.lua
-    echo -e "${GREEN}✅ WezTerm設定を配置しました（Claude統合機能付き）${NC}"
-    echo -e "${BLUE}   新機能: Claude実行状態表示・Git情報・自動レイアウト${NC}"
-else
-    echo -e "${YELLOW}⚠️  WezTermが見つかりません（スキップ）${NC}"
-    echo -e "${CYAN}   WezTermをインストールするとClaude統合機能が利用できます${NC}"
+    echo -e "${GREEN}✅ WezTerm設定を配置しました${NC}"
 fi
 
 # スクリプトを実行可能にする
@@ -93,19 +89,26 @@ echo -e "${NC}"
 
 echo -e "${CYAN}次のステップ:${NC}"
 echo -e "${YELLOW}1. nvim を起動してプラグインのインストール完了を確認${NC}"
-echo -e "${YELLOW}2. WezTermを起動してClaude統合機能を確認${NC}"
-echo -e "${YELLOW}3. Flutter開発を開始: nvim your_flutter_project${NC}"
+echo -e "${YELLOW}2. Flutter開発を開始: nvim your_flutter_project${NC}"
+
+if command -v wezterm &> /dev/null; then
+    echo -e "${YELLOW}3. WezTermでClaude統合機能を確認${NC}"
+    echo ""
+    echo -e "${BLUE}🎯 WezTerm機能:${NC}"
+    echo -e "${CYAN}• Ctrl+Space → w : 3ペイン自動分割レイアウト${NC}"
+    echo -e "${CYAN}• 右下ステータス : Claude実行状態 + Git情報${NC}"
+    echo -e "${CYAN}• タスク完了通知 : 音声・視覚通知システム${NC}"
+    echo -e "${CYAN}• Nerd Fonts対応 : アイコン表示サポート${NC}"
+fi
 
 echo ""
-echo -e "${BLUE}🎯 WezTerm新機能（Claude統合）:${NC}"
-echo -e "${CYAN}• Ctrl+Space → w : 3ペイン自動分割レイアウト${NC}"
-echo -e "${CYAN}• 右下ステータス : Claude実行状態（🤖⚡）+ Git情報${NC}"
-echo -e "${CYAN}• タスク完了通知 : 音声・視覚通知システム${NC}"
+echo -e "${BLUE}💡 Nerd Fontsインストール:${NC}"
+echo -e "${CYAN}フルセットアップでNerd Fontsを自動インストール:${NC}"
+echo -e "${YELLOW}./scripts/setup-flutter-dev-env.sh${NC}"
 
 echo ""
 echo -e "${BLUE}📚 詳細なドキュメント:${NC}"
 echo -e "${CYAN}• FLUTTER_WORKFLOW.md - 完全な開発ガイド${NC}"
 echo -e "${CYAN}• FLUTTER_KEYBINDINGS.md - キーバインド一覧${NC}"
-echo -e "${CYAN}• WEZTERM_CONFIG.md - WezTerm設定詳細${NC}"
 
 echo -e "${GREEN}Happy Coding! 🚀${NC}"

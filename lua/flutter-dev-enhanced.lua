@@ -1,5 +1,5 @@
 -- ===============================================
--- Flutter開発環境設定
+-- Flutter開発環境設定（強化版）
 -- ===============================================
 
 -- 既存のプラグインマネージャーとの競合を防ぐ
@@ -30,22 +30,8 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- ===============================================
--- Flutter開発用プラグイン設定
--- ===============================================
-
--- デバッグ機能の有効/無効フラグ
-local enable_debug = true  -- trueにするとDAPプラグインを有効化（依存関係問題がある場合はfalseにしてください）
-
--- デバッグ状況をログ出力
-if enable_debug then
-  print("Debug plugins enabled")
-else
-  print("Debug plugins disabled - skipping DAP installation")
-end
-
--- プラグインリスト
-local plugins = {
+-- Flutter開発用プラグイン設定（強化版）
+require("lazy").setup({
   -- Flutter Tools - Flutter開発の核となるプラグイン
   {
     'akinsho/flutter-tools.nvim',
@@ -66,14 +52,14 @@ local plugins = {
         },
         decorations = {
           statusline = {
-            app_version = false,
+            app_version = true,
             device = true,
-            project_config = false,
+            project_config = true,
           }
         },
         debugger = {
-          enabled = enable_debug,
-          run_via_dap = enable_debug,
+          enabled = true,
+          run_via_dap = true,
           exception_breakpoints = {},
         },
         flutter_path = (function()
@@ -131,8 +117,8 @@ local plugins = {
         },
         lsp = {
           color = {
-            enabled = false,
-            background = false,
+            enabled = true,
+            background = true,
             foreground = false,
             virtual_text = true,
             virtual_text_str = "■",
@@ -171,13 +157,13 @@ local plugins = {
                 source = "if_many",
                 format = function(diagnostic)
                   if diagnostic.severity == vim.diagnostic.severity.ERROR then
-                    return string.format("🚨 %s", diagnostic.message)
+                    return string.format("E: %s", diagnostic.message)
                   elseif diagnostic.severity == vim.diagnostic.severity.WARN then
-                    return string.format("⚠️  %s", diagnostic.message)
+                    return string.format("W: %s", diagnostic.message)
                   elseif diagnostic.severity == vim.diagnostic.severity.INFO then
-                    return string.format("💡 %s", diagnostic.message)
+                    return string.format("I: %s", diagnostic.message)
                   else
-                    return string.format("💭 %s", diagnostic.message)
+                    return string.format("H: %s", diagnostic.message)
                   end
                 end,
               },
@@ -189,16 +175,7 @@ local plugins = {
                 prefix = '',
                 scope = 'cursor',
               },
-              signs = {
-                text = {
-                  [vim.diagnostic.severity.ERROR] = '🚨',
-                  [vim.diagnostic.severity.WARN] = '⚠️',
-                  [vim.diagnostic.severity.INFO] = '💡',
-                  [vim.diagnostic.severity.HINT] = '💭',
-                },
-                linehl = {},
-                numhl = {},
-              },
+              signs = true,
               underline = true,
               update_in_insert = false,
               severity_sort = true,
@@ -225,7 +202,6 @@ local plugins = {
               updateImportsOnRename = true,
               includeDependenciesInWorkspaceSymbols = true,
               enableSnippets = true,
-              includeDependenciesInWorkspaceSymbols = true,
               renameFilesWithClasses = "prompt",
             }
           }
@@ -287,11 +263,289 @@ local plugins = {
         sources = cmp.config.sources({
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
+          { name = 'copilot' },
         }, {
           { name = 'buffer' },
           { name = 'path' },
         })
       })
+    end,
+  },
+
+  -- GitHub Copilot
+  {
+    'zbirenbaum/copilot.lua',
+    cmd = "Copilot",
+    event = "InsertEnter",
+    config = function()
+      require("copilot").setup({
+        panel = {
+          enabled = true,
+          auto_refresh = false,
+          keymap = {
+            jump_prev = "[[",
+            jump_next = "]]",
+            accept = "<CR>",
+            refresh = "gr",
+            open = "<M-CR>"
+          },
+          layout = {
+            position = "bottom",
+            ratio = 0.4
+          },
+        },
+        suggestion = {
+          enabled = true,
+          auto_trigger = true,
+          debounce = 75,
+          keymap = {
+            accept = "<M-l>",
+            accept_word = false,
+            accept_line = false,
+            next = "<M-]>",
+            prev = "<M-[>",
+            dismiss = "<C-]>",
+          },
+        },
+        filetypes = {
+          yaml = false,
+          markdown = false,
+          help = false,
+          gitcommit = false,
+          gitrebase = false,
+          hgcommit = false,
+          svn = false,
+          cvs = false,
+          ["."] = false,
+        },
+        copilot_node_command = 'node',
+      })
+    end,
+  },
+
+  -- Copilot補完統合
+  {
+    "zbirenbaum/copilot-cmp",
+    dependencies = { "copilot.lua" },
+    config = function ()
+      require("copilot_cmp").setup()
+    end
+  },
+
+  -- Copilot Chat
+  {
+    "CopilotC-Nvim/CopilotChat.nvim",
+    branch = "canary",
+    dependencies = {
+      { "zbirenbaum/copilot.lua" },
+      { "nvim-lua/plenary.nvim" },
+    },
+    opts = {
+      debug = true,
+      window = {
+        layout = 'float',
+        relative = 'cursor',
+        width = 1,
+        height = 0.4,
+        row = 1
+      }
+    },
+    keys = {
+      { "<leader>cc", "<cmd>CopilotChatOpen<cr>", desc = "CopilotChat - Open" },
+      { "<leader>ce", "<cmd>CopilotChatExplain<cr>", desc = "CopilotChat - Explain code" },
+      { "<leader>ct", "<cmd>CopilotChatTests<cr>", desc = "CopilotChat - Generate tests" },
+      { "<leader>cr", "<cmd>CopilotChatReview<cr>", desc = "CopilotChat - Review code" },
+      { "<leader>cR", "<cmd>CopilotChatRefactor<cr>", desc = "CopilotChat - Refactor code" },
+    },
+  },
+
+  -- Git強化版
+  {
+    'lewis6991/gitsigns.nvim',
+    config = function()
+      require('gitsigns').setup {
+        signs = {
+          add          = { text = '│' },
+          change       = { text = '│' },
+          delete       = { text = '_' },
+          topdelete    = { text = '‾' },
+          changedelete = { text = '~' },
+          untracked    = { text = '┆' },
+        },
+        signcolumn = true,
+        numhl      = false,
+        linehl     = false,
+        word_diff  = false,
+        watch_gitdir = {
+          interval = 1000,
+          follow_files = true
+        },
+        attach_to_untracked = true,
+        current_line_blame = true,
+        current_line_blame_opts = {
+          virt_text = true,
+          virt_text_pos = 'eol',
+          delay = 1000,
+          ignore_whitespace = false,
+        },
+        current_line_blame_formatter = '<author>, <author_time:%Y-%m-%d> - <summary>',
+        sign_priority = 6,
+        update_debounce = 100,
+        status_formatter = nil,
+        max_file_length = 40000,
+        preview_config = {
+          border = 'single',
+          style = 'minimal',
+          relative = 'cursor',
+          row = 0,
+          col = 1
+        },
+        yadm = {
+          enable = false
+        },
+        on_attach = function(bufnr)
+          local gs = package.loaded.gitsigns
+
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
+
+          -- Navigation
+          map('n', ']c', function()
+            if vim.wo.diff then return ']c' end
+            vim.schedule(function() gs.next_hunk() end)
+            return '<Ignore>'
+          end, {expr=true})
+
+          map('n', '[c', function()
+            if vim.wo.diff then return '[c' end
+            vim.schedule(function() gs.prev_hunk() end)
+            return '<Ignore>'
+          end, {expr=true})
+
+          -- Actions
+          map('n', '<leader>hs', gs.stage_hunk)
+          map('n', '<leader>hr', gs.reset_hunk)
+          map('v', '<leader>hs', function() gs.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end)
+          map('v', '<leader>hr', function() gs.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end)
+          map('n', '<leader>hS', gs.stage_buffer)
+          map('n', '<leader>hu', gs.undo_stage_hunk)
+          map('n', '<leader>hR', gs.reset_buffer)
+          map('n', '<leader>hp', gs.preview_hunk)
+          map('n', '<leader>hb', function() gs.blame_line{full=true} end)
+          map('n', '<leader>tb', gs.toggle_current_line_blame)
+          map('n', '<leader>hd', gs.diffthis)
+          map('n', '<leader>hD', function() gs.diffthis('~') end)
+          map('n', '<leader>td', gs.toggle_deleted)
+
+          -- Text object
+          map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+        end
+      }
+    end,
+  },
+
+  -- Diffview
+  {
+    'sindrets/diffview.nvim',
+    dependencies = 'nvim-lua/plenary.nvim',
+    config = function()
+      require("diffview").setup({
+        diff_binaries = false,
+        enhanced_diff_hl = false,
+        git_cmd = { "git" },
+        use_icons = true,
+        icons = {
+          folder_closed = "",
+          folder_open = "",
+        },
+        signs = {
+          fold_closed = "",
+          fold_open = "",
+        },
+        view = {
+          default = {
+            layout = "diff2_horizontal",
+            winbar_info = false,
+          },
+          merge_tool = {
+            layout = "diff3_horizontal",
+            disable_diagnostics = true,
+          },
+          file_history = {
+            layout = "diff2_horizontal",
+            winbar_info = false,
+          },
+        },
+        file_panel = {
+          listing_style = "tree",
+          tree_options = {
+            flatten_dirs = true,
+            folder_statuses = "only_folded",
+          },
+          win_config = {
+            position = "left",
+            width = 35,
+          },
+        },
+        key_bindings = {
+          disable_defaults = false,
+        },
+      })
+      
+      -- キーマップ
+      vim.keymap.set('n', '<leader>gd', '<cmd>DiffviewOpen<cr>', { desc = 'Git diff view' })
+      vim.keymap.set('n', '<leader>gh', '<cmd>DiffviewFileHistory<cr>', { desc = 'Git file history' })
+      vim.keymap.set('n', '<leader>gc', '<cmd>DiffviewClose<cr>', { desc = 'Close diff view' })
+    end,
+  },
+
+  -- Neogit
+  {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "sindrets/diffview.nvim",
+      "nvim-telescope/telescope.nvim",
+    },
+    config = function()
+      require('neogit').setup({
+        disable_signs = false,
+        disable_hint = false,
+        disable_context_highlighting = false,
+        disable_commit_confirmation = false,
+        auto_refresh = true,
+        sort_branches = "-committerdate",
+        disable_builtin_notifications = false,
+        use_magit_keybindings = false,
+        kind = "tab",
+        console_timeout = 2000,
+        auto_show_console = true,
+        remember_settings = true,
+        use_per_project_settings = true,
+        ignored_settings = {},
+        commit_popup = {
+          kind = "split",
+        },
+        preview_buffer = {
+          kind = "split",
+        },
+        popup = {
+          kind = "split",
+        },
+        signs = {
+          section = { ">", "v" },
+          item = { ">", "v" },
+          hunk = { "", "" },
+        },
+        integrations = {
+          diffview = true,
+        },
+      })
+      
+      vim.keymap.set('n', '<leader>gg', '<cmd>Neogit<cr>', { desc = 'Neogit status' })
     end,
   },
 
@@ -302,7 +556,7 @@ local plugins = {
     event = { "BufReadPost", "BufNewFile" },
     config = function()
       require('nvim-treesitter.configs').setup {
-        ensure_installed = { "dart", "yaml", "json", "markdown", "lua", "vim" },
+        ensure_installed = { "dart", "yaml", "json", "markdown", "lua", "vim", "vimdoc", "regex", "bash", "markdown_inline" },
         auto_install = true,
         sync_install = false,
         highlight = {
@@ -350,27 +604,402 @@ local plugins = {
     end,
   },
 
-
-  -- Git統合
+  -- ToggleTerm - 統合ターミナル
   {
-    'lewis6991/gitsigns.nvim',
+    'akinsho/toggleterm.nvim',
+    version = "*",
     config = function()
-      require('gitsigns').setup {
-        signs = {
-          add = { text = '+' },
-          change = { text = '~' },
-          delete = { text = '_' },
-          topdelete = { text = '‾' },
-          changedelete = { text = '~' },
+      require("toggleterm").setup{
+        size = function(term)
+          if term.direction == "horizontal" then
+            return 15
+          elseif term.direction == "vertical" then
+            return vim.o.columns * 0.4
+          end
+        end,
+        open_mapping = [[<c-\>]],
+        hide_numbers = true,
+        shade_filetypes = {},
+        shade_terminals = true,
+        shading_factor = 2,
+        start_in_insert = true,
+        insert_mappings = true,
+        terminal_mappings = true,
+        persist_size = true,
+        persist_mode = true,
+        direction = 'float',
+        close_on_exit = true,
+        shell = vim.o.shell,
+        float_opts = {
+          border = 'curved',
+          winblend = 0,
+          highlights = {
+            border = "Normal",
+            background = "Normal",
+          }
+        }
+      }
+      
+      -- ターミナル用キーマップ
+      function _G.set_terminal_keymaps()
+        local opts = {buffer = 0}
+        vim.keymap.set('t', '<esc>', [[<C-\><C-n>]], opts)
+        vim.keymap.set('t', 'jk', [[<C-\><C-n>]], opts)
+        vim.keymap.set('t', '<C-h>', [[<Cmd>wincmd h<CR>]], opts)
+        vim.keymap.set('t', '<C-j>', [[<Cmd>wincmd j<CR>]], opts)
+        vim.keymap.set('t', '<C-k>', [[<Cmd>wincmd k<CR>]], opts)
+        vim.keymap.set('t', '<C-l>', [[<Cmd>wincmd l<CR>]], opts)
+      end
+      
+      vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
+      
+      -- Flutter専用ターミナル
+      local Terminal = require('toggleterm.terminal').Terminal
+      local flutter_terminal = Terminal:new({
+        cmd = "flutter run",
+        direction = "horizontal",
+        close_on_exit = false,
+      })
+      
+      function _flutter_toggle()
+        flutter_terminal:toggle()
+      end
+      
+      vim.keymap.set("n", "<leader>tf", "<cmd>lua _flutter_toggle()<CR>", {noremap = true, silent = true})
+    end,
+  },
+
+  -- Trouble - 診断情報の改善
+  {
+    "folke/trouble.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {},
+    keys = {
+      { "<leader>xx", "<cmd>TroubleToggle<cr>", desc = "Toggle Trouble" },
+      { "<leader>xw", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Workspace Diagnostics" },
+      { "<leader>xd", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "Document Diagnostics" },
+      { "<leader>xq", "<cmd>TroubleToggle quickfix<cr>", desc = "QuickFix" },
+      { "<leader>xl", "<cmd>TroubleToggle loclist<cr>", desc = "Location List" },
+    },
+  },
+
+  -- TODO Comments
+  {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {
+      signs = true,
+      sign_priority = 8,
+      keywords = {
+        FIX = {
+          icon = " ",
+          color = "error",
+          alt = { "FIXME", "BUG", "FIXIT", "ISSUE" },
         },
-        current_line_blame = true,
-        current_line_blame_opts = {
-          virt_text = true,
-          virt_text_pos = 'eol',
-          delay = 1000,
+        TODO = { icon = " ", color = "info" },
+        HACK = { icon = " ", color = "warning" },
+        WARN = { icon = " ", color = "warning", alt = { "WARNING", "XXX" } },
+        PERF = { icon = " ", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE" } },
+        NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
+        TEST = { icon = "⏲ ", color = "test", alt = { "TESTING", "PASSED", "FAILED" } },
+      },
+      gui_style = {
+        fg = "NONE",
+        bg = "BOLD",
+      },
+      merge_keywords = true,
+      highlight = {
+        multiline = true,
+        multiline_pattern = "^.",
+        multiline_context = 10,
+        before = "",
+        keyword = "wide",
+        after = "fg",
+        pattern = [[.*<(KEYWORDS)\s*:]],
+        comments_only = true,
+        max_line_len = 400,
+        exclude = {},
+      },
+      colors = {
+        error = { "DiagnosticError", "ErrorMsg", "#DC2626" },
+        warning = { "DiagnosticWarn", "WarningMsg", "#FBBF24" },
+        info = { "DiagnosticInfo", "#2563EB" },
+        hint = { "DiagnosticHint", "#10B981" },
+        default = { "Identifier", "#7C3AED" },
+        test = { "Identifier", "#FF00FF" }
+      },
+      search = {
+        command = "rg",
+        args = {
+          "--color=never",
+          "--no-heading",
+          "--with-filename",
+          "--line-number",
+          "--column",
         },
+        pattern = [[\b(KEYWORDS):]],
+      },
+    },
+    keys = {
+      { "]t", function() require("todo-comments").jump_next() end, desc = "Next todo comment" },
+      { "[t", function() require("todo-comments").jump_prev() end, desc = "Previous todo comment" },
+      { "<leader>xt", "<cmd>TodoTrouble<cr>", desc = "Todo (Trouble)" },
+      { "<leader>xT", "<cmd>TodoTrouble keywords=TODO,FIX,FIXME<cr>", desc = "Todo/Fix/Fixme (Trouble)" },
+      { "<leader>st", "<cmd>TodoTelescope<cr>", desc = "Todo" },
+      { "<leader>sT", "<cmd>TodoTelescope keywords=TODO,FIX,FIXME<cr>", desc = "Todo/Fix/Fixme" },
+    },
+  },
+
+  -- Which Key
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    init = function()
+      vim.o.timeout = true
+      vim.o.timeoutlen = 300
+    end,
+    opts = {
+      plugins = {
+        marks = true,
+        registers = true,
+        spelling = {
+          enabled = true,
+          suggestions = 20,
+        },
+        presets = {
+          operators = true,
+          motions = true,
+          text_objects = true,
+          windows = true,
+          nav = true,
+          z = true,
+          g = true,
+        },
+      },
+      key_labels = {},
+      icons = {
+        breadcrumb = "»",
+        separator = "➜",
+        group = "+",
+      },
+      popup_mappings = {
+        scroll_down = "<c-d>",
+        scroll_up = "<c-u>",
+      },
+      window = {
+        border = "rounded",
+        position = "bottom",
+        margin = { 1, 0, 1, 0 },
+        padding = { 2, 2, 2, 2 },
+        winblend = 0,
+      },
+      layout = {
+        height = { min = 4, max = 25 },
+        width = { min = 20, max = 50 },
+        spacing = 3,
+        align = "left",
+      },
+      ignore_missing = false,
+      hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ " },
+      show_help = true,
+      show_keys = true,
+      triggers = "auto",
+      triggers_blacklist = {
+        i = { "j", "k" },
+        v = { "j", "k" },
+      },
+      disable = {
+        buftypes = {},
+        filetypes = { "TelescopePrompt" },
+      },
+    },
+    config = function(_, opts)
+      local wk = require("which-key")
+      wk.setup(opts)
+      
+      -- グループ定義
+      wk.register({
+        ["<leader>f"] = { name = "+flutter/find" },
+        ["<leader>g"] = { name = "+git" },
+        ["<leader>h"] = { name = "+hunk" },
+        ["<leader>x"] = { name = "+diagnostics/quickfix" },
+        ["<leader>c"] = { name = "+copilot" },
+        ["<leader>t"] = { name = "+terminal/toggle" },
+        ["<leader>s"] = { name = "+search" },
+        ["<leader>d"] = { name = "+dart/debug" },
+        ["<leader>F"] = { name = "+Flutter project" },
+      })
+    end,
+  },
+
+  -- Lualine - ステータスライン
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('lualine').setup {
+        options = {
+          icons_enabled = true,
+          theme = 'auto',
+          component_separators = { left = '', right = ''},
+          section_separators = { left = '', right = ''},
+          disabled_filetypes = {
+            statusline = {},
+            winbar = {},
+          },
+          ignore_focus = {},
+          always_divide_middle = true,
+          globalstatus = false,
+          refresh = {
+            statusline = 1000,
+            tabline = 1000,
+            winbar = 1000,
+          }
+        },
+        sections = {
+          lualine_a = {'mode'},
+          lualine_b = {'branch', 'diff', 'diagnostics'},
+          lualine_c = {'filename'},
+          lualine_x = {
+            {
+              function()
+                local msg = 'No Active Lsp'
+                local clients = vim.lsp.get_clients({ bufnr = 0 })
+                if next(clients) == nil then
+                  return msg
+                end
+                for _, client in ipairs(clients) do
+                  return client.name
+                end
+                return msg
+              end,
+              icon = ' LSP:',
+              color = { fg = '#ffffff', gui = 'bold' },
+            },
+            'encoding',
+            'fileformat',
+            'filetype'
+          },
+          lualine_y = {'progress'},
+          lualine_z = {'location'}
+        },
+        inactive_sections = {
+          lualine_a = {},
+          lualine_b = {},
+          lualine_c = {'filename'},
+          lualine_x = {'location'},
+          lualine_y = {},
+          lualine_z = {}
+        },
+        tabline = {},
+        winbar = {},
+        inactive_winbar = {},
+        extensions = {'nvim-tree', 'toggleterm', 'trouble'}
       }
     end,
+  },
+
+  -- Bufferline - タブライン
+  {
+    'akinsho/bufferline.nvim',
+    version = "*",
+    dependencies = 'nvim-tree/nvim-web-devicons',
+    config = function()
+      require("bufferline").setup{
+        options = {
+          mode = "buffers",
+          style_preset = require("bufferline").style_preset.default,
+          themable = true,
+          numbers = "none",
+          close_command = "bdelete! %d",
+          right_mouse_command = "bdelete! %d",
+          left_mouse_command = "buffer %d",
+          middle_mouse_command = nil,
+          indicator = {
+            icon = '▎',
+            style = 'icon',
+          },
+          buffer_close_icon = '',
+          modified_icon = '●',
+          close_icon = '',
+          left_trunc_marker = '',
+          right_trunc_marker = '',
+          max_name_length = 18,
+          max_prefix_length = 15,
+          truncate_names = true,
+          tab_size = 18,
+          diagnostics = "nvim_lsp",
+          diagnostics_update_in_insert = false,
+          diagnostics_indicator = function(count, level, diagnostics_dict, context)
+            local s = " "
+            for e, n in pairs(diagnostics_dict) do
+              local sym = e == "error" and " "
+                or (e == "warning" and " " or "")
+              s = s .. n .. sym
+            end
+            return s
+          end,
+          offsets = {
+            {
+              filetype = "NvimTree",
+              text = "File Explorer",
+              text_align = "left",
+              separator = true
+            }
+          },
+          color_icons = true,
+          show_buffer_icons = true,
+          show_buffer_close_icons = true,
+          show_close_icon = true,
+          show_tab_indicators = true,
+          show_duplicate_prefix = true,
+          persist_buffer_sort = true,
+          separator_style = "slant",
+          enforce_regular_tabs = false,
+          always_show_bufferline = true,
+          hover = {
+            enabled = true,
+            delay = 200,
+            reveal = {'close'}
+          },
+          sort_by = 'insert_after_current',
+        }
+      }
+      
+      -- Bufferlineキーマップ
+      vim.keymap.set('n', '<Tab>', '<cmd>BufferLineCycleNext<cr>', { desc = 'Next buffer' })
+      vim.keymap.set('n', '<S-Tab>', '<cmd>BufferLineCyclePrev<cr>', { desc = 'Previous buffer' })
+      vim.keymap.set('n', '<leader>bp', '<cmd>BufferLineTogglePin<cr>', { desc = 'Pin buffer' })
+      vim.keymap.set('n', '<leader>bP', '<cmd>BufferLineGroupClose ungrouped<cr>', { desc = 'Close non-pinned buffers' })
+    end,
+  },
+
+  -- Indent Blankline
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    opts = {
+      indent = {
+        char = "│",
+        tab_char = "│",
+      },
+      scope = { enabled = false },
+      exclude = {
+        filetypes = {
+          "help",
+          "alpha",
+          "dashboard",
+          "neo-tree",
+          "Trouble",
+          "trouble",
+          "lazy",
+          "mason",
+          "notify",
+          "toggleterm",
+          "lazyterm",
+        },
+      },
+    },
   },
 
   -- ファイルエクスプローラー
@@ -390,6 +1019,14 @@ local plugins = {
         git = {
           enable = true,
           ignore = false,
+        },
+        renderer = {
+          highlight_git = true,
+          icons = {
+            show = {
+              git = true,
+            },
+          },
         },
       }
       vim.keymap.set('n', '<Leader>e', ':NvimTreeToggle<CR>', {})
@@ -500,109 +1137,92 @@ local plugins = {
     end,
   },
 
-  -- VSCode Task Runner - overseer.nvim
+  -- Hop - 高速移動
   {
-    'stevearc/overseer.nvim',
-    cmd = { "OverseerRun", "OverseerToggle", "OverseerOpen", "OverseerClose" },
+    'phaazon/hop.nvim',
+    branch = 'v2',
     config = function()
-      require('overseer').setup({
-        task_list = {
-          direction = "bottom",
-          min_height = 25,
-          max_height = 25,
-          default_detail = 1,
-          bindings = {
-            ["?"] = "ShowHelp",
-            ["g?"] = "ShowHelp",
-            ["<CR>"] = "RunAction",
-            ["<C-e>"] = "Edit",
-            ["o"] = "Open",
-            ["<C-v>"] = "OpenVsplit",
-            ["<C-s>"] = "OpenSplit",
-            ["<C-f>"] = "OpenFloat",
-            ["<C-q>"] = "OpenQuickFix",
-            ["p"] = "TogglePreview",
-            ["<C-l>"] = "IncreaseDetail",
-            ["<C-h>"] = "DecreaseDetail",
-            ["L"] = "IncreaseAllDetail",
-            ["H"] = "DecreaseAllDetail",
-            ["["] = "DecreaseWidth",
-            ["]"] = "IncreaseWidth",
-            ["{"] = "PrevTask",
-            ["}"] = "NextTask",
-            ["<C-k>"] = "ScrollOutputUp",
-            ["<C-j>"] = "ScrollOutputDown",
-            ["q"] = "Close",
-          },
-        },
-        form = {
-          border = "rounded",
-          win_opts = {
-            winblend = 10,
-          },
-        },
-        confirm = {
-          border = "rounded",
-          win_opts = {
-            winblend = 10,
-          },
-        },
-        task_win = {
-          border = "rounded",
-          win_opts = {
-            winblend = 10,
-          },
-        },
-        -- VSCode tasks.json support
-        auto_detect_success_color = true,
-        templates = { "builtin", "vscode" },
-        -- Flutter/Dart specific task detection
-        task_editor = {
-          bindings = {
-            i = {
-              ["<C-s>"] = "Submit",
-              ["<C-c>"] = "Cancel",
-            },
-            n = {
-              ["<CR>"] = "Submit",
-              ["<C-s>"] = "Submit",
-              ["q"] = "Cancel",
-              ["<C-c>"] = "Cancel",
-            },
-          },
-        },
-      })
+      require'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
       
-      -- VSCode keymaps
-      vim.keymap.set('n', '<Leader>vr', ':OverseerRun<CR>', { desc = 'Run VSCode Task' })
-      vim.keymap.set('n', '<Leader>vt', ':OverseerToggle<CR>', { desc = 'Toggle Task List' })
-      vim.keymap.set('n', '<Leader>vo', ':OverseerOpen<CR>', { desc = 'Open Task List' })
-      vim.keymap.set('n', '<Leader>vc', ':OverseerClose<CR>', { desc = 'Close Task List' })
+      -- Hopキーマップ
+      vim.keymap.set('', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true })<cr>", {})
+      vim.keymap.set('', 'F', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true })<cr>", {})
+      vim.keymap.set('', 't', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })<cr>", {})
+      vim.keymap.set('', 'T', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })<cr>", {})
+      vim.keymap.set('n', '<leader>hw', "<cmd>HopWord<cr>", { desc = 'Hop to word' })
+      vim.keymap.set('n', '<leader>hl', "<cmd>HopLine<cr>", { desc = 'Hop to line' })
+      vim.keymap.set('n', '<leader>hc', "<cmd>HopChar1<cr>", { desc = 'Hop to char' })
+      vim.keymap.set('n', '<leader>hp', "<cmd>HopPattern<cr>", { desc = 'Hop to pattern' })
+    end
+  },
+
+  -- Auto Pairs
+  {
+    'windwp/nvim-autopairs',
+    event = "InsertEnter",
+    opts = {},
+    config = function(_, opts)
+      require("nvim-autopairs").setup(opts)
+      
+      -- nvim-cmpとの統合
+      local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+      local cmp = require('cmp')
+      cmp.event:on(
+        'confirm_done',
+        cmp_autopairs.on_confirm_done()
+      )
     end,
   },
-}
 
--- デバッグ機能が有効な場合のみDAPプラグインを追加
-if enable_debug then
-  -- nvim-nio (必須依存関係として最優先でインストール)
-  table.insert(plugins, {
-    'nvim-neotest/nvim-nio',
+  -- Comment
+  {
+    'numToStr/Comment.nvim',
+    opts = {},
     lazy = false,
-    priority = 1000,
+  },
+
+  -- Surround
+  {
+    "kylechui/nvim-surround",
+    version = "*",
+    event = "VeryLazy",
     config = function()
-      -- nvim-nioが利用可能であることを確認
-      pcall(require, 'nio')
-    end,
-  })
+      require("nvim-surround").setup()
+    end
+  },
 
-  -- DAP - デバッグ
-  table.insert(plugins, {
+  -- Mason - LSP Manager
+  {
+    "williamboman/mason.nvim",
+    build = ":MasonUpdate",
+    config = function()
+      require("mason").setup({
+        ui = {
+          icons = {
+            package_installed = "✓",
+            package_pending = "➜",
+            package_uninstalled = "✗"
+          }
+        }
+      })
+    end,
+  },
+
+  -- Mason LSPConfig
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = { "mason.nvim" },
+    config = function()
+      require("mason-lspconfig").setup({
+        ensure_installed = { "dartls" },
+        automatic_installation = true,
+      })
+    end,
+  },
+
+  -- DAP support
+  {
     'mfussenegger/nvim-dap',
-    lazy = false,
-    priority = 900,
-    dependencies = {
-      'nvim-neotest/nvim-nio',
-    },
     config = function()
       local dap = require('dap')
       
@@ -853,25 +1473,135 @@ if enable_debug then
       
       -- Set up the watcher
       setup_launch_json_watcher()
+      
+      -- Enhanced configuration selector
+      vim.keymap.set('n', '<Leader>vl', function()
+        local function find_project_root()
+          local cwd = vim.fn.getcwd()
+          local markers = {
+            'pubspec.yaml',
+            'package.json',
+            '.git',
+            '.vscode'
+          }
+          
+          for _, marker in ipairs(markers) do
+            if vim.fn.filereadable(cwd .. '/' .. marker) == 1 or vim.fn.isdirectory(cwd .. '/' .. marker) == 1 then
+              return cwd
+            end
+          end
+          
+          local path = cwd
+          while path ~= '/' do
+            for _, marker in ipairs(markers) do
+              if vim.fn.filereadable(path .. '/' .. marker) == 1 or vim.fn.isdirectory(path .. '/' .. marker) == 1 then
+                return path
+              end
+            end
+            path = vim.fn.fnamemodify(path, ':h')
+          end
+          
+          return cwd
+        end
+        
+        local project_root = find_project_root()
+        local launch_json_path = project_root .. '/.vscode/launch.json'
+        
+        if vim.fn.filereadable(launch_json_path) == 0 then
+          vim.notify("No .vscode/launch.json found in project: " .. project_root, vim.log.levels.WARN)
+          vim.ui.input({ prompt = "Create basic launch.json? (y/n): " }, function(input)
+            if input and input:lower() == 'y' then
+              vim.cmd('edit ' .. launch_json_path)
+            end
+          end)
+          return
+        end
+        
+        -- Reload configurations
+        require('dap.ext.vscode').load_launchjs(launch_json_path, {
+          dart = {'dart', 'flutter'},
+          flutter = {'dart', 'flutter'},
+          node = {'javascript', 'typescript'},
+          python = {'python'},
+          go = {'go'},
+          rust = {'rust'},
+          cpp = {'cpp', 'c'},
+          java = {'java'}
+        })
+        
+        -- Get all available configurations with better sorting
+        local current_ft = vim.bo.filetype
+        local all_configs = {}
+        
+        -- Collect configurations from multiple file types, prioritizing current filetype
+        local filetypes_to_check = {current_ft, 'dart', 'flutter'}
+        
+        for _, ft in ipairs(filetypes_to_check) do
+          if dap.configurations[ft] then
+            for _, config in ipairs(dap.configurations[ft]) do
+              table.insert(all_configs, {
+                config = config,
+                filetype = ft,
+                is_current_ft = ft == current_ft
+              })
+            end
+          end
+        end
+        
+        if #all_configs > 0 then
+          -- Sort configurations: current filetype first, then by name
+          table.sort(all_configs, function(a, b)
+            if a.is_current_ft ~= b.is_current_ft then
+              return a.is_current_ft
+            end
+            return (a.config.name or '') < (b.config.name or '')
+          end)
+          
+          vim.ui.select(all_configs, {
+            prompt = 'Select debug configuration (' .. vim.fn.fnamemodify(project_root, ':t') .. '):',
+            format_item = function(item)
+              local prefix = item.is_current_ft and '● ' or '  '
+              local name = item.config.name or 'Unnamed'
+              local type_info = '[' .. (item.config.type or 'unknown') .. ']'
+              local args_info = ''
+              
+              if item.config.args and #item.config.args > 0 then
+                args_info = ' (args: ' .. table.concat(item.config.args, ' ') .. ')'
+              end
+              
+              return prefix .. name .. ' ' .. type_info .. args_info
+            end,
+          }, function(choice)
+            if choice then
+              local old_cwd = vim.fn.getcwd()
+              vim.cmd('cd ' .. project_root)
+              
+              vim.notify("Starting debug session: " .. (choice.config.name or 'Unnamed'), vim.log.levels.INFO)
+              dap.run(choice.config)
+              
+              vim.cmd('cd ' .. old_cwd)
+            end
+          end)
+        else
+          vim.notify("No launch configurations found. Check " .. launch_json_path, vim.log.levels.WARN)
+          vim.ui.input({ prompt = "Open launch.json for editing? (y/n): " }, function(input)
+            if input and input:lower() == 'y' then
+              vim.cmd('edit ' .. launch_json_path)
+            end
+          end)
+        end
+      end, { desc = 'Select and run VSCode launch configuration' })
     end,
-  })
+  },
 
-  -- DAP UI - デバッグ用UI
-  table.insert(plugins, {
+  -- DAP UI
+  {
     'rcarriga/nvim-dap-ui',
-    lazy = false,
-    priority = 800,
     dependencies = {
       'mfussenegger/nvim-dap',
       'nvim-neotest/nvim-nio',
     },
     config = function()
-      local nio_ok = pcall(require, 'nio')
-      if not nio_ok then
-        vim.notify("nvim-nio is not available. DAP UI may not work properly.", vim.log.levels.WARN)
-        return
-      end
-      
       local dap = require('dap')
       local dapui = require('dapui')
       
@@ -890,10 +1620,10 @@ if enable_debug then
       
       vim.keymap.set('n', '<Leader>du', dapui.toggle, { desc = "Debug: Toggle UI" })
     end,
-  })
+  },
 
-  -- DAP Virtual Text - デバッグ時の変数表示
-  table.insert(plugins, {
+  -- DAP Virtual Text
+  {
     'theHamsta/nvim-dap-virtual-text',
     dependencies = {
       'mfussenegger/nvim-dap',
@@ -901,22 +1631,12 @@ if enable_debug then
     config = function()
       require('nvim-dap-virtual-text').setup()
     end,
-  })
-end
-
--- lazy.nvimでプラグインをセットアップ
-local setup_ok, setup_error = pcall(function()
-  require("lazy").setup(plugins, {
-    ui = {
-      border = "rounded",
-    },
-  })
-end)
-
-if not setup_ok then
-  vim.notify("Plugin setup failed: " .. tostring(setup_error), vim.log.levels.ERROR)
-  print("Plugin setup failed: " .. tostring(setup_error))
-end
+  },
+}, {
+  ui = {
+    border = "rounded",
+  },
+})
 
 -- ===============================================
 -- ファイルタイプ検出の追加
@@ -1038,12 +1758,12 @@ end
 function _G.flutter_statusline()
   local status = ""
   if _G.is_flutter_project() then
-    status = status .. "📱 Flutter"
+    status = status .. " Flutter"
     
     -- Flutterデバイス情報取得
     local device_info = vim.fn.system("flutter devices --machine 2>/dev/null")
     if vim.v.shell_error == 0 and device_info ~= "" then
-      status = status .. " | 📲"
+      status = status .. " | Device Connected"
     end
   end
   return status
@@ -1060,168 +1780,4 @@ vim.keymap.set('n', '<Leader>Fl', ':FlutterLogToggle<CR>', { desc = 'Toggle Flut
 vim.keymap.set('n', '<Leader>Fs', ':FlutterSuper<CR>', { desc = 'Flutter super class' })
 vim.keymap.set('n', '<Leader>Fw', ':FlutterWrap<CR>', { desc = 'Flutter wrap widget' })
 
--- VSCode統合キーマップ
-vim.keymap.set('n', '<Leader>vs', function()
-  -- Show available VSCode configurations
-  local telescope_ok, telescope = pcall(require, 'telescope.builtin')
-  if telescope_ok then
-    telescope.commands()
-  else
-    vim.cmd('OverseerRun')
-  end
-end, { desc = 'Show VSCode configurations' })
-
--- Project root detection function
-local function find_project_root()
-  local cwd = vim.fn.getcwd()
-  local markers = {
-    'pubspec.yaml',  -- Flutter/Dart
-    'package.json',  -- Node.js
-    'Cargo.toml',    -- Rust
-    'go.mod',        -- Go
-    '.git',          -- Git repository
-    '.vscode'        -- VSCode workspace
-  }
-  
-  -- Check current directory first
-  for _, marker in ipairs(markers) do
-    if vim.fn.filereadable(cwd .. '/' .. marker) == 1 or vim.fn.isdirectory(cwd .. '/' .. marker) == 1 then
-      return cwd
-    end
-  end
-  
-  -- Walk up the directory tree
-  local path = cwd
-  while path ~= '/' do
-    for _, marker in ipairs(markers) do
-      if vim.fn.filereadable(path .. '/' .. marker) == 1 or vim.fn.isdirectory(path .. '/' .. marker) == 1 then
-        return path
-      end
-    end
-    path = vim.fn.fnamemodify(path, ':h')
-  end
-  
-  return cwd
-end
-
-vim.keymap.set('n', '<Leader>vl', function()
-  -- Enhanced configuration selector with better error handling
-  local function find_project_root()
-    local cwd = vim.fn.getcwd()
-    local markers = {
-      'pubspec.yaml',
-      'package.json',
-      '.git',
-      '.vscode'
-    }
-    
-    for _, marker in ipairs(markers) do
-      if vim.fn.filereadable(cwd .. '/' .. marker) == 1 or vim.fn.isdirectory(cwd .. '/' .. marker) == 1 then
-        return cwd
-      end
-    end
-    
-    local path = cwd
-    while path ~= '/' do
-      for _, marker in ipairs(markers) do
-        if vim.fn.filereadable(path .. '/' .. marker) == 1 or vim.fn.isdirectory(path .. '/' .. marker) == 1 then
-          return path
-        end
-      end
-      path = vim.fn.fnamemodify(path, ':h')
-    end
-    
-    return cwd
-  end
-  
-  local project_root = find_project_root()
-  local launch_json_path = project_root .. '/.vscode/launch.json'
-  
-  if vim.fn.filereadable(launch_json_path) == 0 then
-    vim.notify("No .vscode/launch.json found in project: " .. project_root, vim.log.levels.WARN)
-    -- Offer to create a basic launch.json
-    vim.ui.input({ prompt = "Create basic launch.json? (y/n): " }, function(input)
-      if input and input:lower() == 'y' then
-        vim.cmd('edit ' .. launch_json_path)
-      end
-    end)
-    return
-  end
-  
-  -- Reload configurations
-  local dap = require('dap')
-  require('dap.ext.vscode').load_launchjs(launch_json_path, {
-    dart = {'dart', 'flutter'},
-    flutter = {'dart', 'flutter'},
-    node = {'javascript', 'typescript'},
-    python = {'python'},
-    go = {'go'},
-    rust = {'rust'},
-    cpp = {'cpp', 'c'},
-    java = {'java'}
-  })
-  
-  -- Get all available configurations with better sorting
-  local current_ft = vim.bo.filetype
-  local all_configs = {}
-  
-  -- Collect configurations from multiple file types, prioritizing current filetype
-  local filetypes_to_check = {current_ft, 'dart', 'flutter'}
-  
-  for _, ft in ipairs(filetypes_to_check) do
-    if dap.configurations[ft] then
-      for _, config in ipairs(dap.configurations[ft]) do
-        table.insert(all_configs, {
-          config = config,
-          filetype = ft,
-          is_current_ft = ft == current_ft
-        })
-      end
-    end
-  end
-  
-  if #all_configs > 0 then
-    -- Sort configurations: current filetype first, then by name
-    table.sort(all_configs, function(a, b)
-      if a.is_current_ft ~= b.is_current_ft then
-        return a.is_current_ft
-      end
-      return (a.config.name or '') < (b.config.name or '')
-    end)
-    
-    vim.ui.select(all_configs, {
-      prompt = 'Select debug configuration (' .. vim.fn.fnamemodify(project_root, ':t') .. '):',
-      format_item = function(item)
-        local prefix = item.is_current_ft and '● ' or '  '
-        local name = item.config.name or 'Unnamed'
-        local type_info = '[' .. (item.config.type or 'unknown') .. ']'
-        local args_info = ''
-        
-        if item.config.args and #item.config.args > 0 then
-          args_info = ' (args: ' .. table.concat(item.config.args, ' ') .. ')'
-        end
-        
-        return prefix .. name .. ' ' .. type_info .. args_info
-      end,
-    }, function(choice)
-      if choice then
-        local old_cwd = vim.fn.getcwd()
-        vim.cmd('cd ' .. project_root)
-        
-        vim.notify("Starting debug session: " .. (choice.config.name or 'Unnamed'), vim.log.levels.INFO)
-        dap.run(choice.config)
-        
-        vim.cmd('cd ' .. old_cwd)
-      end
-    end)
-  else
-    vim.notify("No launch configurations found. Check " .. launch_json_path, vim.log.levels.WARN)
-    vim.ui.input({ prompt = "Open launch.json for editing? (y/n): " }, function(input)
-      if input and input:lower() == 'y' then
-        vim.cmd('edit ' .. launch_json_path)
-      end
-    end)
-  end
-end, { desc = 'Select and run VSCode launch configuration' })
-
-print("Flutter development environment loaded! 🎯")
+print("Flutter development environment loaded! (Enhanced Edition)")

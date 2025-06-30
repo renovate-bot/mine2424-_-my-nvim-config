@@ -20,13 +20,14 @@ echo -e "${BLUE}"
 cat << 'EOF'
 🚀 Flutter Development Environment Setup
 =========================================
-WezTerm + Neovim + Flutter Tools
+Neovim + Flutter Tools (+ Optional WezTerm)
 
 このスクリプトは以下をセットアップします:
 ✅ 必要なソフトウェアのインストール
-✅ Neovim + WezTerm設定の配置
+✅ Neovim設定の配置
 ✅ Flutter開発環境の構築
 ✅ 開発用ツールの設定
+🔧 WezTerm設定（オプション）
 EOF
 echo -e "${NC}"
 
@@ -47,9 +48,10 @@ echo -e "${CYAN}検出されたOS: $OS${NC}"
 # 確認プロンプト
 echo -e "${YELLOW}このスクリプトは以下の作業を行います:${NC}"
 echo "1. 必要なソフトウェアをインストール (Homebrew経由)"
-echo "2. 既存のNeovim/WezTerm設定をバックアップ"
+echo "2. 既存のNeovim設定をバックアップ"
 echo "3. 新しい設定ファイルを配置"
 echo "4. Flutter開発環境を構築"
+echo "5. WezTerm設定を配置（利用可能な場合）"
 echo ""
 echo -e "${YELLOW}続行しますか? (y/N)${NC}"
 read -r CONFIRM
@@ -88,7 +90,6 @@ install_software() {
     
     local packages=(
         "neovim"
-        "wezterm"
         "tmux"
         "git"
         "ripgrep"
@@ -96,12 +97,24 @@ install_software() {
         "fzf"
     )
     
+    local optional_packages=(
+        "wezterm"
+    )
+    
+    local font_packages=(
+        "font-jetbrains-mono-nerd-font"
+        "font-fira-code-nerd-font"
+        "font-hack-nerd-font"
+        "font-cascadia-code-nerd-font"
+        "font-meslo-lg-nerd-font"
+        "font-inconsolata-nerd-font"
+    )
+    
     local cask_packages=(
-        "font-jetbrains-mono"
         "flutter"
     )
     
-    # 通常パッケージのインストール
+    # 必須パッケージのインストール
     for package in "${packages[@]}"; do
         if brew list "$package" &>/dev/null; then
             echo -e "${GREEN}✅ $package は既にインストール済み${NC}"
@@ -111,11 +124,26 @@ install_software() {
         fi
     done
     
-    # フォントタップの追加
-    if ! brew tap | grep -q "homebrew/cask-fonts"; then
-        echo -e "${BLUE}📦 フォントタップを追加中...${NC}"
-        brew tap homebrew/cask-fonts
-    fi
+    # オプションパッケージのインストール
+    for package in "${optional_packages[@]}"; do
+        if brew list "$package" &>/dev/null; then
+            echo -e "${GREEN}✅ $package は既にインストール済み${NC}"
+        else
+            echo -e "${BLUE}📦 $package (オプション) をインストール中...${NC}"
+            brew install "$package" || echo -e "${CYAN}ℹ️  $package のインストールをスキップしました${NC}"
+        fi
+    done
+    
+    # Nerd Fontsのインストール
+    echo -e "${BLUE}🔤 Nerd Fonts をインストール中...${NC}"
+    for font in "${font_packages[@]}"; do
+        if brew list --cask "$font" &>/dev/null; then
+            echo -e "${GREEN}✅ $font は既にインストール済み${NC}"
+        else
+            echo -e "${BLUE}📦 $font をインストール中...${NC}"
+            brew install --cask "$font" || echo -e "${CYAN}ℹ️  $font のインストールをスキップしました${NC}"
+        fi
+    done
     
     # Caskパッケージのインストール
     for package in "${cask_packages[@]}"; do
@@ -141,7 +169,7 @@ create_backup() {
         echo -e "${GREEN}✅ ~/.config/nvim → ~/.config/nvim.backup.$timestamp${NC}"
     fi
     
-    # WezTerm設定のバックアップ
+    # WezTerm設定のバックアップ（オプション）
     if [ -f ~/.wezterm.lua ]; then
         echo -e "${BLUE}📁 WezTerm設定をバックアップ中...${NC}"
         mv ~/.wezterm.lua ~/.wezterm.lua.backup.$timestamp
@@ -173,10 +201,12 @@ deploy_configs() {
     cp -r "$CONFIG_DIR/lua"/* ~/.config/nvim/lua/
     echo -e "${GREEN}✅ Neovim設定を配置しました${NC}"
     
-    echo -e "${BLUE}📋 WezTerm設定をコピー中...${NC}"
-    cp "$CONFIG_DIR/wezterm.lua" ~/.wezterm.lua
-    echo -e "${GREEN}✅ WezTerm設定を配置しました（Claude統合機能付き）${NC}"
-    echo -e "${CYAN}   新機能: リアルタイムClaude監視・Git情報・自動レイアウト${NC}"
+    # WezTerm設定（オプション）
+    if [ -f "$CONFIG_DIR/wezterm.lua" ]; then
+        echo -e "${BLUE}📋 WezTerm設定をコピー中...${NC}"
+        cp "$CONFIG_DIR/wezterm.lua" ~/.wezterm.lua
+        echo -e "${GREEN}✅ WezTerm設定を配置しました${NC}"
+    fi
     
     # スクリプトを実行可能にする
     echo -e "${BLUE}🔧 開発スクリプトを設定中...${NC}"
@@ -269,18 +299,22 @@ show_completion_message() {
 
 📋 インストールされたもの:
 ✅ Neovim (Flutter開発最適化済み)
-✅ WezTerm (自動ワークスペース機能付き)
 ✅ Flutter Tools & LSP
 ✅ 開発用ユーティリティスクリプト
+✅ Nerd Fonts (アイコン表示対応)
+🔧 WezTerm設定（オプション）
 
 🚀 次のステップ:
 EOF
     echo -e "${NC}"
     
     echo -e "${CYAN}1. ターミナルを再起動して新しい設定を読み込み${NC}"
-    echo -e "${CYAN}2. WezTerm を起動: ${YELLOW}open -a WezTerm${NC}"
-    echo -e "${CYAN}3. 新しいFlutterプロジェクトを作成: ${YELLOW}flutter-new my_app${NC}"
-    echo -e "${CYAN}4. 既存プロジェクトで開発: ${YELLOW}cd project && nvim .${NC}"
+    echo -e "${CYAN}2. 新しいFlutterプロジェクトを作成: ${YELLOW}flutter-new my_app${NC}"
+    echo -e "${CYAN}3. 既存プロジェクトで開発: ${YELLOW}cd project && nvim .${NC}"
+    
+    if command -v wezterm &> /dev/null; then
+        echo -e "${CYAN}4. WezTerm を起動: ${YELLOW}open -a WezTerm${NC}"
+    fi
     
     echo ""
     echo -e "${BLUE}📚 ドキュメント:${NC}"

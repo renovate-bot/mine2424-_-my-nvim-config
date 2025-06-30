@@ -13,23 +13,33 @@ function M.start_ide_layout()
   if vim.fn.line('$') == 1 and vim.fn.getline(1) == '' and vim.fn.expand('%') == '' then
     vim.cmd('enew')
   end
-  
+
   -- 左側にファイルツリー（netrw）を開く
   vim.cmd('Lexplore')
-  
-  -- ファイルツリーのサイズを調整（幅20列）
-  vim.cmd('vertical resize 20')
-  
+
+  -- ファイルツリーのサイズを調整（幅35列）
+  vim.cmd('vertical resize 35')
+
   -- メインエディタエリアに移動
   vim.cmd('wincmd l')
-  
+
   -- 右側にターミナルを開く（垂直分割）
   vim.cmd('vsplit')
-  vim.cmd('vertical resize 30')
+  vim.cmd('vertical resize 120')
   vim.cmd('terminal')
-  
+
   -- メインエディタにフォーカス
   vim.cmd('wincmd h')
+  
+  -- Copilotを自動起動
+  local copilot_ok, _ = pcall(function()
+    vim.cmd('Copilot enable')
+  end)
+  if copilot_ok then
+    print('IDE layout activated with Copilot enabled!')
+  else
+    print('IDE layout activated!')
+  end
 end
 
 -- ===============================================
@@ -41,15 +51,25 @@ function M.start_simple_ide()
   if vim.fn.line('$') == 1 and vim.fn.getline(1) == '' and vim.fn.expand('%') == '' then
     vim.cmd('enew')
   end
-  
+
   -- 左側にファイルツリー（netrw）を開く
   vim.cmd('Lexplore')
-  
+
   -- ファイルツリーのサイズを調整
-  vim.cmd('vertical resize 30')
-  
+  vim.cmd('vertical resize 35')
+
   -- メインエディタエリアに移動
   vim.cmd('wincmd l')
+  
+  -- Copilotを自動起動
+  local copilot_ok, _ = pcall(function()
+    vim.cmd('Copilot enable')
+  end)
+  if copilot_ok then
+    print('Simple IDE layout activated with Copilot enabled!')
+  else
+    print('Simple IDE layout activated!')
+  end
 end
 
 -- ===============================================
@@ -61,31 +81,42 @@ function M.start_flutter_ide()
   if vim.fn.line('$') == 1 and vim.fn.getline(1) == '' and vim.fn.expand('%') == '' then
     vim.cmd('enew')
   end
-  
+
   -- 左側にファイルツリー
   vim.cmd('Lexplore')
-  vim.cmd('vertical resize 25')
-  
+  vim.cmd('vertical resize 35')
+
   -- メインエディタエリアに移動
   vim.cmd('wincmd l')
-  
-  -- 右側にもエディタを作成（Dartファイル用）
+
+  -- 右側にFlutter用ターミナル（垂直分割）
   vim.cmd('vsplit')
-  
-  -- 下部にFlutter用ターミナル
-  vim.cmd('split')
-  vim.cmd('resize 15')
+  vim.cmd('vertical resize 120')
   vim.cmd('terminal')
+
+  -- メインエディタにフォーカス
+  vim.cmd('wincmd h')
   
-  -- Flutter runを自動実行するかユーザーに確認
+  -- Copilotを自動起動
+  local copilot_ok, _ = pcall(function()
+    vim.cmd('Copilot enable')
+  end)
+  
+  -- Flutter プロジェクト検出とメッセージ
   local flutter_dir = vim.fn.findfile('pubspec.yaml', '.;')
   if flutter_dir ~= '' then
-    print('Flutter project detected. Use <Leader>Fr to start flutter run.')
+    if copilot_ok then
+      print('Flutter IDE layout activated with Copilot enabled! Use <Leader>Fr to start flutter run.')
+    else
+      print('Flutter IDE layout activated! Use <Leader>Fr to start flutter run.')
+    end
+  else
+    if copilot_ok then
+      print('Flutter IDE layout activated with Copilot enabled!')
+    else
+      print('Flutter IDE layout activated!')
+    end
   end
-  
-  -- メインエディタにフォーカス
-  vim.cmd('wincmd k')
-  vim.cmd('wincmd h')
 end
 
 -- ===============================================
@@ -105,20 +136,20 @@ end
 function M.setup_netrw()
   -- netrwの表示スタイル（ツリー表示）
   vim.g.netrw_liststyle = 3
-  
+
   -- netrwのウィンドウサイズ
   vim.g.netrw_winsize = 25
-  
+
   -- netrwでディレクトリを開いた時の動作
   vim.g.netrw_browse_split = 0
-  
+
   -- netrwのバナーを非表示
   vim.g.netrw_banner = 0
-  
+
   -- netrwで隠しファイルを非表示
   vim.g.netrw_hide = 1
   vim.g.netrw_list_hide = [[^\.\.\=/\=$,^\./$]]
-  
+
   -- netrwで削除したファイルをゴミ箱に移動（macOS）
   if vim.fn.has('macunix') == 1 then
     vim.g.netrw_localrmdir = 'trash'
@@ -131,7 +162,7 @@ end
 
 function M.setup_autocmds()
   local augroup = vim.api.nvim_create_augroup('IDELayout', { clear = true })
-  
+
   -- netrwウィンドウでのキーマップ設定
   vim.api.nvim_create_autocmd('FileType', {
     group = augroup,
@@ -145,7 +176,7 @@ function M.setup_autocmds()
     end,
     desc = 'Setup netrw keymaps'
   })
-  
+
   -- ターミナルウィンドウの設定
   vim.api.nvim_create_autocmd('TermOpen', {
     group = augroup,
@@ -166,28 +197,28 @@ end
 
 function M.detect_project_type()
   local cwd = vim.fn.getcwd()
-  
+
   -- Flutter/Dartプロジェクト
   if vim.fn.filereadable(cwd .. '/pubspec.yaml') == 1 then
     return 'flutter'
   end
-  
+
   -- Node.jsプロジェクト
   if vim.fn.filereadable(cwd .. '/package.json') == 1 then
     return 'nodejs'
   end
-  
+
   -- Pythonプロジェクト
-  if vim.fn.filereadable(cwd .. '/requirements.txt') == 1 or 
+  if vim.fn.filereadable(cwd .. '/requirements.txt') == 1 or
      vim.fn.filereadable(cwd .. '/pyproject.toml') == 1 then
     return 'python'
   end
-  
+
   -- Rustプロジェクト
   if vim.fn.filereadable(cwd .. '/Cargo.toml') == 1 then
     return 'rust'
   end
-  
+
   return 'general'
 end
 
@@ -197,13 +228,11 @@ end
 
 function M.start_smart_ide()
   local project_type = M.detect_project_type()
-  
+
   if project_type == 'flutter' then
     M.start_flutter_ide()
-    print('Flutter IDE layout activated!')
   else
     M.start_ide_layout()
-    print('General IDE layout activated!')
   end
 end
 
@@ -214,10 +243,10 @@ end
 function M.setup()
   -- netrwの設定
   M.setup_netrw()
-  
+
   -- 自動コマンドの設定
   M.setup_autocmds()
-  
+
   -- ユーザーコマンドの登録
   vim.api.nvim_create_user_command('StartIDE', M.start_ide_layout, { desc = 'Start IDE layout' })
   vim.api.nvim_create_user_command('StartSimpleIDE', M.start_simple_ide, { desc = 'Start simple IDE layout' })

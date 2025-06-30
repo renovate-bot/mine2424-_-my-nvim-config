@@ -64,9 +64,20 @@ config.webgpu_power_preference = 'HighPerformance'
 -- Basic Configuration
 -- ===============================================
 
--- Font Configuration (optimal for coding with OS-specific settings)
+-- Font Configuration with Nerd Fonts support
 config.font = wezterm.font_with_fallback {
+  -- Nerd Fonts (with icon support)
+  'JetBrainsMono Nerd Font',
+  'FiraCode Nerd Font',
+  'Hack Nerd Font',
+  'CascadiaCode Nerd Font',
+  'MesloLGS Nerd Font',
+  'Inconsolata Nerd Font',
+  
+  -- Fallback to regular fonts
   'JetBrains Mono',
+  'Fira Code',
+  'Hack',
   'SF Mono',
   'Menlo',
   'Monaco',
@@ -786,22 +797,36 @@ wezterm.on('format-tab-title', function(tab, tabs, panes, conf, hover, max_width
   local edge_foreground = background
 
   local title = tab.active_pane.title
-  if title == 'nvim' then
-    title = ''
+  if title == 'nvim' or title:match('nvim') then
+    title = ''  -- Neovim icon
   elseif title == 'zsh' then
-    title = ''
+    title = ''  -- Terminal icon
   elseif title == 'bash' then
-    title = '󱆃'
-  elseif title == 'flutter' then
-    title = '󰔬'
-  elseif title == 'lazygit' or title == 'tig' then
-    title = ''
+    title = '󱆃'  -- Bash icon
+  elseif title == 'flutter' or title:match('flutter') then
+    title = '󰔬'  -- Flutter icon
+  elseif title == 'dart' or title:match('dart') then
+    title = ''  -- Dart icon
+  elseif title == 'lazygit' or title == 'tig' or title:match('git') then
+    title = ''  -- Git icon
   elseif title == 'wezterm' then
-    title = ''
+    title = ''  -- Terminal icon
   elseif title == 'tmux' then
-    title = '🖥️'
+    title = ''  -- Tmux icon
   elseif title:match('claude') then
-    title = '🤖'
+    title = '󰚩'  -- AI/Robot icon
+  elseif title:match('node') or title:match('npm') then
+    title = ''  -- Node.js icon
+  elseif title:match('python') or title:match('py') then
+    title = ''  -- Python icon
+  elseif title:match('rust') or title:match('cargo') then
+    title = ''  -- Rust icon
+  elseif title:match('go') then
+    title = ''  -- Go icon
+  elseif title:match('docker') then
+    title = ''  -- Docker icon
+  elseif title:match('vim') then
+    title = ''  -- Vim icon
   else
     title = title
   end
