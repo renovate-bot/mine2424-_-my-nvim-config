@@ -261,13 +261,22 @@ require("lazy").setup({
           end, { 'i', 's' }),
         }),
         sources = cmp.config.sources({
-          { name = 'nvim_lsp' },
-          { name = 'luasnip' },
-          { name = 'copilot' },
+          { name = 'copilot', priority = 1000 },
+          { name = 'nvim_lsp', priority = 900 },
+          { name = 'luasnip', priority = 800 },
         }, {
-          { name = 'buffer' },
-          { name = 'path' },
-        })
+          { name = 'buffer', priority = 500 },
+          { name = 'path', priority = 300 },
+        }),
+        formatting = {
+          format = function(entry, vim_item)
+            -- Copilotのアイコンを設定
+            if entry.source.name == 'copilot' then
+              vim_item.kind = '🤖 ' .. vim_item.kind
+            end
+            return vim_item
+          end
+        }
       })
     end,
   },
@@ -275,8 +284,7 @@ require("lazy").setup({
   -- GitHub Copilot
   {
     'zbirenbaum/copilot.lua',
-    cmd = "Copilot",
-    event = "InsertEnter",
+    event = "VimEnter",
     config = function()
       require("copilot").setup({
         panel = {
@@ -295,8 +303,8 @@ require("lazy").setup({
           },
         },
         suggestion = {
-          enabled = true,
-          auto_trigger = true,
+          enabled = false,  -- nvim-cmpと統合するため無効化
+          auto_trigger = false,
           debounce = 75,
           keymap = {
             accept = "<M-l>",
@@ -308,10 +316,10 @@ require("lazy").setup({
           },
         },
         filetypes = {
-          yaml = false,
-          markdown = false,
+          yaml = true,
+          markdown = true,
           help = false,
-          gitcommit = false,
+          gitcommit = true,
           gitrebase = false,
           hgcommit = false,
           svn = false,
@@ -328,7 +336,9 @@ require("lazy").setup({
     "zbirenbaum/copilot-cmp",
     dependencies = { "copilot.lua" },
     config = function ()
-      require("copilot_cmp").setup()
+      require("copilot_cmp").setup({
+        fix_pairs = true,
+      })
     end
   },
 

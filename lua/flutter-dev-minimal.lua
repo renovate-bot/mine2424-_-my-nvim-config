@@ -358,13 +358,22 @@ require("lazy").setup({
           end, { 'i', 's' }),
         }),
         sources = cmp.config.sources({
-          { name = 'nvim_lsp' },
-          { name = 'luasnip' },
-          { name = 'copilot' },
+          { name = 'copilot', priority = 1000 },
+          { name = 'nvim_lsp', priority = 900 },
+          { name = 'luasnip', priority = 800 },
         }, {
-          { name = 'buffer' },
-          { name = 'path' },
-        })
+          { name = 'buffer', priority = 500 },
+          { name = 'path', priority = 300 },
+        }),
+        formatting = {
+          format = function(entry, vim_item)
+            -- Copilotのアイコンを設定
+            if entry.source.name == 'copilot' then
+              vim_item.kind = '🤖 ' .. vim_item.kind
+            end
+            return vim_item
+          end
+        }
       })
     end,
   },

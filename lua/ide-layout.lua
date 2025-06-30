@@ -31,15 +31,22 @@ function M.start_ide_layout()
   -- メインエディタにフォーカス
   vim.cmd('wincmd h')
   
-  -- Copilotを自動起動
-  local copilot_ok, _ = pcall(function()
-    vim.cmd('Copilot enable')
-  end)
-  if copilot_ok then
-    print('IDE layout activated with Copilot enabled!')
-  else
-    print('IDE layout activated!')
-  end
+  -- Copilotを自動起動（遅延実行で確実に有効化）
+  vim.defer_fn(function()
+    local copilot_ok, _ = pcall(function()
+      vim.cmd('Copilot enable')
+      vim.cmd('Copilot auth')  -- 認証確認
+    end)
+    if copilot_ok then
+      print('IDE layout activated with Copilot enabled!')
+      -- Copilotの状態を確認
+      vim.defer_fn(function()
+        vim.cmd('Copilot status')
+      end, 1000)
+    else
+      print('IDE layout activated! (Copilot not available)')
+    end
+  end, 500)
 end
 
 -- ===============================================
@@ -61,15 +68,17 @@ function M.start_simple_ide()
   -- メインエディタエリアに移動
   vim.cmd('wincmd l')
   
-  -- Copilotを自動起動
-  local copilot_ok, _ = pcall(function()
-    vim.cmd('Copilot enable')
-  end)
-  if copilot_ok then
-    print('Simple IDE layout activated with Copilot enabled!')
-  else
-    print('Simple IDE layout activated!')
-  end
+  -- Copilotを自動起動（遅延実行で確実に有効化）
+  vim.defer_fn(function()
+    local copilot_ok, _ = pcall(function()
+      vim.cmd('Copilot enable')
+    end)
+    if copilot_ok then
+      print('Simple IDE layout activated with Copilot enabled!')
+    else
+      print('Simple IDE layout activated! (Copilot not available)')
+    end
+  end, 500)
 end
 
 -- ===============================================
@@ -97,26 +106,28 @@ function M.start_flutter_ide()
   -- メインエディタにフォーカス
   vim.cmd('wincmd h')
   
-  -- Copilotを自動起動
-  local copilot_ok, _ = pcall(function()
-    vim.cmd('Copilot enable')
-  end)
-  
-  -- Flutter プロジェクト検出とメッセージ
-  local flutter_dir = vim.fn.findfile('pubspec.yaml', '.;')
-  if flutter_dir ~= '' then
-    if copilot_ok then
-      print('Flutter IDE layout activated with Copilot enabled! Use <Leader>Fr to start flutter run.')
+  -- Copilotを自動起動（遅延実行で確実に有効化）
+  vim.defer_fn(function()
+    local copilot_ok, _ = pcall(function()
+      vim.cmd('Copilot enable')
+    end)
+    
+    -- Flutter プロジェクト検出とメッセージ
+    local flutter_dir = vim.fn.findfile('pubspec.yaml', '.;')
+    if flutter_dir ~= '' then
+      if copilot_ok then
+        print('Flutter IDE layout activated with Copilot enabled! Use <Leader>Fr to start flutter run.')
+      else
+        print('Flutter IDE layout activated! Use <Leader>Fr to start flutter run.')
+      end
     else
-      print('Flutter IDE layout activated! Use <Leader>Fr to start flutter run.')
+      if copilot_ok then
+        print('Flutter IDE layout activated with Copilot enabled!')
+      else
+        print('Flutter IDE layout activated! (Copilot not available)')
+      end
     end
-  else
-    if copilot_ok then
-      print('Flutter IDE layout activated with Copilot enabled!')
-    else
-      print('Flutter IDE layout activated!')
-    end
-  end
+  end, 500)
 end
 
 -- ===============================================
