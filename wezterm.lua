@@ -102,17 +102,67 @@ config.line_height = 1.2
 -- Color scheme (Solarized Dark for tmux/nvim consistency)
 config.color_scheme = 'Solarized Dark'
 
+-- Enhanced color scheme for better tab visibility
+config.colors = {
+  tab_bar = {
+    background = '#1a202c',
+    active_tab = {
+      bg_color = '#3182ce',
+      fg_color = '#ffffff',
+      intensity = 'Bold',
+      underline = 'None',
+      italic = false,
+      strikethrough = false,
+    },
+    inactive_tab = {
+      bg_color = '#2d3748',
+      fg_color = '#e2e8f0',
+      intensity = 'Normal',
+      underline = 'None',
+      italic = false,
+      strikethrough = false,
+    },
+    inactive_tab_hover = {
+      bg_color = '#4a5568',
+      fg_color = '#ffffff',
+      intensity = 'Normal',
+      underline = 'None',
+      italic = false,
+      strikethrough = false,
+    },
+    new_tab = {
+      bg_color = '#1a202c',
+      fg_color = '#68d391',
+      intensity = 'Bold',
+      underline = 'None',
+      italic = false,
+      strikethrough = false,
+    },
+    new_tab_hover = {
+      bg_color = '#2d3748',
+      fg_color = '#68d391',
+      intensity = 'Bold',
+      underline = 'None',
+      italic = false,
+      strikethrough = false,
+    },
+  },
+}
+
 -- Window appearance
 config.window_decorations = 'RESIZE'
 config.window_background_opacity = 0.95
 config.text_background_opacity = 1.0
 config.macos_window_background_blur = 30
 
--- Tab bar configuration
+-- Enhanced Tab bar configuration
 config.enable_tab_bar = true
-config.use_fancy_tab_bar = false
-config.tab_bar_at_bottom = true
-config.show_tab_index_in_tab_bar = false
+config.use_fancy_tab_bar = true
+config.tab_bar_at_bottom = false  -- 上部に移動してより見やすく
+config.show_tab_index_in_tab_bar = true
+config.show_new_tab_button_in_tab_bar = true
+config.tab_max_width = 32
+config.hide_tab_bar_if_only_one_tab = false
 
 -- Scrollback
 config.scrollback_lines = 10000
@@ -784,51 +834,86 @@ wezterm.on('tab-active', function(tab, pane, window)
   end)
 end)
 
--- Enhanced tab title formatting with process icons
+-- Enhanced tab title formatting with improved visibility and naming
 wezterm.on('format-tab-title', function(tab, tabs, panes, conf, hover, max_width)
-  local background = '#282c34'
-  local foreground = '#dcd7ba'
-  local edge_background = '#282c34'
+  -- カラースキーマ（視認性重視）
+  local background = '#2d3748'  -- ダークグレー
+  local foreground = '#e2e8f0'  -- ライトグレー
+  local edge_background = '#1a202c'  -- より暗いグレー
+  local tab_index_color = '#68d391'  -- グリーン
 
-  if tab.is_active or hover then
-    background = '#015db2'
+  if tab.is_active then
+    background = '#3182ce'  -- ブルー
+    foreground = '#ffffff'  -- ホワイト
+    tab_index_color = '#ffd700'  -- ゴールド
+  elseif hover then
+    background = '#4a5568'  -- ライトグレー
     foreground = '#ffffff'
   end
+  
   local edge_foreground = background
 
-  local title = tab.active_pane.title
-  if title == 'nvim' or title:match('nvim') then
-    title = ''  -- Neovim icon
-  elseif title == 'zsh' then
-    title = ''  -- Terminal icon
-  elseif title == 'bash' then
-    title = '󱆃'  -- Bash icon
-  elseif title == 'flutter' or title:match('flutter') then
-    title = '󰔬'  -- Flutter icon
-  elseif title == 'dart' or title:match('dart') then
-    title = ''  -- Dart icon
-  elseif title == 'lazygit' or title == 'tig' or title:match('git') then
-    title = ''  -- Git icon
-  elseif title == 'wezterm' then
-    title = ''  -- Terminal icon
-  elseif title == 'tmux' then
-    title = ''  -- Tmux icon
-  elseif title:match('claude') then
-    title = '󰚩'  -- AI/Robot icon
-  elseif title:match('node') or title:match('npm') then
-    title = ''  -- Node.js icon
-  elseif title:match('python') or title:match('py') then
-    title = ''  -- Python icon
-  elseif title:match('rust') or title:match('cargo') then
-    title = ''  -- Rust icon
-  elseif title:match('go') then
-    title = ''  -- Go icon
-  elseif title:match('docker') then
-    title = ''  -- Docker icon
-  elseif title:match('vim') then
-    title = ''  -- Vim icon
+  -- プロセス情報を取得
+  local process_name = tab.active_pane.foreground_process_name or ''
+  local title = tab.active_pane.title or ''
+  local cwd = tab.active_pane.current_working_dir
+  local cwd_path = cwd and cwd.file_path or ''
+  
+  -- ディレクトリ名を取得
+  local dir_name = ''
+  if cwd_path ~= '' then
+    dir_name = cwd_path:match('([^/]+)$') or ''
+  end
+
+  -- タブタイトルとアイコンを決定
+  local icon = ''
+  local display_title = ''
+  
+  if process_name:match('nvim') or title:match('nvim') then
+    icon = ''  -- Neovim icon
+    display_title = dir_name ~= '' and ('nvim: ' .. dir_name) or 'nvim'
+  elseif process_name:match('flutter') or title:match('flutter') then
+    icon = '󰔬'  -- Flutter icon
+    display_title = dir_name ~= '' and ('flutter: ' .. dir_name) or 'flutter'
+  elseif process_name:match('dart') or title:match('dart') then
+    icon = ''  -- Dart icon
+    display_title = dir_name ~= '' and ('dart: ' .. dir_name) or 'dart'
+  elseif process_name:match('git') or title:match('git') or process_name:match('lazygit') then
+    icon = ''  -- Git icon
+    display_title = dir_name ~= '' and ('git: ' .. dir_name) or 'git'
+  elseif process_name:match('node') or process_name:match('npm') then
+    icon = ''  -- Node.js icon
+    display_title = dir_name ~= '' and ('node: ' .. dir_name) or 'node'
+  elseif process_name:match('python') or process_name:match('py') then
+    icon = ''  -- Python icon
+    display_title = dir_name ~= '' and ('python: ' .. dir_name) or 'python'
+  elseif process_name:match('rust') or process_name:match('cargo') then
+    icon = ''  -- Rust icon
+    display_title = dir_name ~= '' and ('rust: ' .. dir_name) or 'rust'
+  elseif process_name:match('go') then
+    icon = ''  -- Go icon
+    display_title = dir_name ~= '' and ('go: ' .. dir_name) or 'go'
+  elseif process_name:match('docker') then
+    icon = ''  -- Docker icon
+    display_title = 'docker'
+  elseif process_name:match('claude') or title:match('claude') then
+    icon = '󰚩'  -- AI/Robot icon
+    display_title = 'claude'
+  elseif process_name:match('zsh') or process_name:match('bash') then
+    icon = ''  -- Terminal icon
+    display_title = dir_name ~= '' and dir_name or 'terminal'
   else
-    title = title
+    icon = ''  -- Default terminal icon
+    display_title = dir_name ~= '' and dir_name or (title ~= '' and title or 'shell')
+  end
+
+  -- タブインデックスを含む最終タイトル
+  local tab_number = tab.tab_index + 1
+  local final_title = string.format('%d: %s %s', tab_number, icon, display_title)
+  
+  -- 長すぎる場合は切り詰め
+  if string.len(final_title) > max_width - 4 then
+    final_title = string.sub(final_title, 1, max_width - 7) .. '...'
   end
 
   return {
@@ -836,9 +921,12 @@ wezterm.on('format-tab-title', function(tab, tabs, panes, conf, hover, max_width
     { Foreground = { Color = edge_foreground } },
     { Text = ' ' },
     { Background = { Color = background } },
+    { Foreground = { Color = tab_index_color } },
+    { Attribute = { Intensity = 'Bold' } },
+    { Text = tostring(tab_number) },
     { Foreground = { Color = foreground } },
     { Attribute = { Intensity = tab.is_active and 'Bold' or 'Normal' } },
-    { Text = ' ' .. title .. '  ' },
+    { Text = ': ' .. icon .. ' ' .. display_title .. ' ' },
     { Background = { Color = edge_background } },
     { Foreground = { Color = edge_foreground } },
     { Text = '' },
@@ -878,12 +966,46 @@ config.bypass_mouse_reporting_modifiers = 'SHIFT'
 -- ===============================================
 
 
--- Single pane startup - no automatic splitting
+-- Single pane startup with smart tab naming
 wezterm.on('gui-startup', function(cmd)
   local tab, pane, window = wezterm.mux.spawn_window(cmd or {})
   
   -- Set initial window size for development
   window:gui_window():set_inner_size(1600, 1000)
+  
+  -- Set initial tab title
+  tab:set_title('1:  main')
+end)
+
+-- Auto-name new tabs based on content
+wezterm.on('new-tab', function(tab, pane, window)
+  -- Get the current working directory for context
+  local cwd = pane:get_current_working_dir()
+  local dir_name = ''
+  
+  if cwd and cwd.file_path then
+    dir_name = cwd.file_path:match('([^/]+)$') or ''
+  end
+  
+  local tab_number = tab.tab_index + 1
+  local default_title = dir_name ~= '' and (tab_number .. ':  ' .. dir_name) or (tab_number .. ':  terminal')
+  
+  tab:set_title(default_title)
+end)
+
+-- Update tab title when process changes
+wezterm.on('format-window-title', function(tab, pane, tabs, panes, config)
+  local zoomed = ''
+  if tab.active_pane.is_zoomed then
+    zoomed = '[Z] '
+  end
+
+  local index = ''
+  if #tabs > 1 then
+    index = string.format('[%d/%d] ', tab.tab_index + 1, #tabs)
+  end
+
+  return zoomed .. index .. tab.active_pane.title
 end)
 
 
