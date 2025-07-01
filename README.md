@@ -21,10 +21,12 @@
 - **Copilot管理**: `<leader>C*` キーでの簡単操作
 
 ### 📊 Git統合
-- **Gitsigns**: インライン差分表示・ステージング
-- **Diffview**: サイドバイサイド差分表示
-- **Neogit**: Magit風Git操作インターフェース
-- **ブランチ情報**: ステータスライン表示
+- **Gitsigns.nvim**: リアルタイム差分表示・インラインステージング
+  - サイン列での視覚的変更表示
+  - 現在行のGit blame情報
+  - Hunk単位でのステージング・リセット
+  - プレビュー機能付きdiff表示
+- **高度なキーバインド**: 効率的なGit操作
 
 ### 🛠️ IDE機能
 - **統合ターミナル**: ToggleTerm with Flutter専用ターミナル
@@ -32,6 +34,16 @@
 - **プロジェクト検索**: Telescope fuzzy finder
 - **TODO管理**: todo-comments.nvimでタスク追跡
 - **キーバインドヘルプ**: which-key.nvimでコマンド発見
+
+### 🖥️ ターミナル統合 (WezTerm)
+- **Claude監視システム**: リアルタイムClaude実行状況表示
+  - CPU使用率ベースの状態検出 (🤖 アイドル / ⚡ 実行中 / 💭 思考中)
+  - プロセス監視とパフォーマンス最適化
+- **人間活動追跡**: キーボード・マウス操作の監視
+  - 👤 アクティブ / 😴 アイドル状態表示
+  - 非アクティブ時間の可視化
+- **統合ステータスバー**: Git + Claude + 人間活動状況を一元表示
+- **スマート通知**: Claudeタスク完了時の音声・トースト通知
 
 ### 🎨 UI/UX
 - **ステータスライン**: Lualineによる情報豊富な表示
@@ -124,21 +136,29 @@ nvim .
 - `<leader>ca` - コードアクション
 - `<leader>rn` - リネーム
 
-4. **Git操作**
-- `<leader>gg` - Neogitでステータス確認
-- `<leader>gd` - 差分表示
+4. **Git操作** (gitsigns.nvim)
+- `]c` / `[c` - 次/前のhunkに移動
 - `<leader>hs` - Hunkをステージング
+- `<leader>hr` - Hunkをリセット
+- `<leader>hp` - Hunkをプレビュー
+- `<leader>hb` - 行のblame表示
+- `<leader>tb` - blame表示の切替
 
 ### 主要キーバインド
 
-| キー | 機能 |
-|------|------|
-| `<leader>ff` | ファイル検索 |
-| `<leader>fg` | テキスト検索 |
-| `<leader>e` | ファイルツリー |
-| `<C-\>` | ターミナル |
-| `<leader>xx` | 診断情報 |
-| `<leader>cc` | Copilot Chat |
+| カテゴリ | キー | 機能 |
+|----------|------|------|
+| **ファイル** | `<leader>ff` | ファイル検索 |
+| | `<leader>fg` | テキスト検索 |
+| | `<leader>e` | ファイルツリー |
+| **Git** | `]c` / `[c` | 次/前のhunk移動 |
+| | `<leader>hs` | Hunkステージング |
+| | `<leader>hp` | Hunkプレビュー |
+| | `<leader>hb` | Git blame |
+| **ターミナル** | `<C-\>` | ターミナル切替 |
+| **診断** | `<leader>xx` | 診断情報 |
+| **AI** | `<leader>cc` | Copilot Chat |
+| | `Alt+l` | Copilot提案受け入れ |
 
 詳細なキーバインドは [FLUTTER_KEYBINDINGS.md](./FLUTTER_KEYBINDINGS.md) を参照してください。
 
@@ -146,7 +166,9 @@ nvim .
 
 - [📋 キーバインド一覧](./FLUTTER_KEYBINDINGS.md)
 - [🔄 開発ワークフロー](./FLUTTER_WORKFLOW.md)
-- [📊 lualine.nvim 設定ガイド](./LUALINE_GUIDE.md) **NEW!**
+- [📊 Git統合ガイド (gitsigns.nvim)](./GITSIGNS_GUIDE.md) **NEW!**
+- [🖥️ WezTerm Claude監視システム](./WEZTERM_CLAUDE_MONITORING.md) **NEW!**
+- [📊 lualine.nvim 設定ガイド](./LUALINE_GUIDE.md)
 - [🌈 hlchunk.nvim 使用ガイド](./HLCHUNK_GUIDE.md)
 - [🚀 VSCode統合アップデート](./VSCODE_INTEGRATION_UPDATE.md)
 - [🔧 トラブルシューティング](./TROUBLESHOOTING.md)

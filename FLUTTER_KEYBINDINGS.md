@@ -91,38 +91,39 @@ Flutter開発環境で使用可能な全キーバインドの完全リファレ�
 
 ## Git操作
 
-### 📊 状態確認
+### 📊 状態確認 (gitsigns.nvim)
 | キー | 機能 | 説明 |
 |------|------|------|
-| `<leader>gg` | Neogit起動 | Git状態を表示 |
-| `<leader>gd` | 差分表示 | Diffviewで差分を表示 |
-| `<leader>gh` | ファイル履歴 | ファイルの変更履歴を表示 |
-| `<leader>gc` | 差分ビューを閉じる | Diffviewを閉じる |
+| `<leader>hd` | 差分表示 | 現在ファイルのdiff表示 |
+| `<leader>hD` | HEADとの差分 | HEAD~1との差分表示 |
+| `<leader>hb` | Git blame | 現在行の詳細blame情報 |
 
-### 🔄 Hunk操作
+### 🔄 Hunk操作 (gitsigns.nvim)
 | キー | 機能 | 説明 |
 |------|------|------|
 | `]c` | 次のHunk | 次の変更箇所へ移動 |
 | `[c` | 前のHunk | 前の変更箇所へ移動 |
-| `<leader>hs` | Hunkステージング | 変更をステージングエリアに追加 |
-| `<leader>hr` | Hunkリセット | 変更を取り消し |
-| `<leader>hp` | Hunkプレビュー | 変更内容をプレビュー |
-| `<leader>hb` | 行のBlame表示 | Git blameを表示 |
-| `<leader>hd` | 差分表示 | 現在の差分を表示 |
-| `<leader>hD` | HEADとの差分 | HEADとの差分を表示 |
+| `<leader>hs` | Hunkステージング | 現在のhunkをステージング |
+| `<leader>hr` | Hunkリセット | 現在のhunkの変更を破棄 |
+| `<leader>hp` | Hunkプレビュー | 変更内容をポップアップ表示 |
+| `<leader>hu` | ステージ取り消し | hunkのステージングを取り消し |
 
-### 📝 ファイル操作
+### 📝 ファイル操作 (gitsigns.nvim)
 | キー | 機能 | 説明 |
 |------|------|------|
-| `<leader>hS` | ファイル全体ステージング | ファイル全体をステージング |
-| `<leader>hu` | ステージング取り消し | 最後のステージングを取り消し |
-| `<leader>hR` | ファイル全体リセット | ファイル全体をリセット |
+| `<leader>hS` | バッファステージング | ファイル全体をステージング |
+| `<leader>hR` | バッファリセット | ファイル全体の変更を破棄 |
 
-### 🔍 表示切り替え
+### 🔍 表示切り替え (gitsigns.nvim)
 | キー | 機能 | 説明 |
 |------|------|------|
-| `<leader>tb` | Blame表示切り替え | Git blameの表示をトグル |
-| `<leader>td` | 削除行表示切り替え | 削除された行の表示をトグル |
+| `<leader>tb` | Blame表示切り替え | 行末blame表示のON/OFF |
+| `<leader>td` | 削除行表示切り替え | 削除された行の表示切替 |
+
+### 📝 テキストオブジェクト (gitsigns.nvim)
+| キー | 機能 | 使用例 |
+|------|------|--------|
+| `ih` | Hunk選択 | `dih` (hunk削除), `vih` (hunk選択) |
 
 ---
 
