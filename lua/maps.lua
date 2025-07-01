@@ -149,6 +149,59 @@ keymap.set('n', '<Leader>FT', ':tabnew | terminal flutter run<Return>', { desc =
 keymap.set('n', '<Leader>FL', ':split | terminal flutter logs<Return>', { desc = 'Flutter logs in split' })
 
 -- ===============================================
+-- LSP (Language Server Protocol)
+-- ===============================================
+
+-- LSP Navigation
+keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to declaration' })
+keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to definition' })
+keymap.set('n', 'gi', vim.lsp.buf.implementation, { desc = 'Go to implementation' })
+keymap.set('n', 'gr', vim.lsp.buf.references, { desc = 'Show references' })
+keymap.set('n', 'K', vim.lsp.buf.hover, { desc = 'Show hover documentation' })
+keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, { desc = 'Show signature help' })
+
+-- LSP Actions
+keymap.set('n', '<Leader>rn', vim.lsp.buf.rename, { desc = 'LSP rename symbol' })
+keymap.set('n', '<Leader>ca', vim.lsp.buf.code_action, { desc = 'LSP code actions' })
+keymap.set('v', '<Leader>ca', vim.lsp.buf.code_action, { desc = 'LSP code actions (visual)' })
+
+-- LSP Diagnostics
+keymap.set('n', '<Leader>e', vim.diagnostic.open_float, { desc = 'Show line diagnostics' })
+keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Previous diagnostic' })
+keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Next diagnostic' })
+keymap.set('n', '<Leader>dl', vim.diagnostic.setloclist, { desc = 'Diagnostics to location list' })
+
+-- LSP Workspace
+keymap.set('n', '<Leader>wa', vim.lsp.buf.add_workspace_folder, { desc = 'Add workspace folder' })
+keymap.set('n', '<Leader>wr', vim.lsp.buf.remove_workspace_folder, { desc = 'Remove workspace folder' })
+keymap.set('n', '<Leader>wl', function()
+  print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+end, { desc = 'List workspace folders' })
+
+-- LSP Info
+keymap.set('n', '<Leader>li', ':LspInfo<Return>', { desc = 'LSP information' })
+keymap.set('n', '<Leader>lr', ':LspRestart<Return>', { desc = 'Restart LSP' })
+
+-- ===============================================
+-- GitHub Copilot
+-- ===============================================
+
+-- Copilot suggestions (インサートモードで動作)
+-- Note: これらのキーマップはcopilot.luaの設定で自動的に設定されますが、
+-- リファレンスのためにここにも記載しています
+-- <M-l> (Alt+l): 提案を受け入れる
+-- <M-]> (Alt+]): 次の提案
+-- <M-[> (Alt+[): 前の提案
+-- <C-]> (Ctrl+]): 提案を却下
+
+-- Copilot管理コマンド
+keymap.set('n', '<Leader>Cs', ':Copilot status<Return>', { desc = 'Copilot status' })
+keymap.set('n', '<Leader>Ce', ':Copilot enable<Return>', { desc = 'Copilot enable' })
+keymap.set('n', '<Leader>Cd', ':Copilot disable<Return>', { desc = 'Copilot disable' })
+keymap.set('n', '<Leader>Ca', ':Copilot auth<Return>', { desc = 'Copilot authenticate' })
+keymap.set('n', '<Leader>Cp', ':Copilot panel<Return>', { desc = 'Copilot suggestions panel' })
+
+-- ===============================================
 -- IDE風レイアウト
 -- ===============================================
 

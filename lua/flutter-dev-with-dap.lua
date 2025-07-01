@@ -78,6 +78,360 @@ local plugins = {
     end,
   },
 
+  -- Copilot.lua (GitHub Copilot for Neovim)
+  {
+    "zbirenbaum/copilot.lua",
+    cmd = "Copilot",
+    event = "InsertEnter",
+    config = function()
+      require("copilot").setup({
+        panel = {
+          enabled = true,
+          auto_refresh = false,
+          keymap = {
+            jump_prev = "[[",
+            jump_next = "]]",
+            accept = "<CR>",
+            refresh = "gr",
+            open = "<M-CR>"
+          },
+          layout = {
+            position = "bottom",
+            ratio = 0.4
+          },
+        },
+        suggestion = {
+          enabled = true,
+          auto_trigger = true,
+          hide_during_completion = true,
+          debounce = 75,
+          keymap = {
+            accept = "<M-l>",
+            accept_word = false,
+            accept_line = false,
+            next = "<M-]>",
+            prev = "<M-[>",
+            dismiss = "<C-]>",
+          },
+        },
+        filetypes = {
+          yaml = false,
+          markdown = false,
+          help = false,
+          gitcommit = false,
+          gitrebase = false,
+          hgcommit = false,
+          svn = false,
+          cvs = false,
+          ["."] = false,
+        },
+        copilot_node_command = 'node',
+        server_opts_overrides = {},
+      })
+    end,
+  },
+
+  -- copilot-cmp (nvim-cmp統合)
+  {
+    "zbirenbaum/copilot-cmp",
+    config = function ()
+      require("copilot_cmp").setup()
+    end
+  },
+
+  -- nvim-cmp (自動補完フレームワーク)
+  {
+    "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "hrsh7th/cmp-cmdline",
+      "L3MON4D3/LuaSnip",
+      "saadparwaiz1/cmp_luasnip",
+    },
+    config = function()
+      local cmp = require('cmp')
+      local luasnip = require('luasnip')
+      
+      cmp.setup({
+        snippet = {
+          expand = function(args)
+            luasnip.lsp_expand(args.body)
+          end,
+        },
+        mapping = cmp.mapping.preset.insert({
+          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          ['<C-Space>'] = cmp.mapping.complete(),
+          ['<C-e>'] = cmp.mapping.abort(),
+          ['<CR>'] = cmp.mapping.confirm({ select = true }),
+          ['<Tab>'] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item()
+            elseif luasnip.expand_or_jumpable() then
+              luasnip.expand_or_jump()
+            else
+              fallback()
+            end
+          end, { 'i', 's' }),
+          ['<S-Tab>'] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item()
+            elseif luasnip.jumpable(-1) then
+              luasnip.jump(-1)
+            else
+              fallback()
+            end
+          end, { 'i', 's' }),
+        }),
+        sources = cmp.config.sources({
+          { name = "copilot", group_index = 2 },
+          { name = 'nvim_lsp', group_index = 2 },
+          { name = 'luasnip', group_index = 2 },
+        }, {
+          { name = 'buffer' },
+          { name = 'path' },
+        })
+      })
+    end,
+  },
+
+  -- LSP Package Manager (Mason)
+  {
+    "williamboman/mason.nvim",
+    build = ":MasonUpdate",
+    config = function()
+      require("mason").setup({
+        ui = {
+          icons = {
+            package_installed = "✓",
+            package_pending = "➜",
+            package_uninstalled = "✗"
+          }
+        }
+      })
+    end,
+  },
+
+  -- LSP Configuration
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = { "williamboman/mason.nvim" },
+    config = function()
+      require("mason-lspconfig").setup({
+        ensure_installed = { "dartls" },
+        automatic_installation = true,
+      })
+    end,
+  },
+
+  -- Neovim LSP Configuration
+  {
+    "neovim/nvim-lspconfig",
+    dependencies = { "williamboman/mason-lspconfig.nvim" },
+    config = function()
+      local lspconfig = require("lspconfig")
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+      -- LSP診断設定
+      vim.diagnostic.config({
+        virtual_text = {
+          prefix = "●",
+          source = "if_many",
+        },
+        float = {
+          source = "always",
+          border = "rounded",
+        },
+        signs = true,
+        underline = true,
+        update_in_insert = false,
+        severity_sort = true,
+      })
+
+      -- 診断記号の設定
+      local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
+      for type, icon in pairs(signs) do
+        local hl = "DiagnosticSign" .. type
+        vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+      end
+
+      -- Dart LSP設定（flutter-toolsと連携するため基本設定のみ）
+      lspconfig.dartls.setup({
+        capabilities = capabilities,
+        settings = {
+          dart = {
+            completeFunctionCalls = true,
+            showTodos = true,
+          }
+        }
+      })
+    end,
+  },
+
+  -- Flutter Tools (Flutter/Dart統合)
+  {
+    "akinsho/flutter-tools.nvim",
+    lazy = false,
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "stevearc/dressing.nvim",
+    },
+    config = function()
+      require("flutter-tools").setup({
+        ui = {
+          border = "rounded",
+          notification_style = "native",
+        },
+        decorations = {
+          statusline = {
+            app_version = false,
+            device = true,
+          }
+        },
+        debugger = {
+          enabled = true,
+          run_via_dap = true,
+          exception_breakpoints = {},
+          register_configurations = function(paths)
+            require("dap").configurations.dart = {
+              require("dap.ext.vscode").load_launchjs(nil, { dart = {"dart", "flutter"} })
+            }
+          end,
+        },
+        flutter_path = nil,
+        flutter_lookup_cmd = nil,
+        fvm = false,
+        widget_guides = {
+          enabled = false,
+        },
+        closing_tags = {
+          highlight = "ErrorMsg",
+          prefix = ">",
+          enabled = true
+        },
+        dev_log = {
+          enabled = true,
+          notify_errors = false,
+          open_cmd = "tabedit",
+        },
+        dev_tools = {
+          autostart = false,
+          auto_open_browser = false,
+        },
+        outline = {
+          open_cmd = "30vnew",
+          auto_open = false
+        },
+        lsp = {
+          color = {
+            enabled = false,
+            background = false,
+            background_color = nil,
+            foreground = false,
+            virtual_text = true,
+            virtual_text_str = "■",
+          },
+          on_attach = function(client, bufnr)
+            -- LSPキーマップは maps.lua で統一管理
+          end,
+          capabilities = require("cmp_nvim_lsp").default_capabilities(),
+          settings = {
+            showTodos = true,
+            completeFunctionCalls = true,
+            renameFilesWithClasses = "prompt",
+            enableSnippets = true,
+            updateImportsOnRename = true,
+          }
+        }
+      })
+    end,
+  },
+
+  -- hlchunk.nvim (コードチャンクハイライト)
+  {
+    "shellRaining/hlchunk.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      require("hlchunk").setup({
+        chunk = {
+          enable = true,
+          notify = true,
+          use_treesitter = true,
+          style = {
+            "#806d9c",
+            "#c21f30",
+          },
+          chars = {
+            horizontal_line = "─",
+            vertical_line = "│",
+            left_top = "╭",
+            left_bottom = "╰",
+            right_arrow = "─",
+          },
+          textobject = "",
+          max_file_size = 1024 * 1024,
+          error_sign = true,
+        },
+        indent = {
+          enable = true,
+          use_treesitter = false,
+          style = {
+            "#434C5E",
+            "#4C566A",
+            "#5E81AC",
+            "#88C0D0",
+            "#81A1C1",
+            "#8FBCBB",
+          },
+          chars = {
+            "│",
+          },
+          exclude_filetypes = {
+            aerial = true,
+            dashboard = true,
+            help = true,
+            lspinfo = true,
+            packer = true,
+            checkhealth = true,
+            man = true,
+            gitcommit = true,
+            TelescopePrompt = true,
+            [""] = true,
+          },
+        },
+        line_num = {
+          enable = true,
+          style = "#806d9c",
+          use_treesitter = true,
+        },
+        blank = {
+          enable = true,
+          style = {
+            "#434C5E",
+          },
+          chars = {
+            "․",
+          },
+          exclude_filetypes = {
+            aerial = true,
+            dashboard = true,
+            help = true,
+            lspinfo = true,
+            packer = true,
+            checkhealth = true,
+            man = true,
+            gitcommit = true,
+            TelescopePrompt = true,
+            [""] = true,
+          },
+        },
+      })
+    end,
+  },
+
   -- 必要な依存関係
   {
     'nvim-lua/popup.nvim',
@@ -88,8 +442,29 @@ local plugins = {
   {
     'nvim-telescope/telescope.nvim',
     tag = '0.1.4',
+    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
-      require('telescope').setup({})
+      require('telescope').setup({
+        defaults = {
+          mappings = {
+            i = {
+              ["<C-j>"] = "move_selection_next",
+              ["<C-k>"] = "move_selection_previous",
+            }
+          }
+        }
+      })
+      
+      -- Telescopeキーマップ
+      local builtin = require('telescope.builtin')
+      vim.keymap.set('n', '<Leader>ff', builtin.find_files, { desc = 'Find files' })
+      vim.keymap.set('n', '<Leader>fg', builtin.live_grep, { desc = 'Live grep' })
+      vim.keymap.set('n', '<Leader>fb', builtin.buffers, { desc = 'Find buffers' })
+      vim.keymap.set('n', '<Leader>fh', builtin.help_tags, { desc = 'Find help' })
+      vim.keymap.set('n', '<Leader>fs', builtin.lsp_document_symbols, { desc = 'Find document symbols' })
+      vim.keymap.set('n', '<Leader>fw', builtin.lsp_workspace_symbols, { desc = 'Find workspace symbols' })
+      vim.keymap.set('n', '<Leader>fr', builtin.oldfiles, { desc = 'Find recent files' })
+      vim.keymap.set('n', '<Leader>fc', builtin.commands, { desc = 'Find commands' })
     end,
   },
 }
