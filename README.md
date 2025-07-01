@@ -6,17 +6,19 @@
 
 ### 🚀 Flutter開発
 - **Flutter Tools**: フルサポートのFlutter開発環境
-- **Dart LSP**: 完全なコード補完・診断・リファクタリング
+- **Dart LSP**: Mason + lspconfig による自動LSPサーバー管理
+- **完全なコード補完**: nvim-cmp + Copilot統合補完
 - **デバッグサポート**: DAP統合によるフルデバッグ機能
 - **VSCode統合**: launch.json自動読み込み・実行（2024年最適化済み）
 - **ホットリロード**: `<leader>fh`でリアルタイム更新
 - **デバイス管理**: エミュレータ・デバイス管理
-- **カラープレビュー**: Flutterカラーのインライン表示
+- **インテリジェント診断**: リアルタイムエラー検出と修正提案
 
 ### 🤖 AI統合
-- **GitHub Copilot**: コード自動補完
-- **Copilot Chat**: エディタ内AI会話
-- **コード説明・レビュー**: AI支援による開発
+- **GitHub Copilot**: zbirenbaum/copilot.lua による高度なコード補完
+- **インライン提案**: Alt+l で提案受け入れ、Alt+]/[ でナビゲーション
+- **Copilot-cmp統合**: nvim-cmp との完全統合
+- **Copilot管理**: `<leader>C*` キーでの簡単操作
 
 ### 📊 Git統合
 - **Gitsigns**: インライン差分表示・ステージング
@@ -47,13 +49,19 @@
 ## 📦 設定ファイル
 
 ### 基本設定
-- `lua/flutter-dev-minimal.lua` - 軽量版（フル機能）
-- `lua/flutter-dev-with-dap.lua` - デバッグ機能付き
-- `lua/flutter-dev-enhanced.lua` - 最新強化版
+- `lua/flutter-dev-with-dap.lua` - **メイン設定**（フル機能 + LSP + DAP + Copilot）
+- `lua/maps.lua` - キーマッピング統合管理
+- `lua/ide-layout.lua` - IDE風レイアウト管理
+- `lua/base.lua` - 基本Vim設定
+- `lua/plugins.lua` - 軽量設定（参考用）
+- `wezterm.lua` - WezTerm設定（Zenn風デザイン + 透過）
+- `starship.toml` - Starshipプロンプト設定（Flutter特化）
 
 ### スクリプト
-- `scripts/setup-flutter-dev-env.sh` - 自動セットアップスクリプト
+- `scripts/setup.sh` - **統合セットアップスクリプト**（全機能対応）
 - `scripts/flutter-utils.sh` - Flutter開発ユーティリティ
+- `scripts/create-flutter-project.sh` - 新規Flutterプロジェクト作成
+- `scripts/verify-setup.sh` - セットアップ検証
 
 ## 🚀 クイックスタート
 
@@ -64,16 +72,17 @@
 git clone https://github.com/your-username/my-nvim-config.git
 cd my-nvim-config
 
-# 自動セットアップを実行
-chmod +x scripts/setup-flutter-dev-env.sh
-./scripts/setup-flutter-dev-env.sh
+# 統合セットアップスクリプトを実行
+./scripts/setup.sh
 ```
 
 ### 手動セットアップ
 
+詳細な手動セットアップ手順については [SETUP_GUIDE.md](./SETUP_GUIDE.md) を参照してください。
+
 1. **必要なソフトウェアをインストール**
 ```bash
-brew install neovim wezterm tmux git ripgrep fd fzf
+brew install neovim wezterm tmux git ripgrep fd fzf node
 brew install --cask flutter
 ```
 

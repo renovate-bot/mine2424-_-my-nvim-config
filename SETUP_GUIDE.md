@@ -1,23 +1,49 @@
 # Flutter開発環境 セットアップガイド
 
-## 🚀 自動セットアップ（推奨）
+## 🚀 統合セットアップスクリプト（推奨）
 
-### macOS ユーザー
+新しい統合セットアップスクリプトで全てを一括インストール可能です。
 
-**完全自動セットアップ（推奨）**
+### 基本使用方法
+
 ```bash
 # このリポジトリをクローン
 git clone <repository-url> ~/flutter-dev-config
 cd ~/flutter-dev-config
 
-# 完全セットアップスクリプトを実行
-./scripts/setup-flutter-dev-env.sh
+# 完全セットアップ（全機能）
+./scripts/setup.sh
+
+# クイックセットアップ（依存関係は既にインストール済み）
+./scripts/setup.sh quick
+
+# 設定ファイルのみコピー
+./scripts/setup.sh config-only
+
+# Starshipのみインストール
+./scripts/setup.sh starship-only
 ```
 
-**クイックセットアップ（Neovimが既にある場合）**
+### オプション指定
+
 ```bash
-# 設定ファイルのみを配置
-./scripts/quick-setup.sh
+# WezTerm除外
+./scripts/setup.sh --no-wezterm
+
+# Starship除外
+./scripts/setup.sh --no-starship
+
+# Flutter除外
+./scripts/setup.sh --no-flutter
+
+# バックアップ無効
+./scripts/setup.sh --no-backup
+
+# ドライラン（何が実行されるか確認のみ）
+./scripts/setup.sh --dry-run
+
+# ヘルプ表示
+./scripts/setup.sh --help
 ```
 
 ---
@@ -29,7 +55,7 @@ cd ~/flutter-dev-config
 #### macOS
 ```bash
 # Homebrew経由でインストール
-brew install neovim wezterm tmux git ripgrep fd fzf
+brew install neovim wezterm tmux git ripgrep fd fzf node
 brew tap homebrew/cask-fonts
 brew install --cask font-jetbrains-mono flutter
 ```
@@ -124,7 +150,7 @@ mkdir -p ~/bin
 
 # 開発ツールのシンボリックリンク作成
 ln -sf ~/flutter-dev-config/scripts/flutter-utils.sh ~/bin/flutter-utils
-ln -sf ~/flutter-dev-config/scripts/flutter-dev-setup.sh ~/bin/flutter-new
+ln -sf ~/flutter-dev-config/scripts/create-flutter-project.sh ~/bin/flutter-new
 
 # PATHに~/binを追加（シェル設定ファイルに追加）
 echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc  # Bashの場合
@@ -174,9 +200,24 @@ nvim .
 
 # Dartファイル（lib/main.dart）を開いてLSP機能をテスト:
 # - シンタックスハイライト
-# - コード補完
-# - エラー検出
+# - コード補完（インサートモード）
+# - エラー検出とリアルタイム診断
 # - 定義ジャンプ（gd）
+# - 参照検索（gr）
+# - ホバードキュメント（K）
+# - シンボルリネーム（<leader>rn）
+# - コードアクション（<leader>ca）
+```
+
+#### LSPサーバーの確認
+```bash
+# Neovim内でLSPサーバーの状態を確認
+:LspInfo
+
+# Masonでインストール済みサーバーを確認
+:Mason
+
+# Dart LSPサーバー（dartls）が自動インストールされていることを確認
 ```
 
 ---
