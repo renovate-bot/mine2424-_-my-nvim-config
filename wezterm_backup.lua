@@ -218,36 +218,14 @@ wezterm.on('format-tab-title', function(tab, tabs, panes, conf, hover, max_width
     title = process_to_icon(tab.active_pane.title)
   end
 
-  -- Claude status for current tab
+  -- System-wide Claude status with multiple instances display
   local claude_emoji = ''
-  local proc_info = tab.active_pane and tab.active_pane.foreground_process_info
-  if proc_info and proc_info.name then
-    local is_claude = proc_info.name:lower():match('claude')
-    if not is_claude and proc_info.argv then
-      for _, arg in ipairs(proc_info.argv) do
-        if arg:lower():match('claude') then
-          is_claude = true
-          break
-        end
-      end
-    end
-    
-    if is_claude then
-      -- Simple CPU check using ps
-      local success, stdout = wezterm.run_child_process {
-        '/bin/ps',
-        '-p',
-        tostring(proc_info.pid),
-        '-o',
-        'pcpu'
-      }
-      if success and stdout then
-        local cpu = stdout:match('([%d%.]+)')
-        local cpu_usage = tonumber(cpu) or 0
-        claude_emoji = cpu_usage >= 1.0 and ' ⚡' or ' 🤖'
-      else
-        claude_emoji = ' 🤖'
-      end
+  local claude_status = get_system_claude_status()
+  if claude_status.has_claude then
+    if claude_status.running then
+      claude_emoji = ' ' .. CLAUDE_CONSTANTS.EMOJI_RUNNING
+    else
+      claude_emoji = ' ' .. CLAUDE_CONSTANTS.EMOJI_IDLE
     end
   end
 
@@ -275,7 +253,7 @@ local CLAUDE_CONSTANTS = {
   INVALID_TTY = '??',
 
   -- 実行判定の閾値
-  CPU_ACTIVE_THRESHOLD = 1.0, -- CPU使用率がこれ以上なら実行中
+  CPU_ACTIVE_THRESHOLD = 0.5, -- CPU使用率がこれ以上なら実行中（より敏感に）
   CPU_CHECK_THRESHOLD = 0.1, -- FDチェックを行う最小CPU使用率
   FD_ACTIVE_THRESHOLD = 10, -- ファイルディスクリプタ数の閾値（より敏感に）
   MEMORY_ACTIVE_THRESHOLD = 100, -- メモリ使用量の閾値（MB）
@@ -300,7 +278,34 @@ local CLAUDE_CONSTANTS = {
   PS_PATH = '/bin/ps',
 }
 
--- Removed: add_claude_status_to_elements function (no longer needed)
+-- Claude ステータス表示 (enhanced for multiple instances)
+local function add_claude_status_to_elements(elements, claude_status)
+  if not claude_status or not claude_status.has_claude then
+    return
+  end
+
+  table.insert(elements, { Foreground = { Color = CLAUDE_CONSTANTS.COLOR_ICON } })
+
+  if claude_status.process_count > 1 then
+    -- 複数インスタンスの表示
+    local idle_count = claude_status.process_count - claude_status.running_count
+    if claude_status.running_count > 0 then
+      table.insert(elements, { Text = CLAUDE_CONSTANTS.EMOJI_RUNNING .. tostring(claude_status.running_count) })
+      if idle_count > 0 then
+        table.insert(elements, { Text = ' ' })
+      end
+    end
+    if idle_count > 0 then
+      table.insert(elements, { Text = CLAUDE_CONSTANTS.EMOJI_IDLE .. tostring(idle_count) })
+    end
+  else
+    -- 単一インスタンスの表示
+    local emoji = claude_status.running and CLAUDE_CONSTANTS.EMOJI_RUNNING or CLAUDE_CONSTANTS.EMOJI_IDLE
+    table.insert(elements, { Text = emoji })
+  end
+
+  table.insert(elements, { Text = CLAUDE_CONSTANTS.SPACING_SINGLE })
+end
 
 -- プロセスの実行状態をチェックするヘルパー関数
 local function check_process_running(pid)
@@ -372,130 +377,153 @@ local function check_process_running(pid)
   return false
 end
 
--- Removed: get_system_claude_status function (replaced with simpler approach)
+-- System-wide Claude process detection with multiple instances tracking
+local function get_system_claude_status()
+  -- Try multiple detection methods
+  -- First try ps command which is more reliable
+  local success, stdout = wezterm.run_child_process {
+    '/bin/ps',
+    'aux'
+  }
 
+  if not success or not stdout then
+    return { has_claude = false, running = false, process_count = 0, running_count = 0 }
+  end
 
--- Claude status detection across all tabs
-local function get_claude_status(window)
-  local claude_tabs = {}
+  local pids = {}
   
-  if window then
-    local mux_window = window:mux_window()
-    if mux_window then
-      for _, tab in ipairs(mux_window:tabs()) do
-        for _, pane in ipairs(tab:panes()) do
-          local proc_info = pane:get_foreground_process_info()
-          if proc_info and proc_info.name then
-            -- Check if it's a Claude process
-            local is_claude = proc_info.name:lower():match('claude')
-            
-            -- Also check command line arguments
-            if not is_claude and proc_info.argv then
-              for _, arg in ipairs(proc_info.argv) do
-                if arg:lower():match('claude') then
-                  is_claude = true
-                  break
-                end
-              end
-            end
-            
-            if is_claude then
-              -- Check if process is running
-              local is_running = check_process_running(proc_info.pid)
-              table.insert(claude_tabs, {
-                tab_id = tab:tab_id(),
-                is_running = is_running
-              })
-            end
-          end
-        end
+  -- Parse ps output to find Claude processes
+  for line in stdout:gmatch('[^\n]+') do
+    -- Match lines containing 'claude' but not 'grep' and not our own script
+    if line:lower():match('claude') and not line:match('grep') and not line:match('test_claude_detection') then
+      -- Extract PID (first number in the line after username)
+      local pid = line:match('%s+(%d+)%s+')
+      if pid then
+        table.insert(pids, tonumber(pid))
+        wezterm.log_info(string.format('Found Claude process with PID: %s', pid))
       end
     end
   end
-  
-  -- Count running and idle instances
-  local running_count = 0
-  local idle_count = 0
-  for _, status in ipairs(claude_tabs) do
-    if status.is_running then
-      running_count = running_count + 1
-    else
-      idle_count = idle_count + 1
+
+  if #pids == 0 then
+    -- Fallback: try pgrep with simple pattern
+    success, stdout = wezterm.run_child_process {
+      'pgrep',
+      '-i',
+      'claude'
+    }
+    
+    if success and stdout and stdout ~= '' then
+      for pid in stdout:gmatch('%d+') do
+        table.insert(pids, tonumber(pid))
+      end
     end
   end
-  
+
+  if #pids == 0 then
+    return { has_claude = false, running = false, process_count = 0, running_count = 0 }
+  end
+
+  -- Check each Claude process and count running instances
+  local running_count = 0
+  for _, pid in ipairs(pids) do
+    if check_process_running(pid) then
+      running_count = running_count + 1
+    end
+  end
+
   return {
-    has_claude = #claude_tabs > 0,
-    running_count = running_count,
-    idle_count = idle_count,
-    total_count = #claude_tabs
+    has_claude = true,
+    running = running_count > 0,
+    process_count = #pids,
+    running_count = running_count
   }
 end
 
--- Update status bar with Claude status - show each instance separately
+-- Claude プロセス情報を取得する関数 (simplified)
+local function get_claude_status(window)
+  return get_system_claude_status()
+end
+
 wezterm.on('update-right-status', function(window, pane)
   local elements = {}
-  
-  if window then
+
+  -- Claude ステータスを取得
+  local claude_status = get_claude_status(window)
+
+  -- Debug: Log Claude status
+  if claude_status.has_claude then
+    wezterm.log_info(string.format('Claude detected: %d processes, %d running', 
+      claude_status.process_count, claude_status.running_count))
+  end
+
+  -- 時刻表示を追加（デバッグ用）
+  table.insert(elements, { Foreground = { Color = '#9ece6a' } })
+  table.insert(elements, { Text = wezterm.strftime '%H:%M:%S' })
+  table.insert(elements, { Text = '  ' })
+
+  local cwd = pane:get_current_working_dir()
+  if not cwd then
+    -- Claude ステータスのみ表示
+    add_claude_status_to_elements(elements, claude_status)
+    window:set_right_status(wezterm.format(elements))
+    return
+  end
+
+  local cwd_path = cwd.file_path
+
+  -- Git リポジトリ名を取得
+  local repo_name = get_git_repo_name(cwd_path)
+
+  if not repo_name then
+    -- Git リポジトリでない場合は Claude ステータスのみ表示
+    add_claude_status_to_elements(elements, claude_status)
+    window:set_right_status(wezterm.format(elements))
+    return
+  end
+
+  -- ブランチ名を取得
+  local branch = safe_git_command(cwd_path, 'branch', '--show-current')
+  if not branch or branch == '' then
+    local ref = safe_git_command(cwd_path, 'symbolic-ref', '--short', 'HEAD')
+    if ref then
+      branch = ref
+    else
+      branch = safe_git_command(cwd_path, 'rev-parse', '--short', 'HEAD')
+    end
+  end
+
+  -- Git 表示
+  if repo_name then
+    table.insert(elements, { Foreground = { Color = CLAUDE_CONSTANTS.GIT_ICON_COLOR } })
+    table.insert(elements, { Text = CLAUDE_CONSTANTS.SPACING_SMALL })
+    table.insert(elements, { Foreground = { Color = CLAUDE_CONSTANTS.GIT_REPO_COLOR } })
+    table.insert(elements, { Text = repo_name })
+
+    if branch then
+      table.insert(elements, { Foreground = { Color = CLAUDE_CONSTANTS.GIT_BRANCH_ICON_COLOR } })
+      table.insert(elements, { Text = CLAUDE_CONSTANTS.SPACING_MEDIUM })
+      table.insert(elements, { Foreground = { Color = CLAUDE_CONSTANTS.GIT_BRANCH_COLOR } })
+      table.insert(elements, { Text = branch })
+    end
+
+    -- アクティブなタブのタイトルを更新
     local mux_window = window:mux_window()
     if mux_window then
-      -- Check each tab for Claude processes
-      for tab_idx, tab in ipairs(mux_window:tabs()) do
-        for _, pane in ipairs(tab:panes()) do
-          local proc_info = pane:get_foreground_process_info()
-          if proc_info and proc_info.name then
-            -- Check if it's a Claude process
-            local is_claude = proc_info.name:lower():match('claude')
-            
-            -- Also check command line arguments
-            if not is_claude and proc_info.argv then
-              for _, arg in ipairs(proc_info.argv) do
-                if arg:lower():match('claude') then
-                  is_claude = true
-                  break
-                end
-              end
-            end
-            
-            if is_claude then
-              -- Add separator if not first item
-              if #elements > 0 then
-                table.insert(elements, { Text = '  ' })
-              end
-              
-              -- Check CPU usage
-              local is_running = false
-              local success, stdout = wezterm.run_child_process {
-                '/bin/ps',
-                '-p',
-                tostring(proc_info.pid),
-                '-o',
-                'pcpu'
-              }
-              if success and stdout then
-                local cpu = stdout:match('([%d%.]+)')
-                local cpu_usage = tonumber(cpu) or 0
-                is_running = cpu_usage >= 1.0
-              end
-              
-              -- Add Claude status for this tab
-              table.insert(elements, { Foreground = { Color = '#FF6B6B' } })
-              if is_running then
-                table.insert(elements, { Text = '⚡' })
-              else
-                table.insert(elements, { Text = '🤖' })
-              end
-              
-              -- Add tab number
-              table.insert(elements, { Foreground = { Color = '#a0a0a0' } })
-              table.insert(elements, { Text = tostring(tab_idx) })
-            end
-          end
-        end
+      local active_tab = mux_window:active_tab()
+      if active_tab and active_tab:tab_id() == pane:tab():tab_id() then
+        -- タブタイトルをリポジトリ名に設定
+        active_tab:set_title(repo_name)
       end
     end
   end
-  
+
+  -- Claude ステータス表示（最後に表示）
+  if elements and #elements > 0 then
+    table.insert(elements, { Text = CLAUDE_CONSTANTS.SPACING_MEDIUM })
+  end
+  add_claude_status_to_elements(elements, claude_status)
+
   window:set_right_status(wezterm.format(elements))
 end)
 

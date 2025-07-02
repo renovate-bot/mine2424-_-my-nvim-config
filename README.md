@@ -4,283 +4,71 @@
 
 ## ✨ 主な機能
 
-### 🚀 Flutter開発
-- **Flutter Tools**: フルサポートのFlutter開発環境
-- **Dart LSP**: Mason + lspconfig による自動LSPサーバー管理
-- **完全なコード補完**: nvim-cmp + Copilot統合補完
-- **デバッグサポート**: DAP統合によるフルデバッグ機能
-- **VSCode統合**: launch.json自動読み込み・実行（2024年最適化済み）
-- **ホットリロード**: `<leader>fh`でリアルタイム更新
-- **デバイス管理**: エミュレータ・デバイス管理
-- **インテリジェント診断**: リアルタイムエラー検出と修正提案
-
-### 🤖 AI統合
-- **GitHub Copilot**: zbirenbaum/copilot.lua による高度なコード補完
-- **インライン提案**: Alt+l で提案受け入れ、Alt+]/[ でナビゲーション
-- **Copilot-cmp統合**: nvim-cmp との完全統合
-- **Copilot管理**: `<leader>C*` キーでの簡単操作
-
-### 📊 Git統合
-- **Gitsigns.nvim**: リアルタイム差分表示・インラインステージング
-  - サイン列での視覚的変更表示
-  - 現在行のGit blame情報
-  - Hunk単位でのステージング・リセット
-  - プレビュー機能付きdiff表示
-- **高度なキーバインド**: 効率的なGit操作
-
-### 🛠️ IDE機能
-- **統合ターミナル**: ToggleTerm with Flutter専用ターミナル
-- **診断情報**: Trouble.nvimによる高度なエラー表示
-- **プロジェクト検索**: Telescope fuzzy finder
-- **TODO管理**: todo-comments.nvimでタスク追跡
-- **キーバインドヘルプ**: which-key.nvimでコマンド発見
-
-### 🖥️ ターミナル統合 (WezTerm)
-- **Claude監視システム**: リアルタイムClaude実行状況表示
-  - CPU使用率ベースの状態検出 (🤖 アイドル / ⚡ 実行中 / 💭 思考中)
-  - プロセス監視とパフォーマンス最適化
-- **人間活動追跡**: キーボード・マウス操作の監視
-  - 👤 アクティブ / 😴 アイドル状態表示
-  - 非アクティブ時間の可視化
-- **統合ステータスバー**: Git + Claude + 人間活動状況を一元表示
-- **スマート通知**: Claudeタスク完了時の音声・トースト通知
-
-### 🎨 UI/UX
-- **ステータスライン**: Lualineによる情報豊富な表示
-- **タブライン**: Bufferlineによる美しいタブ管理
-- **ファイルツリー**: NvimTreeによるプロジェクト探索
-- **インデントガイド**: hlchunk.nvimによる高度なコードチャンク・インデント表示
-- **コードハイライト**: 階層化されたインデントラインとコードブロック可視化
-
-### ⚡ 効率化機能
-- **高速移動**: Hop.nvimによるジャンプ
-- **自動ペアリング**: 括弧・クォートの自動補完
-- **スマートコメント**: Comment.nvimによる高度なコメント機能
-- **テキスト操作**: nvim-surroundによる囲み操作
-
-## 📦 設定ファイル
-
-### 基本設定
-- `lua/flutter-dev-with-dap.lua` - **メイン設定**（フル機能 + LSP + DAP + Copilot）
-- `lua/maps.lua` - キーマッピング統合管理
-- `lua/ide-layout.lua` - IDE風レイアウト管理
-- `lua/base.lua` - 基本Vim設定
-- `lua/plugins.lua` - 軽量設定（参考用）
-- `wezterm.lua` - WezTerm設定（Zenn風デザイン + 透過）
-- `starship.toml` - Starshipプロンプト設定（Flutter特化）
-
-### スクリプト
-- `scripts/setup.sh` - **統合セットアップスクリプト**（全機能対応）
-- `scripts/flutter-utils.sh` - Flutter開発ユーティリティ
-- `scripts/create-flutter-project.sh` - 新規Flutterプロジェクト作成
-- `scripts/verify-setup.sh` - セットアップ検証
+- 🚀 **Flutter開発**: DAP統合デバッグ、ホットリロード、デバイス管理
+- 🤖 **AI統合**: GitHub Copilot完全統合
+- 📊 **Git統合**: リアルタイム差分表示、インラインステージング
+- 🖥️ **ターミナル統合**: WezTerm + Claude監視システム
+- ⚡ **高性能**: 遅延読み込み、最適化済み設定
 
 ## 🚀 クイックスタート
 
-### 自動セットアップ（推奨）
-
 ```bash
-# リポジトリをクローン
-git clone https://github.com/your-username/my-nvim-config.git
+# 1. リポジトリクローン
+git clone https://github.com/your-repo/my-nvim-config.git
 cd my-nvim-config
 
-# 統合セットアップスクリプトを実行
+# 2. 自動セットアップ
 ./scripts/setup.sh
+
+# 3. 検証
+./scripts/verify-setup.sh
+
+# 4. Flutter プロジェクト開始
+./scripts/create-flutter-project.sh my_app
+cd my_app && nvim .
 ```
 
-### 手動セットアップ
+## 📋 主要コマンド
 
-詳細な手動セットアップ手順については [SETUP_GUIDE.md](./SETUP_GUIDE.md) を参照してください。
-
-1. **必要なソフトウェアをインストール**
-```bash
-brew install neovim wezterm tmux git ripgrep fd fzf node
-brew install --cask flutter
-```
-
-2. **設定ファイルを配置**
-```bash
-# 既存設定をバックアップ
-mv ~/.config/nvim ~/.config/nvim.backup.$(date +%Y%m%d)
-
-# 新しい設定を配置
-mkdir -p ~/.config/nvim/lua
-cp init.lua ~/.config/nvim/
-cp -r lua/* ~/.config/nvim/lua/
-```
-
-3. **WezTerm設定**
-```bash
-cp wezterm.lua ~/.wezterm.lua
-```
-
-## 📖 使い方
-
-### 基本的な開発フロー
-
-1. **プロジェクトを開く**
-```bash
-cd your-flutter-project
-nvim .
-```
-
-2. **Flutter開発を開始**
-- `<leader>fd` - デバイス一覧表示
-- `<leader>fe` - エミュレータ起動
+### Flutter開発
 - `<leader>fr` - Flutter実行
-- `<leader>fh` - ホットリロード
+- `<leader>fh` - ホットリロード  
+- `<leader>fd` - デバイス一覧
+- `<F5>` - デバッグ開始
 
-3. **コード編集**
-- LSPによる自動補完・エラー表示
-- GitHub Copilotによるコード提案
-- `<leader>ca` - コードアクション
-- `<leader>rn` - リネーム
+### Git操作
+- `]c` / `[c` - hunk移動
+- `<leader>hs` - hunkステージ
+- `<leader>hp` - hunkプレビュー
 
-4. **Git操作** (gitsigns.nvim)
-- `]c` / `[c` - 次/前のhunkに移動
-- `<leader>hs` - Hunkをステージング
-- `<leader>hr` - Hunkをリセット
-- `<leader>hp` - Hunkをプレビュー
-- `<leader>hb` - 行のblame表示
-- `<leader>tb` - blame表示の切替
+### AI機能
+- `Alt+l` - Copilot提案受け入れ
+- `<leader>cc` - Copilotチャット
 
-### 主要キーバインド
+## 📚 詳細ドキュメント
 
-| カテゴリ | キー | 機能 |
-|----------|------|------|
-| **ファイル** | `<leader>ff` | ファイル検索 |
-| | `<leader>fg` | テキスト検索 |
-| | `<leader>e` | ファイルツリー |
-| **Git** | `]c` / `[c` | 次/前のhunk移動 |
-| | `<leader>hs` | Hunkステージング |
-| | `<leader>hp` | Hunkプレビュー |
-| | `<leader>hb` | Git blame |
-| **ターミナル** | `<C-\>` | ターミナル切替 |
-| **診断** | `<leader>xx` | 診断情報 |
-| **AI** | `<leader>cc` | Copilot Chat |
-| | `Alt+l` | Copilot提案受け入れ |
-
-詳細なキーバインドは [FLUTTER_KEYBINDINGS.md](./FLUTTER_KEYBINDINGS.md) を参照してください。
-
-## 📚 ドキュメント
-
-- [📋 キーバインド一覧](./FLUTTER_KEYBINDINGS.md)
-- [🔄 開発ワークフロー](./FLUTTER_WORKFLOW.md)
-- [📊 Git統合ガイド (gitsigns.nvim)](./GITSIGNS_GUIDE.md) **NEW!**
-- [🖥️ WezTerm Claude監視システム](./WEZTERM_CLAUDE_MONITORING.md) **NEW!**
-- [📊 lualine.nvim 設定ガイド](./LUALINE_GUIDE.md)
-- [🌈 hlchunk.nvim 使用ガイド](./HLCHUNK_GUIDE.md)
-- [🚀 VSCode統合アップデート](./VSCODE_INTEGRATION_UPDATE.md)
-- [🔧 トラブルシューティング](./TROUBLESHOOTING.md)
-- [⚙️ 設定ガイド](./CONFIG_GUIDE.md)
-
-## 🛠️ カスタマイズ
-
-### プラグインの有効/無効
-
-特定のプラグインを無効にする場合：
-
-```lua
--- lua/flutter-dev-minimal.lua内で
-{
-  'plugin-name',
-  enabled = false,  -- プラグインを無効化
-  -- ... 設定
-}
-```
-
-### キーバインドのカスタマイズ
-
-```lua
--- カスタムキーマップを追加
-vim.keymap.set('n', '<your-key>', '<command>', { desc = 'Your description' })
-```
-
-### テーマの変更
-
-```lua
--- Lualineテーマの変更
-require('lualine').setup {
-  options = {
-    theme = 'your-preferred-theme'  -- auto, gruvbox, etc.
-  }
-}
-```
+- **[DOCS.md](DOCS.md)** - 完全ガイド（セットアップ、ワークフロー、キーバインド）
+- **[CLAUDE.md](CLAUDE.md)** - AI開発者向け技術詳細
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - トラブルシューティング
 
 ## 🔧 システム要件
 
-### 必須
-- Neovim 0.9.0+
-- Node.js 18+ (Copilot用)
-- Git
-- Flutter SDK
+- **Neovim** 0.9.0+
+- **Flutter** 3.0.0+
+- **Git** 2.30.0+
+- **Node.js** 16.0.0+ (Copilot用)
 
-### 推奨
-- WezTerm (ターミナル)
-- ripgrep (高速検索)
-- fd (高速ファイル検索)
-- fzf (ファジーファインダー)
+## 📦 含まれる設定
 
-### OS サポート
-- ✅ macOS (完全サポート)
-- ⚠️ Linux (手動セットアップ)
-- ⚠️ Windows (WSL推奨)
+- **Neovim**: 完全なFlutter開発環境
+- **WezTerm**: Claude監視、Git統合ターミナル
+- **Starship**: Flutter特化プロンプト
+- **Scripts**: 自動セットアップツール
 
-## 🚨 トラブルシューティング
+## 🤝 貢献
 
-### よくある問題
-
-**プラグインが読み込まれない**
-```bash
-# lazy.nvimを更新
-:Lazy sync
-```
-
-**Copilotが動作しない**
-```bash
-# Copilotにログイン
-:Copilot auth
-```
-
-**Flutter LSPが起動しない**
-```bash
-# Flutter doctorで環境確認
-flutter doctor -v
-```
-
-詳細は [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) を参照してください。
-
-## 🔄 アップデート
-
-```bash
-# 設定を更新
-cd my-nvim-config
-git pull origin main
-
-# プラグインを更新
-nvim -c "Lazy sync" -c "qa"
-```
-
-## 🤝 コントリビューション
-
-1. このリポジトリをフォーク
-2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'Add amazing feature'`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. プルリクエストを作成
+Issue報告やPull Requestを歓迎します。
 
 ## 📄 ライセンス
 
-MIT License - 詳細は [LICENSE](./LICENSE) ファイルを参照してください。
-
-## 🙏 謝辞
-
-以下のプロジェクトに感謝します：
-- [akinsho/flutter-tools.nvim](https://github.com/akinsho/flutter-tools.nvim)
-- [zbirenbaum/copilot.lua](https://github.com/zbirenbaum/copilot.lua)
-- [lewis6991/gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim)
-- その他多数の素晴らしいNeovimプラグイン
-
----
-
-**Happy Flutter Development with Neovim! 🎯✨**
+MIT License

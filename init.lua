@@ -1,16 +1,14 @@
--- Neovim設定
+-- ===============================================
+-- Neovim Configuration Entry Point
+-- ===============================================
+
+-- Core settings
 require('base')
 require('maps')
-require('plugins')
+require('autocmds')
 
--- IDE風レイアウト設定
-require('ide-layout').setup()
-
--- Flutter開発環境設定
--- DAP機能なし版（安定版）
--- require('flutter-dev-minimal')
-
--- DAP機能付き版を使用したい場合は、上記をコメントアウトして以下を有効にしてください
+-- Flutter development with DAP (main configuration)
 require('flutter-dev-with-dap')
 
--- hlchunk.nvim設定はflutter-dev-with-dap.luaで管理されています
+-- IDE layout setup
+require('ide-layout').setup()

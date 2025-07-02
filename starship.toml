@@ -11,7 +11,6 @@ $git_branch\
 $git_status\
 $git_metrics\
 $dart\
-$flutter\
 $nodejs\
 $python\
 $rust\
@@ -86,22 +85,14 @@ disabled = false
 # Language and Framework Configuration
 # ===============================================
 [dart]
-symbol = " "
+symbol = "󰔬 "
 style = "bold blue"
 format = "via [$symbol($version)]($style) "
 version_format = "v${major}.${minor}"
 detect_extensions = ["dart"]
 detect_files = ["pubspec.yaml", "pubspec.yml", "pubspec.lock"]
-detect_folders = ["lib", "test", ".dart_tool"]
+detect_folders = ["lib", "test", ".dart_tool", "android", "ios", "web", "linux", "macos", "windows"]
 
-[flutter]
-symbol = "󰔬 "
-style = "bold blue"
-format = "via [$symbol($version)]($style) "
-version_format = "v${major}.${minor}"
-detect_extensions = []
-detect_files = ["pubspec.yaml", "pubspec.yml"]
-detect_folders = ["lib", "android", "ios", "web", "linux", "macos", "windows"]
 
 [nodejs]
 symbol = " "
