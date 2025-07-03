@@ -266,7 +266,7 @@ wezterm.on('format-tab-title', function(tab, tabs, panes, conf, hover, max_width
 end)
 
 -- 右下に Git ブランチを表示する
-config.status_update_interval = 100 -- 0.1秒ごとに更新（Claude状態を素早く反映）
+config.status_update_interval = 1000 -- 1秒ごとに更新（安定性重視）
 
 -- Claude 関連の定数
 local CLAUDE_CONSTANTS = {
@@ -302,74 +302,23 @@ local CLAUDE_CONSTANTS = {
 
 -- Removed: add_claude_status_to_elements function (no longer needed)
 
--- プロセスの実行状態をチェックするヘルパー関数
+-- 軽量なプロセス実行状態チェック（CPU使用率のみ）
 local function check_process_running(pid)
   local ps_success, ps_stdout = wezterm.run_child_process {
-    CLAUDE_CONSTANTS.PS_PATH,
+    '/bin/ps',
     '-p',
     tostring(pid),
     '-o',
-    'stat,pcpu,rss',
+    'pcpu',
   }
 
   if not ps_success or not ps_stdout then
     return false
   end
 
-  local lines = {}
-  for line in ps_stdout:gmatch '[^\n]+' do
-    table.insert(lines, line)
-  end
-
-  if #lines < 2 then
-    return false
-  end
-
-  local data_line = lines[2]
-  local stat, pcpu, rss = data_line:match '%s*(%S+)%s+(%S+)%s+(%S+)'
-
-  if not stat then
-    return false
-  end
-
-  -- 1. プロセス状態による判定
-  if stat:match '^[RD]' then
-    return true
-  end
-
-  local cpu_usage = tonumber(pcpu) or 0
-  local memory_mb = tonumber(rss) and (tonumber(rss) / 1024) or 0
-
-  -- 2. CPU使用率による判定（閾値を下げて敏感に）
-  if cpu_usage >= CLAUDE_CONSTANTS.CPU_ACTIVE_THRESHOLD then
-    return true
-  end
-
-  -- 3. メモリ使用量による判定
-  if memory_mb >= CLAUDE_CONSTANTS.MEMORY_ACTIVE_THRESHOLD then
-    return true
-  end
-
-  -- 4. ファイルディスクリプタ数をチェック（最後の手段）
-  if cpu_usage > CLAUDE_CONSTANTS.CPU_CHECK_THRESHOLD then
-    local lsof_success, lsof_stdout = wezterm.run_child_process {
-      'lsof',
-      '-p',
-      tostring(pid),
-      '-t',
-    }
-    if lsof_success and lsof_stdout then
-      local fd_count = 0
-      for _ in lsof_stdout:gmatch '[^\n]+' do
-        fd_count = fd_count + 1
-      end
-      if fd_count > CLAUDE_CONSTANTS.FD_ACTIVE_THRESHOLD then
-        return true
-      end
-    end
-  end
-
-  return false
+  local cpu = ps_stdout:match('([%d%.]+)')
+  local cpu_usage = tonumber(cpu) or 0
+  return cpu_usage >= 1.0
 end
 
 -- Removed: get_system_claude_status function (replaced with simpler approach)
@@ -432,22 +381,23 @@ local function get_claude_status(window)
   }
 end
 
--- Update status bar with Claude status - show each instance separately
+-- 軽量化された全タブClaude監視
 wezterm.on('update-right-status', function(window, pane)
   local elements = {}
   
+  -- 全タブをスキャンしてClaude状態を把握（軽量化版）
   if window then
     local mux_window = window:mux_window()
     if mux_window then
-      -- Check each tab for Claude processes
+      local claude_instances = {}
+      
+      -- 全タブをスキャンしてClaude instances を収集
       for tab_idx, tab in ipairs(mux_window:tabs()) do
-        for _, pane in ipairs(tab:panes()) do
-          local proc_info = pane:get_foreground_process_info()
+        for _, tab_pane in ipairs(tab:panes()) do
+          local proc_info = tab_pane:get_foreground_process_info()
           if proc_info and proc_info.name then
-            -- Check if it's a Claude process
             local is_claude = proc_info.name:lower():match('claude')
             
-            -- Also check command line arguments
             if not is_claude and proc_info.argv then
               for _, arg in ipairs(proc_info.argv) do
                 if arg:lower():match('claude') then
@@ -458,43 +408,62 @@ wezterm.on('update-right-status', function(window, pane)
             end
             
             if is_claude then
-              -- Add separator if not first item
-              if #elements > 0 then
-                table.insert(elements, { Text = '  ' })
-              end
-              
-              -- Check CPU usage
-              local is_running = false
-              local success, stdout = wezterm.run_child_process {
-                '/bin/ps',
-                '-p',
-                tostring(proc_info.pid),
-                '-o',
-                'pcpu'
-              }
-              if success and stdout then
-                local cpu = stdout:match('([%d%.]+)')
-                local cpu_usage = tonumber(cpu) or 0
-                is_running = cpu_usage >= 1.0
-              end
-              
-              -- Add Claude status for this tab
-              table.insert(elements, { Foreground = { Color = '#FF6B6B' } })
-              if is_running then
-                table.insert(elements, { Text = '⚡' })
-              else
-                table.insert(elements, { Text = '🤖' })
-              end
-              
-              -- Add tab number
-              table.insert(elements, { Foreground = { Color = '#a0a0a0' } })
-              table.insert(elements, { Text = tostring(tab_idx) })
+              -- 軽量なCPUチェック
+              local is_running = check_process_running(proc_info.pid)
+              table.insert(claude_instances, {
+                tab_idx = tab_idx,
+                is_running = is_running
+              })
             end
           end
         end
       end
+      
+      -- Claude instances を表示
+      if #claude_instances > 0 then
+        local running_count = 0
+        local idle_count = 0
+        
+        for _, instance in ipairs(claude_instances) do
+          if instance.is_running then
+            running_count = running_count + 1
+          else
+            idle_count = idle_count + 1
+          end
+        end
+        
+        -- Claude状態のサマリー表示
+        table.insert(elements, { Foreground = { Color = '#FF6B6B' } })
+        if running_count > 0 then
+          table.insert(elements, { Text = '⚡' .. running_count })
+        end
+        if idle_count > 0 then
+          if running_count > 0 then
+            table.insert(elements, { Text = ' ' })
+          end
+          table.insert(elements, { Text = '🤖' .. idle_count })
+        end
+        
+        -- タブ番号を表示
+        table.insert(elements, { Foreground = { Color = '#a0a0a0' } })
+        table.insert(elements, { Text = ' [' })
+        for i, instance in ipairs(claude_instances) do
+          if i > 1 then
+            table.insert(elements, { Text = ',' })
+          end
+          table.insert(elements, { Text = tostring(instance.tab_idx) })
+        end
+        table.insert(elements, { Text = ']' })
+      end
     end
   end
+  
+  -- 時刻表示
+  if #elements > 0 then
+    table.insert(elements, { Text = '  ' })
+  end
+  table.insert(elements, { Foreground = { Color = '#9ece6a' } })
+  table.insert(elements, { Text = wezterm.strftime('%H:%M') })
   
   window:set_right_status(wezterm.format(elements))
 end)
@@ -533,19 +502,10 @@ local function update_tab_titles(window)
   end
 end
 
--- タブがアクティブになった時にも更新（即座更新）
+-- タブがアクティブになった時の軽量更新
 wezterm.on('tab-active', function(tab, pane, window)
-  -- すぐに更新をトリガー
-  wezterm.emit('update-right-status', window, pane)
-
-  -- タブタイトルを更新
+  -- タブタイトルのみ更新（重い処理は避ける）
   update_tab_titles(window)
-
-  -- 少し遅れてもう一度更新（確実性向上）
-  wezterm.time.call_after(0.1, function()
-    wezterm.emit('update-right-status', window, pane)
-    update_tab_titles(window)
-  end)
 end)
 
 -- ウィンドウフォーカス時にタブタイトルを更新
