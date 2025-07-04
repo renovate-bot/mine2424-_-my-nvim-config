@@ -9,8 +9,10 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Main Configuration**: `lua/flutter-dev-with-dap.lua` - Full-featured Flutter dev environment with DAP debugging
 - **Alternative**: `lua/plugins.lua` - Lightweight configuration (reference only)
 - **Core Files**: `init.lua`, `lua/base.lua`, `lua/maps.lua`, `lua/ide-layout.lua`
-- **Terminal Integration**: WezTerm with Claude monitoring system
+- **Zsh Configuration**: Modern shell setup based on wasabeef/dotfiles with plugins and aliases
+- **Terminal Integration**: Ghostty terminal with modern configuration
 - **Shell Enhancement**: Starship prompt with Flutter-specific features
+- **Safety Configuration**: Claude Desktop with prohibited command blocking
 
 ## Key Architecture
 
@@ -71,7 +73,10 @@ This is a comprehensive Flutter development environment configuration for Neovim
 ### Configuration Files
 - `*.lua` files in `lua/` directory are the main configuration
 - `init.lua` is the entry point
-- `wezterm.lua` and `starship.toml` are terminal/prompt configurations
+- `zsh/zshrc` is the main Zsh shell configuration
+- `zsh/sheldon/plugins.toml` defines Zsh plugins managed by sheldon
+- `ghostty/config` and `starship.toml` are terminal/prompt configurations
+- `claude/claude_desktop_config.json` is Claude Desktop safety configuration
 
 ### Flutter Development
 - Flutter projects should be opened at the project root (where `pubspec.yaml` exists)
@@ -90,62 +95,69 @@ No specific test framework is used for this configuration. Verification is done 
 - Opening a Flutter project and testing LSP functionality
 - Verifying plugin loading with `:Lazy` command in Neovim
 
-## Terminal Integration
+## Shell and Terminal Integration
 
-The configuration includes advanced WezTerm integration with:
+### Zsh Configuration
+The configuration includes a modern Zsh setup based on wasabeef/dotfiles:
 
-### Claude Monitoring System
-- **Real-time Detection**: Ultra-responsive (0.1s) Claude process monitoring with zero configuration
-- **Dual Detection Method**: 
-  - Process name scanning (`proc_info.name`)
-  - Command line argument analysis (`proc_info.argv`) for `/applications/claude.app`
-- **Smart Activity Detection**: CPU usage >1.0% + process state ('R'/'D') = active processing
-- **Multi-Instance Support**: Tracks multiple Claude processes across all WezTerm tabs simultaneously
-- **Visual Indicators**: 
-  - 🤖 (idle) - Claude detected but CPU <1.0%
-  - ⚡ (active) - Claude actively processing with CPU >1.0%
-- **Integrated Display**: Claude status shown in both individual tab titles and global status bar
-- **Stability First**: Based on proven wasabeef implementation for crash-free operation
+#### Shell Features
+- **Plugin Manager**: Sheldon for fast plugin management
+- **Modern Tools**: Replacements for classic Unix commands (eza→ls, bat→cat, etc.)
+- **Smart Aliases**: Comprehensive shortcuts for Git, Flutter, and development workflows
+- **Auto-suggestions**: Fish-like autosuggestions and syntax highlighting
+- **FZF Integration**: Fuzzy finding for files, history, and commands
 
-### Enhanced Features
-- **Git Integration**: Real-time Git branch display in status bar with automatic repository detection
-- **Process Icon Mapping**: Comprehensive Nerd Font icons for nvim, git, docker, python, node, etc.
-- **Tab Title Intelligence**: Displays Git repository names or directory names in tab titles
-- **Error Resilience**: Comprehensive error handling prevents WezTerm crashes during monitoring
-- **Resource Efficient**: Optimized process scanning with minimal system resource usage
-- **Development Workflow**: Seamless integration with Flutter development environment
+#### Sheldon Plugin Configuration
+- Configuration file: `zsh/sheldon/plugins.toml`
+- Plugins are automatically installed and managed by sheldon
+- Syntax highlighting is loaded without deferring for compatibility
+- Run `sheldon lock` to regenerate the lock file after changes
 
-### Implementation Details
-**Completely migrated to [wasabeef's dotfiles](https://github.com/wasabeef/dotfiles/blob/main/dot_wezterm.lua) implementation** for maximum stability and reliability.
+#### Development Tools Management
+- **mise**: Modern runtime version manager (replaces asdf)
+- Automatically manages Flutter, Ruby, Node.js, and other development tools
+- Configuration: `mise settings set idiomatic_version_file_enable_tools ruby` to enable version file support
 
-#### Core Functions
-- `get_claude_status()`: Scans all WezTerm windows/tabs/panes for Claude processes
-- `check_process_running()`: Uses `ps -p <pid> -o stat,pcpu` to determine process activity and CPU usage
-- `add_claude_status_to_elements()`: Adds appropriate Claude icons to status bar elements
-- `process_to_icon()`: Maps process names to corresponding Nerd Font icons
-- `get_git_repo_name()`: Extracts Git repository name from current working directory
+#### Key Aliases
+- `ll`, `la`, `lt`: Enhanced directory listings with icons
+- `g`, `gs`, `ga`, `gc`: Git shortcuts
+- `fl`, `flr`, `flb`: Flutter command shortcuts
+- `lg`: Launch lazygit
+- `?`, `??`: GitHub Copilot CLI helpers
 
-#### Event Handlers
-- `format-tab-title`: Real-time Claude icon display in tab titles with dual detection method
-- `update-right-status`: Comprehensive status bar with Git branch, Claude status, and timestamp
-- `window-focus-changed`: High-frequency status updates (0.1s) for responsive monitoring
+### Ghostty Terminal Configuration
+- **Theme**: Ayu color scheme for comfortable viewing
+- **Font**: JetBrainsMonoNL Nerd Font Mono with optimized settings
+- **Transparency**: Background opacity at 0.85 with blur for modern aesthetics
+- **Window Padding**: Balanced padding for clean appearance
+- **Performance**: Hardware-accelerated rendering with linear alpha blending
+- **Workflow Integration**: Inherits working directory for seamless navigation
 
-#### Detection Strategy
-- **Process Name Detection**: Checks `proc_info.name` for 'claude' substring
-- **Command Line Detection**: Scans `proc_info.argv` for Claude app paths (`/applications/claude.app`)
-- **Activity Monitoring**: Process state 'R' or 'D' with CPU usage >1.0% indicates active processing
-- **Multi-tab Support**: Tracks Claude instances across all WezTerm tabs simultaneously
+### Terminal Features
+- **Visual Comfort**: Disabled font ligatures, thickened fonts for readability
+- **Modern UI**: Transparent titlebar with shadow effects (macOS)
+- **Cursor**: Block style with 0.7 opacity, no blinking
+- **Keybindings**: Custom shift+enter for multiline input
+- **Developer Friendly**: Full screen mode, mouse hide while typing
 
-#### Visual Indicators
-- **🤖** (idle) - Claude process detected but CPU usage <1.0%
-- **⚡** (active) - Claude process with CPU usage >1.0% (actively processing)
-- **Color Coding**: `#FF6B6B` for Claude icons, `#7aa2f7` for Git info, `#9ece6a` for timestamps
+## Claude Desktop Safety Configuration
 
-#### Architecture Benefits
-- **Zero Configuration**: Works out-of-the-box without manual setup
-- **Crash Resistant**: Error handling prevents WezTerm crashes during process monitoring
-- **Performance Optimized**: Efficient process scanning with minimal system impact
-- **Cross-Platform**: Compatible with macOS, Linux, and Windows environments
+The configuration includes comprehensive safety features to prevent accidental system damage:
+
+### Prohibited Commands
+- Blocks all variations of `rm -rf /` and `rm -rf ~`
+- Prevents deletion of entire home directory or system
+- Includes sudo variations for additional protection
+- Covers multiple command flag combinations (e.g., `-rf`, `-Rf`, `-r -f`, `-fr`)
+
+### Safety Features
+- **Destructive Action Confirmation**: Requires user confirmation for potentially dangerous operations
+- **System Modification Protection**: Blocks unauthorized system changes
+- **Sudo Protection**: Additional layer for privileged commands
+
+### Configuration Location
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Linux**: `~/.config/claude/claude_desktop_config.json`
 
 ## Key Customization Points
 

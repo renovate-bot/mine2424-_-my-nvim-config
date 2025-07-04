@@ -72,6 +72,9 @@ Flutter + Neovim開発環境で発生する一般的な問題とその解決方�
    mise which flutter
    mise current
    
+   # mise警告メッセージが出る場合
+   mise settings set idiomatic_version_file_enable_tools ruby
+   
    # asdfを使用している場合
    asdf which flutter
    asdf current

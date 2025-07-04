@@ -6,7 +6,8 @@
 - [Flutter開発ワークフロー](#flutter開発ワークフロー)
 - [キーバインド一覧](#キーバインド一覧)
 - [Git統合機能](#git統合機能)
-- [WezTerm統合設定](#wezterm統合設定)
+- [Zsh設定](#zsh設定)
+- [Ghostty統合設定](#ghostty統合設定)
 - [プラグイン詳細ガイド](#プラグイン詳細ガイド)
 
 ---
@@ -47,8 +48,8 @@ cd my-nvim-config
    cp -r lua ~/.config/nvim/
    cp init.lua ~/.config/nvim/
    
-   # WezTerm設定
-   cp wezterm.lua ~/.config/wezterm/
+   # Ghostty設定
+   cp ghostty/config ~/.config/ghostty/
    
    # Starship設定
    cp starship.toml ~/.config/
@@ -181,40 +182,115 @@ nvim .
 
 ---
 
-## WezTerm統合設定
+## Zsh設定
 
-### 🖥️ Claude監視システム
+### 🐚 モダンなZshシェル環境
+
+#### ✨ 主な機能
+- **Sheldonプラグインマネージャー**: 高速なプラグイン管理
+- **モダンCLIツール**: eza, bat, fd, ripgrep等の最新ツール
+- **スマートエイリアス**: Git、Flutter、開発ツール用の便利なショートカット
+- **自動補完**: コマンド、パス、Git等の賢い補完機能
+
+#### 🛠️ インストールされるツール
+
+| ツール | 説明 | 従来のコマンド |
+|--------|------|----------------|
+| `eza` | モダンな`ls`代替 | `ls` |
+| `bat` | シンタックスハイライト付き`cat` | `cat` |
+| `fd` | 高速なファイル検索 | `find` |
+| `ripgrep` | 高速なテキスト検索 | `grep` |
+| `dust` | ディスク使用量表示 | `du` |
+| `duf` | ディスク空き容量表示 | `df` |
+| `btop` | リソースモニター | `top` |
+| `lazygit` | Git TUI | - |
+
+#### 📝 便利なエイリアス
+
+```bash
+# エディタ
+vi, vim, neovim → nvim
+
+# ディレクトリ操作
+.. → cd ..
+... → cd ../..
+ll → eza -l --icons --git
+la → eza -la --icons --git
+lt → eza --tree --level=2 --icons --git
+
+# Git
+g → git
+gs → git status
+ga → git add
+gc → git commit
+lg → lazygit
+
+# Flutter
+fl → flutter
+flr → flutter run
+flb → flutter build
+flt → flutter test
+flc → flutter clean
+fld → flutter doctor
+
+# GitHub Copilot CLI
+? → github-copilot-cli what-the-shell
+?? → github-copilot-cli explain
+```
+
+#### 🔧 Zshプラグイン
+- **zsh-autosuggestions**: コマンド履歴からの自動提案
+- **zsh-syntax-highlighting**: コマンドのシンタックスハイライト
+- **zsh-completions**: 追加の補完定義
+- **fzf**: ファジーファインダー統合
+
+#### 📁 設定ファイル構成
+```
+zsh/
+├── zshrc                    # メインのZsh設定
+└── sheldon/
+    └── plugins.toml         # プラグイン設定
+```
+
+#### 🚀 カスタマイズ
+ローカルのカスタマイズは `~/.zshrc.local` に記述してください：
+
+```bash
+# ~/.zshrc.local
+# 個人的なエイリアスや関数を追加
+alias myproject='cd ~/projects/myproject'
+```
+
+---
+
+## Ghostty統合設定
+
+### 🖥️ モダンターミナル設定
 
 #### ✨ 機能概要
-- **リアルタイム検出**: CPU使用率ベースの状態判定
-- **視覚的表示**: 絵文字とカラーコードによる状態表示
-- **パフォーマンス最適化**: キャッシュ機能付きプロセス監視
+- **Ayuテーマ**: 目に優しいカラースキーム
+- **透明度設定**: 背景透明度85%、ブラー効果付き
+- **最適化されたフォント**: JetBrainsMonoNL Nerd Font Mono
 
-#### 🤖 Claude実行状況表示
-- **🤖** (idle) - Claude待機中（CPU < 1.0%）
-- **⚡** (active) - Claude実行中（CPU > 1.0%）
-
-#### 📊 ステータスバー表示
-```
-[Git Repository]  [Branch]   🤖⚡  [Time]
-```
+#### 🎨 視覚設定
+- **フォントサイズ**: 12pt、リガチャー無効
+- **カーソル**: ブロックスタイル、透明度0.7、点滅なし
+- **ウィンドウパディング**: X=20, Y=5
 
 #### 🔧 設定詳細
-```lua
--- Claude監視の設定
-config.status_update_interval = 100  -- 0.1秒更新
-CLAUDE_CONSTANTS = {
-  CPU_ACTIVE_THRESHOLD = 1.0,     -- CPU使用率閾値
-  EMOJI_IDLE = '🤖',              -- 待機中アイコン
-  EMOJI_RUNNING = '⚡',           -- 実行中アイコン
-}
+```toml
+# Ghostty設定ファイル例
+theme = ayu
+font-family = JetBrainsMonoNL Nerd Font Mono
+font-size = 12
+background-opacity = 0.85
+background-blur-radius = 20
 ```
 
-### 🎨 テーマとレイアウト
-- **タブバー**: 下部配置、Git情報表示
-- **フォント**: JetBrains Mono / Monaco / Menlo
-- **透明度**: 75%（背景）
-- **キーバインド**: tmux風操作
+### ⚡ パフォーマンス
+- **ハードウェアアクセラレーション**: 有効
+- **リニアアルファブレンディング**: 最適化レンダリング
+- **作業ディレクトリ継承**: シームレスなナビゲーション
 
 ---
 

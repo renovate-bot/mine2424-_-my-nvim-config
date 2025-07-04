@@ -7,7 +7,9 @@
 - 🚀 **Flutter開発**: DAP統合デバッグ、ホットリロード、デバイス管理
 - 🤖 **AI統合**: GitHub Copilot完全統合
 - 📊 **Git統合**: リアルタイム差分表示、インラインステージング
-- 🖥️ **ターミナル統合**: WezTerm + Claude監視システム
+- 🖥️ **ターミナル統合**: Ghostty モダンターミナル設定
+- 🐚 **モダンZsh**: wasabeef/dotfiles ベースの高機能Zsh設定
+- 🛠️ **CLIツール**: eza, bat, lazygit等のモダンCLIツール
 - ⚡ **高性能**: 遅延読み込み、最適化済み設定
 
 ## 🚀 クイックスタート
@@ -61,8 +63,10 @@ cd my_app && nvim .
 ## 📦 含まれる設定
 
 - **Neovim**: 完全なFlutter開発環境
-- **WezTerm**: Claude監視、Git統合ターミナル
+- **Zsh**: モダンなシェル設定（sheldon、プラグイン、エイリアス）
+- **Ghostty**: モダンターミナル設定
 - **Starship**: Flutter特化プロンプト
+- **Claude Desktop**: 安全なコマンド実行設定
 - **Scripts**: 自動セットアップツール
 
 ## 🤝 貢献
