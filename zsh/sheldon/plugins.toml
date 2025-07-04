@@ -1,0 +1,144 @@
+# Sheldon plugins configuration
+# Based on wasabeef/dotfiles
+
+shell = "zsh"
+
+
+[plugins]
+
+# Deferred loading for faster startup
+[plugins.zsh-defer]
+github = "romkatv/zsh-defer"
+
+# Homebrew completions
+[plugins.brew]
+github = "wintermi/zsh-brew"
+
+# Directory environment management
+[plugins.direnv]
+github = "ohmyzsh/ohmyzsh"
+dir = "plugins/direnv"
+
+# FZF - Fuzzy finder
+[plugins.fzf]
+github = "junegunn/fzf"
+use = ["shell/completion.zsh", "shell/key-bindings.zsh"]
+
+# FZF completions
+[plugins.fzf-zsh-completions]
+github = "chitoku-k/fzf-zsh-completions"
+
+# Auto suggestions
+[plugins.zsh-autosuggestions]
+github = "zsh-users/zsh-autosuggestions"
+use = ["zsh-autosuggestions.zsh"]
+
+# Syntax highlighting (load last)
+[plugins.zsh-syntax-highlighting]
+github = "zsh-users/zsh-syntax-highlighting"
+use = ["zsh-syntax-highlighting.zsh"]
+apply = ["source"]
+
+# Additional completions
+[plugins.zsh-completions]
+github = "zsh-users/zsh-completions"
+
+# NPM scripts completion
+[plugins.zsh-npm-scripts-autocomplete]
+github = "grigorii-zander/zsh-npm-scripts-autocomplete"
+
+# Environment setup inline plugins
+[plugins.env-setup]
+inline = '''
+# Set up environment paths and tools
+
+# mise (formerly rtx) - Runtime version manager
+if command -v mise &> /dev/null; then
+  eval "$(mise activate zsh)"
+  eval "$(mise completion zsh)"
+fi
+
+# Go environment
+if command -v go &> /dev/null; then
+  export GOPATH="$HOME/go"
+  export PATH="$GOPATH/bin:$PATH"
+fi
+
+# Android SDK
+if [[ -d "$HOME/Library/Android/sdk" ]]; then
+  export ANDROID_HOME="$HOME/Library/Android/sdk"
+elif [[ -d "$HOME/Android/Sdk" ]]; then
+  export ANDROID_HOME="$HOME/Android/Sdk"
+fi
+
+if [[ -n "$ANDROID_HOME" ]]; then
+  export PATH="$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH"
+fi
+
+# Flutter
+if [[ -d "$HOME/development/flutter" ]]; then
+  export PATH="$HOME/development/flutter/bin:$PATH"
+  export PATH="$HOME/.pub-cache/bin:$PATH"
+fi
+
+# Rust
+if [[ -f "$HOME/.cargo/env" ]]; then
+  source "$HOME/.cargo/env"
+fi
+
+# Ruby (rbenv)
+if command -v rbenv &> /dev/null; then
+  eval "$(rbenv init - zsh)"
+fi
+
+# Python (pyenv)
+if command -v pyenv &> /dev/null; then
+  export PYENV_ROOT="$HOME/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init -)"
+fi
+
+# Node.js (fnm - Fast Node Manager)
+if command -v fnm &> /dev/null; then
+  eval "$(fnm env --use-on-cd)"
+fi
+'''
+
+# Completion settings
+[plugins.completion-settings]
+inline = '''
+# Completion settings
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*:descriptions' format '%U%B%d%b%u'
+zstyle ':completion:*:warnings' format '%BSorry, no matches for: %d%b'
+'''
+
+# Custom aliases and functions
+[plugins.custom-config]
+inline = '''
+# Custom configuration loaded after all plugins
+
+# Set ZSH options
+setopt COMPLETE_IN_WORD
+setopt ALWAYS_TO_END
+setopt PATH_DIRS
+setopt AUTO_MENU
+setopt AUTO_LIST
+setopt AUTO_PARAM_SLASH
+setopt EXTENDED_GLOB
+setopt UNSET
+setopt NO_BG_NICE
+setopt NO_HUP
+setopt NO_LIST_BEEP
+setopt LOCAL_OPTIONS
+setopt LOCAL_TRAPS
+setopt PROMPT_SUBST
+
+# Key bindings
+bindkey -e  # Emacs key bindings
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+bindkey '^R' history-incremental-search-backward
+'''
