@@ -3,7 +3,7 @@
 # ===============================================
 # Flutter Development Environment Setup Script
 # ===============================================
-# Unified setup script for Flutter + Neovim + WezTerm + Starship
+# Unified setup script for Flutter + Neovim + Ghostty + Starship
 # Supports: macOS, Linux (Ubuntu/Debian)
 
 set -e  # Exit on error
@@ -32,7 +32,6 @@ MODE_CONFIG_ONLY="config-only"
 MODE_STARSHIP_ONLY="starship-only"
 
 # Default settings
-INSTALL_WEZTERM=true
 INSTALL_STARSHIP=true
 INSTALL_FLUTTER=true
 BACKUP_EXISTING=true
@@ -134,7 +133,7 @@ show_banner() {
     
     Complete setup for modern Flutter development:
     ✨ Neovim with LSP + Copilot + Flutter-tools
-    🖥️  WezTerm with transparency and Zenn-style tabs
+    🖥️  Ghostty terminal with modern configuration
     ⭐ Starship prompt with Flutter/Dart integration
     🔧 All configs and key bindings optimized
     
@@ -156,7 +155,6 @@ MODES:
   starship-only       Install and configure Starship only
 
 OPTIONS:
-  --no-wezterm        Skip WezTerm installation and configuration
   --no-starship       Skip Starship installation
   --no-flutter        Skip Flutter installation
   --no-backup         Skip backing up existing configs
@@ -168,7 +166,7 @@ EXAMPLES:
   $0 quick                    # Quick setup (configs only)
   $0 config-only --no-backup # Copy configs without backup
   $0 starship-only            # Install Starship only
-  $0 full --no-wezterm        # Full setup without WezTerm
+  $0 full --no-flutter        # Full setup without Flutter
 
 EOF
 }
@@ -200,11 +198,18 @@ install_packages_macos() {
         "fzf"
         "node"
         "tmux"
+        "sheldon"     # Plugin manager for zsh
+        "eza"         # Modern replacement for ls
+        "bat"         # Modern replacement for cat
+        "dust"        # Modern replacement for du
+        "duf"         # Modern replacement for df
+        "procs"       # Modern replacement for ps
+        "btop"        # Modern replacement for top
+        "lazygit"     # Terminal UI for git
+        "mise"        # Runtime version manager (formerly rtx)
+        "direnv"      # Directory-based environment management
     )
     
-    if [[ "$INSTALL_WEZTERM" == "true" ]]; then
-        packages+=("--cask wezterm")
-    fi
     
     if [[ "$INSTALL_FLUTTER" == "true" ]]; then
         packages+=("--cask flutter")
@@ -238,7 +243,9 @@ install_packages_debian() {
             fzf \
             tmux \
             nodejs \
-            npm
+            npm \
+            cargo \       # For installing Rust-based tools
+            direnv        # Directory-based environment management
             
         # Install Neovim (latest version)
         if ! command_exists nvim; then
@@ -248,6 +255,32 @@ install_packages_debian() {
             sudo tar -C /opt -xzf nvim-linux64.tar.gz
             sudo ln -sf /opt/nvim-linux64/bin/nvim /usr/local/bin/nvim
             rm nvim-linux64.tar.gz
+        fi
+        
+        # Install modern CLI tools via cargo
+        log_step "Installing modern CLI tools..."
+        cargo install eza bat dust duf procs btop
+        
+        # Install sheldon
+        if ! command_exists sheldon; then
+            log_step "Installing sheldon..."
+            curl --proto '=https' -fLsS https://rossmacarthur.github.io/install/crate.sh | bash -s -- --repo rossmacarthur/sheldon --to ~/.local/bin
+        fi
+        
+        # Install lazygit
+        if ! command_exists lazygit; then
+            log_step "Installing lazygit..."
+            LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+            curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+            tar xf lazygit.tar.gz lazygit
+            sudo install lazygit /usr/local/bin
+            rm lazygit.tar.gz lazygit
+        fi
+        
+        # Install mise
+        if ! command_exists mise; then
+            log_step "Installing mise..."
+            curl https://mise.run | sh
         fi
     fi
     
@@ -277,6 +310,9 @@ setup_directories() {
     local dirs=(
         "$HOME/.config/nvim"
         "$HOME/.config/nvim/lua"
+        "$HOME/.config/ghostty"
+        "$HOME/.config/sheldon"
+        "$HOME/.local/bin"
     )
     
     for dir in "${dirs[@]}"; do
@@ -307,26 +343,6 @@ install_neovim_config() {
     log_success "Neovim configuration installed"
 }
 
-install_wezterm_config() {
-    if [[ "$INSTALL_WEZTERM" != "true" ]]; then
-        log_info "Skipping WezTerm configuration"
-        return 0
-    fi
-    
-    log_step "Installing WezTerm configuration..."
-    
-    # Backup existing config
-    if [[ "$BACKUP_EXISTING" == "true" ]]; then
-        backup_file "$HOME/.wezterm.lua"
-    fi
-    
-    # Copy WezTerm config
-    if [[ ! "$DRY_RUN" == "true" ]]; then
-        cp "$PROJECT_ROOT/wezterm.lua" "$HOME/.wezterm.lua"
-    fi
-    
-    log_success "WezTerm configuration installed"
-}
 
 install_starship_config() {
     if [[ "$INSTALL_STARSHIP" != "true" ]]; then
@@ -354,6 +370,110 @@ install_starship_config() {
     configure_starship_shell
     
     log_success "Starship configuration installed"
+}
+
+install_ghostty_config() {
+    log_step "Installing Ghostty configuration..."
+    
+    # Backup existing config
+    if [[ "$BACKUP_EXISTING" == "true" ]]; then
+        backup_file "$HOME/.config/ghostty/config"
+    fi
+    
+    # Copy Ghostty config
+    if [[ ! "$DRY_RUN" == "true" ]]; then
+        mkdir -p "$HOME/.config/ghostty"
+        cp "$PROJECT_ROOT/ghostty/config" "$HOME/.config/ghostty/config"
+    fi
+    
+    log_success "Ghostty configuration installed"
+}
+
+install_claude_config() {
+    log_step "Installing Claude Desktop configuration..."
+    
+    # Detect Claude config directory based on OS
+    local claude_config_dir=""
+    local os=$(detect_os)
+    
+    case "$os" in
+        macOS)
+            claude_config_dir="$HOME/Library/Application Support/Claude"
+            ;;
+        debian|linux)
+            claude_config_dir="$HOME/.config/claude"
+            ;;
+        *)
+            log_warning "Claude Desktop configuration not supported on $os"
+            return 0
+            ;;
+    esac
+    
+    # Backup existing config
+    if [[ "$BACKUP_EXISTING" == "true" ]] && [[ -f "$claude_config_dir/claude_desktop_config.json" ]]; then
+        backup_file "$claude_config_dir/claude_desktop_config.json"
+    fi
+    
+    # Copy Claude config
+    if [[ ! "$DRY_RUN" == "true" ]]; then
+        mkdir -p "$claude_config_dir"
+        cp "$PROJECT_ROOT/claude/claude_desktop_config.json" "$claude_config_dir/claude_desktop_config.json"
+    fi
+    
+    log_success "Claude Desktop configuration installed"
+}
+
+install_zsh_config() {
+    log_step "Installing Zsh configuration..."
+    
+    # Check if zsh is installed
+    if ! command_exists zsh; then
+        log_warning "Zsh is not installed. Please install zsh first."
+        return 1
+    fi
+    
+    # Backup existing zshrc
+    if [[ "$BACKUP_EXISTING" == "true" ]]; then
+        backup_file "$HOME/.zshrc"
+        backup_file "$HOME/.config/sheldon"
+    fi
+    
+    # Copy zsh configuration
+    if [[ ! "$DRY_RUN" == "true" ]]; then
+        # Install main zshrc
+        cp "$PROJECT_ROOT/zsh/zshrc" "$HOME/.zshrc"
+        
+        # Install sheldon plugins configuration
+        mkdir -p "$HOME/.config/sheldon"
+        cp "$PROJECT_ROOT/zsh/sheldon/plugins.toml" "$HOME/.config/sheldon/plugins.toml"
+        
+        # Create local zshrc for user customizations
+        if [[ ! -f "$HOME/.zshrc.local" ]]; then
+            touch "$HOME/.zshrc.local"
+            echo "# Local zsh customizations" > "$HOME/.zshrc.local"
+            echo "# Add your personal configurations here" >> "$HOME/.zshrc.local"
+        fi
+    fi
+    
+    log_success "Zsh configuration installed"
+    
+    # Install sheldon if not already installed
+    if ! command_exists sheldon; then
+        log_step "Installing sheldon plugin manager..."
+        if [[ ! "$DRY_RUN" == "true" ]]; then
+            local os=$(detect_os)
+            case "$os" in
+                macOS)
+                    brew install sheldon
+                    ;;
+                debian|linux)
+                    curl --proto '=https' -fLsS https://rossmacarthur.github.io/install/crate.sh | bash -s -- --repo rossmacarthur/sheldon --to ~/.local/bin
+                    ;;
+            esac
+        fi
+    fi
+    
+    log_success "Zsh setup completed"
 }
 
 configure_starship_shell() {
@@ -421,15 +541,6 @@ verify_installation() {
         ((errors++))
     fi
     
-    # Check WezTerm (if enabled)
-    if [[ "$INSTALL_WEZTERM" == "true" ]]; then
-        if [[ -f "$HOME/.wezterm.lua" ]]; then
-            log_success "WezTerm config: ✓"
-        else
-            log_error "WezTerm config not found"
-            ((errors++))
-        fi
-    fi
     
     # Check Starship (if enabled)
     if [[ "$INSTALL_STARSHIP" == "true" ]]; then
@@ -446,6 +557,33 @@ verify_installation() {
             log_error "Starship config not found"
             ((errors++))
         fi
+    fi
+    
+    # Check Ghostty config
+    if [[ -f "$HOME/.config/ghostty/config" ]]; then
+        log_success "Ghostty config: ✓"
+    else
+        log_error "Ghostty config not found"
+        ((errors++))
+    fi
+    
+    # Check Claude Desktop config
+    local os=$(detect_os)
+    local claude_config_path=""
+    case "$os" in
+        macOS)
+            claude_config_path="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+            ;;
+        debian|linux)
+            claude_config_path="$HOME/.config/claude/claude_desktop_config.json"
+            ;;
+    esac
+    
+    if [[ -n "$claude_config_path" ]] && [[ -f "$claude_config_path" ]]; then
+        log_success "Claude Desktop config: ✓"
+    elif [[ -n "$claude_config_path" ]]; then
+        log_error "Claude Desktop config not found"
+        ((errors++))
     fi
     
     if [[ $errors -eq 0 ]]; then
@@ -471,12 +609,13 @@ show_completion_message() {
     echo ""
     echo -e "${CYAN}Key features installed:${NC}"
     echo "• Neovim with LSP, Copilot, and Flutter tools"
-    if [[ "$INSTALL_WEZTERM" == "true" ]]; then
-        echo "• WezTerm with transparency and Zenn-style tabs"
-    fi
+    echo "• Modern Zsh configuration with plugins and aliases"
     if [[ "$INSTALL_STARSHIP" == "true" ]]; then
         echo "• Starship prompt with Flutter/Dart integration"
     fi
+    echo "• Ghostty terminal configuration"
+    echo "• Claude Desktop safety configuration"
+    echo "• Modern CLI tools (eza, bat, dust, etc.)"
     echo "• Optimized key bindings and development workflow"
     echo ""
     echo -e "${PURPLE}Documentation: Check SETUP_GUIDE.md and FLUTTER_KEYBINDINGS.md${NC}"
@@ -496,10 +635,6 @@ main() {
         case $1 in
             full|quick|config-only|starship-only)
                 mode="$1"
-                shift
-                ;;
-            --no-wezterm)
-                INSTALL_WEZTERM=false
                 shift
                 ;;
             --no-starship)
@@ -577,25 +712,28 @@ main() {
             
             setup_directories
             install_neovim_config
-            install_wezterm_config
+            install_zsh_config
             install_starship_config
+            install_ghostty_config
+            install_claude_config
             ;;
             
         "$MODE_QUICK")
             # Quick setup (dependencies assumed)
             setup_directories
             install_neovim_config
-            install_wezterm_config
+            install_zsh_config
             install_starship_config
+            install_ghostty_config
+            install_claude_config
             ;;
             
         "$MODE_CONFIG_ONLY")
             # Configuration files only
             setup_directories
             install_neovim_config
-            if [[ "$INSTALL_WEZTERM" == "true" ]]; then
-                install_wezterm_config
-            fi
+            install_ghostty_config
+            install_claude_config
             ;;
             
         "$MODE_STARSHIP_ONLY")
