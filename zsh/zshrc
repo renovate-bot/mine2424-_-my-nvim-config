@@ -49,10 +49,10 @@ case $(uname | tr '[:upper:]' '[:lower:]') in
     elif command -v /usr/local/bin/brew &> /dev/null; then
       eval "$(/usr/local/bin/brew shellenv)"
     fi
-    
+
     # Disable saving screenshots to Desktop
     defaults write com.apple.screencapture location ~/Pictures/Screenshots
-    
+
     # Don't create .DS_Store files on network volumes
     defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
     ;;
@@ -84,7 +84,7 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 if command -v sheldon &> /dev/null; then
   # Create sheldon config directory if it doesn't exist
   mkdir -p "$HOME/.config/sheldon"
-  
+
   # Source sheldon plugins (quiet mode)
   export SHELDON_LOAD_QUIET=1
   eval "$(sheldon --quiet source)"
@@ -101,6 +101,9 @@ export PATH="$HOME/.local/bin:$PATH"
 if [ -d "$HOME/development/flutter" ]; then
   export PATH="$HOME/development/flutter/bin:$PATH"
 fi
+
+# Pub Cache
+export PATH="$PATH":"$HOME/.pub-cache/bin"
 
 # Android SDK
 if [ -d "$HOME/Library/Android/sdk" ]; then
@@ -248,6 +251,14 @@ alias reload='source ~/.zshrc'
 alias myip='curl -s https://api.ipify.org'
 alias weather='curl wttr.in'
 
+# Mise
+alias mrucoco=' mise uninstall ruby --all && mise uninstall cocoapods && mise install ruby && mise install cocoapods'
+
+# Claude
+alias cl='claude'
+alias yolo='claude --dangerously-skip-permissions'
+alias ryolo='claude --dangerously-skip-permissions --resume'
+
 # ========================================
 # Functions
 # ========================================
@@ -300,13 +311,13 @@ fi
 if command -v fzf &> /dev/null; then
   # FZF default options
   export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
-  
+
   # Use fd for FZF if available
   if command -v fd &> /dev/null; then
     export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
   fi
-  
+
   # Load FZF key bindings and completion
   [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 fi

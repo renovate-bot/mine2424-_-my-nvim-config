@@ -13,6 +13,7 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Terminal Integration**: Ghostty terminal with modern configuration
 - **Shell Enhancement**: Starship prompt with Flutter-specific features
 - **Safety Configuration**: Claude Desktop with prohibited command blocking
+- **Claude Code Safety**: Command deny list with preToolUse hooks for safe execution
 
 ## Key Architecture
 
@@ -158,6 +159,33 @@ The configuration includes comprehensive safety features to prevent accidental s
 ### Configuration Location
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Linux**: `~/.config/claude/claude_desktop_config.json`
+
+## Claude Code Safety Configuration
+
+The project includes additional safety features for Claude Code command execution:
+
+### Command Deny List (`~/.claude/settings.json`)
+Blocks potentially dangerous commands including:
+- **Git Config**: `git config --global` (prevents global git modifications)
+- **Package Installation**: `brew install/upgrade`, `npm install -g`, `pip install`, etc.
+- **System Commands**: `sudo`, `chmod 777`, `rm -rf`, filesystem operations
+- **Service Control**: `systemctl`, `service`, `shutdown`, `reboot`
+- **Process Control**: `killall`, `kill -9`
+- **Remote Execution**: `curl | bash`, `wget | bash`
+- **GitHub Operations**: `gh repo delete`, `gh auth logout`
+
+### Safety Script (`~/.claude/scripts/deny-check.sh`)
+- Intercepts bash commands before execution
+- Checks against deny patterns
+- Provides clear feedback when blocking dangerous commands
+- Suggests manual execution for blocked operations
+
+### Setup Integration
+The `scripts/setup.sh` automatically installs:
+- Claude Desktop configuration
+- Claude Code safety settings (`~/.claude/settings.json`)
+- Deny check script with proper permissions
+- Both configurations are backed up during installation
 
 ## Key Customization Points
 

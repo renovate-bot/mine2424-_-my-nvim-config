@@ -421,6 +421,24 @@ install_claude_config() {
     fi
     
     log_success "Claude Desktop configuration installed"
+    
+    # Install Claude safety configuration
+    log_step "Installing Claude safety configuration..."
+    
+    # Backup existing Claude settings
+    if [[ "$BACKUP_EXISTING" == "true" ]]; then
+        backup_file "$HOME/.claude/settings.json"
+    fi
+    
+    # Copy Claude safety configuration
+    if [[ ! "$DRY_RUN" == "true" ]]; then
+        mkdir -p "$HOME/.claude/scripts"
+        cp "$PROJECT_ROOT/claude/settings.json" "$HOME/.claude/settings.json"
+        cp "$PROJECT_ROOT/claude/scripts/deny-check.sh" "$HOME/.claude/scripts/deny-check.sh"
+        chmod +x "$HOME/.claude/scripts/deny-check.sh"
+    fi
+    
+    log_success "Claude safety configuration installed"
 }
 
 install_zsh_config() {
@@ -615,6 +633,7 @@ show_completion_message() {
     fi
     echo "• Ghostty terminal configuration"
     echo "• Claude Desktop safety configuration"
+    echo "• Claude Code safety features (command blocking)"
     echo "• Modern CLI tools (eza, bat, dust, etc.)"
     echo "• Optimized key bindings and development workflow"
     echo ""
