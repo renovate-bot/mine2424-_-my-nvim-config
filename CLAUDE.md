@@ -14,6 +14,7 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Shell Enhancement**: Starship prompt with Flutter-specific features
 - **Safety Configuration**: Claude Desktop with prohibited command blocking
 - **Claude Code Safety**: Command deny list with preToolUse hooks for safe execution
+- **MCP Integration**: Model Context Protocol servers for GitHub, Context7, and Playwright
 
 ## Key Architecture
 
@@ -39,6 +40,8 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Debugging**: nvim-dap with Flutter DAP support
 - **UI**: lualine, bufferline, nvim-tree, telescope
 - **Code Quality**: hlchunk.nvim for visual code structure
+- **Search Enhancement**: `folke/flash.nvim` for advanced search and navigation
+- **Claude Code Integration**: `sivchari/claude-code.nvim` for Neovim-Claude Code integration
 
 ## Development Commands
 
@@ -69,6 +72,20 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Suggestions**: `Alt+l` (accept), `Alt+]`/`Alt+[` (navigate)
 - **Management**: `<leader>cc` (Copilot chat), `<leader>C*` commands for control
 
+### Search and Navigation (flash.nvim)
+- **Basic Search**: `/` (forward), `?` (backward), `n`/`N` (next/previous)
+- **Flash Jump**: `s` (2-char jump), `S` (treesitter jump)
+- **Enhanced f/F/t/T**: Single-char search with Flash labels
+- **Word Search**: `*`/`#` (search word under cursor without jumping)
+- **Clear Highlight**: `<ESC><ESC>` (clear search highlights)
+- **Telescope**: `<leader>ff` (files), `<leader>fg` (grep), `<leader>fb` (buffers)
+
+### Claude Code Integration (claude-code.nvim)
+- **CLI Control**: `<leader>clc` (start/stop Claude CLI)
+- **Session Management**: `<leader>cll` (list sessions), `<leader>clm` (monitor sessions)
+- **Worktree**: `<leader>clw` (switch Claude worktree)
+- **Features**: Per-worktree session management, real-time monitoring
+
 ## Important File Patterns
 
 ### Configuration Files
@@ -78,6 +95,8 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - `zsh/sheldon/plugins.toml` defines Zsh plugins managed by sheldon
 - `ghostty/config` and `starship.toml` are terminal/prompt configurations
 - `claude/claude_desktop_config.json` is Claude Desktop safety configuration
+- `claude/mcp_config.json` and `claude/mcp_servers_detailed.json` are MCP server configurations
+- `scripts/setup-mcp.sh` is the MCP setup script
 
 ### Flutter Development
 - Flutter projects should be opened at the project root (where `pubspec.yaml` exists)
@@ -88,6 +107,7 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - `*.md` files contain comprehensive guides for different aspects
 - `FLUTTER_KEYBINDINGS.md` contains complete keymap reference
 - `TROUBLESHOOTING.md` has common issues and solutions
+- `MCP_SETUP.md` contains MCP server configuration and usage guide
 
 ## Testing and Verification
 
@@ -186,6 +206,36 @@ The `scripts/setup.sh` automatically installs:
 - Claude Code safety settings (`~/.claude/settings.json`)
 - Deny check script with proper permissions
 - Both configurations are backed up during installation
+
+## MCP (Model Context Protocol) Integration
+
+The project includes MCP server configurations for extending Claude Code capabilities:
+
+### Available MCP Servers
+- **GitHub MCP**: Repository operations, issues, PRs, GitHub API access
+- **Context7 MCP**: Enhanced context management and memory persistence
+- **Playwright MCP**: Web automation, scraping, and browser testing
+
+### MCP Configuration Files
+- `claude/mcp_config.json` - Basic MCP server definitions
+- `claude/mcp_servers_detailed.json` - Detailed configuration with descriptions
+- `scripts/setup-mcp.sh` - Automated MCP setup script
+
+### MCP Setup
+The MCP configuration is automatically installed with the main setup script:
+```bash
+./scripts/setup.sh  # Includes MCP setup
+# or
+./scripts/setup-mcp.sh  # MCP setup only
+```
+
+### GitHub Token Configuration
+For GitHub MCP functionality, set your personal access token:
+```bash
+export GITHUB_PERSONAL_ACCESS_TOKEN='your-token-here'
+```
+
+See `MCP_SETUP.md` for detailed configuration and usage instructions.
 
 ## Key Customization Points
 

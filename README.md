@@ -6,6 +6,7 @@
 
 - 🚀 **Flutter開発**: DAP統合デバッグ、ホットリロード、デバイス管理
 - 🤖 **AI統合**: GitHub Copilot完全統合
+- 🔌 **MCP統合**: Claude Code用MCP（GitHub、Context7、Playwright）サーバー
 - 📊 **Git統合**: リアルタイム差分表示、インラインステージング
 - 🖥️ **ターミナル統合**: Ghostty モダンターミナル設定
 - 🐚 **モダンZsh**: wasabeef/dotfiles ベースの高機能Zsh設定
@@ -51,6 +52,7 @@ cd my_app && nvim .
 
 - **[DOCS.md](DOCS.md)** - 完全ガイド（セットアップ、ワークフロー、キーバインド）
 - **[CLAUDE.md](CLAUDE.md)** - AI開発者向け技術詳細
+- **[MCP_SETUP.md](MCP_SETUP.md)** - MCP（Model Context Protocol）設定ガイド
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - トラブルシューティング
 
 ## 🔧 システム要件
@@ -67,6 +69,7 @@ cd my_app && nvim .
 - **Ghostty**: モダンターミナル設定
 - **Starship**: Flutter特化プロンプト
 - **Claude Desktop**: 安全なコマンド実行設定
+- **Claude Code MCP**: GitHub、Context7、Playwright統合
 - **Scripts**: 自動セットアップツール
 
 ## 🤝 貢献
