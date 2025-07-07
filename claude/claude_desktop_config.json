@@ -35,10 +35,10 @@
   "settings": {
     "theme": "auto",
     "fontSize": "medium",
-    "maxTokens": 8192,
+    "maxTokens": 100000,
     "temperature": 0.7,
     "topP": 0.9,
-    "modelSelection": "claude-3-5-sonnet-20241022",
+    "modelSelection": "claude-opus-4-20250514",
     "streamResponses": true,
     "codeCompletion": {
       "enabled": true,
