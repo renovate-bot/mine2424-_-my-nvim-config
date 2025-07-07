@@ -425,6 +425,19 @@ local plugins = {
       require("mason-lspconfig").setup({
         ensure_installed = { "dartls" },
         automatic_installation = true,
+        -- sqlls を自動セットアップから除外
+        handlers = {
+          -- デフォルトハンドラー
+          function(server_name)
+            if server_name ~= "sqlls" then
+              require("lspconfig")[server_name].setup({})
+            end
+          end,
+          -- Dart は flutter-tools で管理するため、基本設定のみ
+          ["dartls"] = function()
+            -- dartls は下記の nvim-lspconfig セクションで設定
+          end,
+        },
       })
     end,
   },
@@ -469,6 +482,16 @@ local plugins = {
             showTodos = true,
           }
         }
+      })
+
+      -- SQL LSP設定を無効化（エラー回避）
+      -- sqlls が自動的にアタッチされている場合は明示的に無効化
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "sql",
+        callback = function()
+          -- SQL ファイルで LSP を無効化
+          vim.lsp.stop_client(vim.lsp.get_active_clients({ name = "sqlls" }))
+        end,
       })
     end,
   },
