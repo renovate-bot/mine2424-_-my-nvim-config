@@ -256,8 +256,10 @@ alias mrucoco=' mise uninstall ruby --all && mise uninstall cocoapods && mise in
 
 # Claude
 alias cl='claude'
+alias rcl='claude --resume'
 alias yolo='claude --dangerously-skip-permissions'
 alias ryolo='claude --dangerously-skip-permissions --resume'
+alias cl-cost='npx ccusage@latest'
 
 # ========================================
 # Functions

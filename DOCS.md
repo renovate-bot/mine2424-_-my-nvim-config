@@ -6,6 +6,7 @@
 - [Flutter開発ワークフロー](#flutter開発ワークフロー)
 - [キーバインド一覧](#キーバインド一覧)
 - [Git統合機能](#git統合機能)
+- [MCP統合設定](#mcp統合設定)
 - [Zsh設定](#zsh設定)
 - [Ghostty統合設定](#ghostty統合設定)
 - [プラグイン詳細ガイド](#プラグイン詳細ガイド)
@@ -144,6 +145,33 @@ nvim .
 | `K` | ホバー情報 |
 | `<leader>f` | フォーマット |
 
+### 🔦 検索とナビゲーション
+| キー | 機能 |
+|------|------|
+| `/` | 前方検索（標準） |
+| `?` | 後方検索（標準） |
+| `n` | 次の検索結果 |
+| `N` | 前の検索結果 |
+| `*` | カーソル下の単語を検索（ジャンプしない） |
+| `#` | カーソル下の単語を後方検索（ジャンプしない） |
+| `<ESC><ESC>` | 検索ハイライトをクリア |
+| `<leader>r` | カーソル下の単語を置換 |
+| `s` | Flash ジャンプ（文字検索） |
+| `S` | Flash Treesitter（構造要素ジャンプ） |
+| `f/F` | 1文字検索（前方/後方、Flash強化） |
+| `t/T` | 1文字手前まで検索（前方/後方、Flash強化） |
+| `<leader>ff` | Telescope ファイル検索 |
+| `<leader>fg` | Telescope 文字列検索（grep） |
+| `<leader>fb` | Telescope バッファ検索 |
+
+### 🤖 Claude Code統合
+| キー | 機能 |
+|------|------|
+| `<leader>clc` | Claude CLI起動/停止 |
+| `<leader>cll` | Claude セッション一覧表示 |
+| `<leader>clm` | Claude セッションモニタリング |
+| `<leader>clw` | Claude worktree切り替え |
+
 ### ⚡ デバッグ (DAP)
 | キー | 機能 |
 |------|------|
@@ -179,6 +207,39 @@ nvim .
 - **プレビュー**: `<leader>hp` でdiff詳細表示
 - **ナビゲーション**: `]c` / `[c` でhunk間移動
 - **Blame情報**: `<leader>hb` で行の詳細情報
+
+---
+
+## MCP統合設定
+
+### 🔌 Model Context Protocol (MCP) サーバー
+
+#### ✨ 利用可能なMCPサーバー
+- **GitHub MCP**: リポジトリ操作、Issue/PR管理、GitHub API アクセス
+- **Context7 MCP**: 拡張コンテキスト管理、メモリ永続化
+- **Playwright MCP**: ウェブ自動化、スクレイピング、ブラウザテスト
+
+#### 🚀 セットアップ
+```bash
+# メインセットアップに含まれています
+./scripts/setup.sh
+
+# MCPのみセットアップ
+./scripts/setup-mcp.sh
+```
+
+#### 🔑 GitHub Token設定
+```bash
+# ~/.zshrc または ~/.bashrc に追加
+export GITHUB_PERSONAL_ACCESS_TOKEN='your-token-here'
+```
+
+#### 📝 使用例
+- **GitHub操作**: 「このリポジトリに新しいIssueを作成して」
+- **コンテキスト管理**: セッション間でのコンテキスト保持
+- **Web自動化**: 「このウェブページのスクリーンショットを撮って」
+
+詳細は [MCP_SETUP.md](MCP_SETUP.md) を参照してください。
 
 ---
 

@@ -235,6 +235,112 @@ local plugins = {
     end
   },
 
+  -- flash.nvim (高度な検索とモーション)
+  {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+    opts = {
+      labels = "asdfghjklqwertyuiopzxcvbnm",
+      search = {
+        -- 検索時の設定
+        multi_window = true,
+        forward = true,
+        wrap = true,
+        mode = "exact",
+        incremental = false,
+        exclude = {
+          "notify",
+          "cmp_menu",
+          "noice",
+          "flash_prompt",
+          function(win)
+            return not vim.api.nvim_win_get_config(win).focusable
+          end,
+        },
+      },
+      jump = {
+        -- ジャンプ時の設定
+        jumplist = true,
+        pos = "start",
+        history = false,
+        register = false,
+        nohlsearch = false,
+        autojump = false,
+      },
+      modes = {
+        -- 検索モードの設定
+        search = {
+          enabled = true,
+          highlight = { backdrop = false },
+          jump = { history = true, register = true, nohlsearch = true },
+          search = {
+            mode = "fuzzy",
+            incremental = true,
+          },
+        },
+        char = {
+          enabled = true,
+          config = function(opts)
+            opts.autohide = vim.fn.mode(true):find("no") and vim.v.operator == "y"
+            opts.jump_labels = opts.jump_labels and vim.v.count == 0
+          end,
+          highlight = { backdrop = true },
+          jump = { register = false },
+          search = { wrap = false },
+          multi_line = true,
+          keys = { "f", "F", "t", "T", ";", "," },
+        },
+        treesitter = {
+          labels = "abcdefghijklmnopqrstuvwxyz",
+          jump = { pos = "range" },
+          highlight = {
+            label = { before = true, after = true, style = "inline" },
+            backdrop = false,
+            matches = false,
+          },
+        },
+        remote = {
+          remote_op = { restore = true, motion = true },
+        },
+      },
+      highlight = {
+        backdrop = true,
+        matches = true,
+        priority = 5000,
+        groups = {
+          match = "FlashMatch",
+          current = "FlashCurrent",
+          backdrop = "FlashBackdrop",
+          label = "FlashLabel",
+        },
+      },
+    },
+    keys = {
+      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+      { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+      { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+      { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+    },
+  },
+
+  -- claude-code.nvim (Claude Code統合)
+  {
+    "sivchari/claude-code.nvim",
+    event = "VeryLazy",
+    config = function()
+      require("claude-code").setup({
+        -- 必要に応じて設定を追加
+      })
+    end,
+    keys = {
+      { "<leader>clc", function() require("claude-code").toggle_claude_cli() end, desc = "Start/Stop Claude CLI" },
+      { "<leader>cll", function() require("claude-code").show_sessions() end, desc = "Show Claude Sessions" },
+      { "<leader>clm", function() require("claude-code").monitor_sessions() end, desc = "Monitor Claude Sessions" },
+      { "<leader>clw", function() require("claude-code").switch_worktree() end, desc = "Switch Claude Worktree" },
+    },
+  },
+
   -- nvim-cmp (自動補完フレームワーク)
   {
     "hrsh7th/nvim-cmp",

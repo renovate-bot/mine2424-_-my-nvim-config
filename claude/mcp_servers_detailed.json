@@ -1,0 +1,56 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      },
+      "description": "GitHub MCP server for repository operations, issues, PRs, and more",
+      "capabilities": [
+        "Repository management",
+        "Issue and PR operations",
+        "GitHub API access",
+        "Code search",
+        "Release management"
+      ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@context7/mcp-server"
+      ],
+      "description": "Context7 MCP server for enhanced context management",
+      "capabilities": [
+        "Context preservation",
+        "Memory management",
+        "Session history",
+        "Context switching"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@automatalabs/mcp-server-playwright"
+      ],
+      "description": "Playwright MCP server for web automation and testing",
+      "capabilities": [
+        "Browser automation",
+        "Web scraping",
+        "E2E testing",
+        "Screenshot capture",
+        "Page interaction"
+      ]
+    }
+  },
+  "settings": {
+    "autoStart": true,
+    "logLevel": "info",
+    "timeout": 30000
+  }
+}
