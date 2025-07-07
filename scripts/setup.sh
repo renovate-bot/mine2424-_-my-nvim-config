@@ -439,6 +439,15 @@ install_claude_config() {
     fi
     
     log_success "Claude safety configuration installed"
+    
+    # Install MCP (Model Context Protocol) configuration
+    if [[ -f "$PROJECT_ROOT/scripts/setup-mcp.sh" ]]; then
+        log_step "Installing MCP configuration..."
+        if [[ ! "$DRY_RUN" == "true" ]]; then
+            "$PROJECT_ROOT/scripts/setup-mcp.sh"
+        fi
+        log_success "MCP configuration installed"
+    fi
 }
 
 install_zsh_config() {
@@ -634,6 +643,7 @@ show_completion_message() {
     echo "• Ghostty terminal configuration"
     echo "• Claude Desktop safety configuration"
     echo "• Claude Code safety features (command blocking)"
+    echo "• Claude Code MCP servers (GitHub, context7, Playwright)"
     echo "• Modern CLI tools (eza, bat, dust, etc.)"
     echo "• Optimized key bindings and development workflow"
     echo ""
