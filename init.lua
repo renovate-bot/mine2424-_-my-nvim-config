@@ -12,3 +12,6 @@ require('flutter-dev-with-dap')
 
 -- IDE layout setup
 require('ide-layout').setup()
+
+-- Simple IDE enhancements
+require('simple-ide').setup()

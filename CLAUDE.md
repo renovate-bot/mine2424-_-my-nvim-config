@@ -42,6 +42,9 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Code Quality**: hlchunk.nvim for visual code structure
 - **Search Enhancement**: `folke/flash.nvim` for advanced search and navigation
 - **Claude Code Integration**: `sivchari/claude-code.nvim` for Neovim-Claude Code integration
+- **Syntax Highlighting**: `nvim-treesitter` with text objects support
+- **Fuzzy Finding**: `telescope-fzf-native` for performance
+- **File Explorer**: `nvim-tree` with git integration
 
 ## Development Commands
 
@@ -60,7 +63,7 @@ This is a comprehensive Flutter development environment configuration for Neovim
 ### Flutter Development Workflow
 - **Device Management**: `<leader>fd` (list devices), `<leader>fe` (start emulator)
 - **Flutter Commands**: `<leader>fr` (run), `<leader>fh` (hot reload), `<leader>fq` (quit)
-- **Debugging**: `<F5>` (start debug), `<F10>` (step over), `<F11>` (step into)
+- **Debugging**: `<F5>` (start debug), `<F1>` (step into), `<F2>` (step over), `<F3>` (step out)
 - **LSP Actions**: `<leader>ca` (code actions), `<leader>rn` (rename), `gd` (go to definition)
 
 ### Git Operations (gitsigns.nvim)
@@ -72,17 +75,17 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Suggestions**: `Alt+l` (accept), `Alt+]`/`Alt+[` (navigate)
 - **Management**: `<leader>cc` (Copilot chat), `<leader>C*` commands for control
 
-### Search and Navigation (flash.nvim)
+### Search and Navigation
 - **Basic Search**: `/` (forward), `?` (backward), `n`/`N` (next/previous)
 - **Flash Jump**: `s` (2-char jump), `S` (treesitter jump)
 - **Enhanced f/F/t/T**: Single-char search with Flash labels
 - **Word Search**: `*`/`#` (search word under cursor without jumping)
 - **Clear Highlight**: `<ESC><ESC>` (clear search highlights)
-- **Telescope**: `<leader>ff` (files), `<leader>fg` (grep), `<leader>fb` (buffers)
+- **Telescope**: `<leader>ff` (files), `<leader>fg` (grep), `<leader>fb` (buffers), `<leader>fd` (diagnostics)
 
 ### Claude Code Integration (claude-code.nvim)
-- **CLI Control**: `<leader>clc` (start/stop Claude CLI)
-- **Session Management**: `<leader>cll` (list sessions), `<leader>clm` (monitor sessions)
+- **CLI Control**: `<leader>clc` (toggle Claude), `<leader>clo` (open Claude)
+- **Session Management**: `<leader>cll` (show sessions), `<leader>clm` (monitor sessions)
 - **Worktree**: `<leader>clw` (switch Claude worktree)
 - **Features**: Per-worktree session management, real-time monitoring
 
@@ -244,3 +247,26 @@ See `MCP_SETUP.md` for detailed configuration and usage instructions.
 - Dart/Flutter specific settings in `lua/base.lua` autocmds
 - Terminal integration expects zsh as default shell
 - True color terminal support required
+
+## Recent Updates (Neovim 0.11+ Compatibility)
+
+### LSP Configuration Improvements
+- Migrated to LspAttach autocmd for dynamic keybinding setup
+- Enhanced diagnostics with floating window borders and styling
+- Added inlay hints support with toggle functionality
+- Improved hover and signature help with custom handlers
+- Document highlight on cursor hold for better code navigation
+
+### Enhanced Plugin Stack
+- **nvim-treesitter**: Syntax highlighting and advanced text objects
+- **telescope-fzf-native**: Faster fuzzy searching with native performance
+- **nvim-tree**: Modern file explorer with git integration
+- **lualine**: Informative and customizable statusline
+- **bufferline**: Visual buffer management with tab-like interface
+
+### Keybinding Refactoring
+- Resolved conflicts between buffer and tab navigation
+- Organized diagnostic keybindings under `<leader>d*` prefix
+- Separated LSP formatting (`<leader>f`) from Vim formatting (`<leader>=`)
+- Improved quickfix commands under `<leader>q*` prefix
+- Buffer commands consolidated under `<leader>b*` prefix

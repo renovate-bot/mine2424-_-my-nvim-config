@@ -19,7 +19,7 @@ keymap.set('n', '<ESC><ESC>', ':nohl<Return>', { desc = 'Clear search highlight'
 
 -- 保存・終了
 keymap.set('n', '<Leader>w', ':w<Return>', { desc = 'Save file' })
-keymap.set('n', '<Leader>q', ':q<Return>', { desc = 'Quit' })
+keymap.set('n', '<Leader>Q', ':q<Return>', { desc = 'Quit' })
 keymap.set('n', '<Leader>wq', ':wq<Return>', { desc = 'Save and quit' })
 
 -- ===============================================
@@ -44,18 +44,20 @@ keymap.set('n', '<C-w><up>', '<C-w>+', { desc = 'Increase window height' })
 keymap.set('n', '<C-w><down>', '<C-w>-', { desc = 'Decrease window height' })
 
 -- タブ操作
-keymap.set('n', '<Leader>t', ':tabnew<Return>', { desc = 'New tab' })
+keymap.set('n', '<Leader>tn', ':tabnew<Return>', { desc = 'New tab' })
 keymap.set('n', '<Leader>tc', ':tabclose<Return>', { desc = 'Close tab' })
-keymap.set('n', '<Tab>', ':tabnext<Return>', { desc = 'Next tab' })
-keymap.set('n', '<S-Tab>', ':tabprev<Return>', { desc = 'Previous tab' })
+keymap.set('n', '<Leader>t]', ':tabnext<Return>', { desc = 'Next tab' })
+keymap.set('n', '<Leader>t[', ':tabprev<Return>', { desc = 'Previous tab' })
 
 -- ===============================================
 -- バッファ操作
 -- ===============================================
 
--- バッファ移動
-keymap.set('n', '<Leader>bp', ':bprev<Return>', { desc = 'Previous buffer' })
-keymap.set('n', '<Leader>bn', ':bnext<Return>', { desc = 'Next buffer' })
+-- バッファ移動（Tab/S-Tabをシンプルなバッファ切り替えに）
+keymap.set('n', '<Tab>', ':bnext<Return>', { desc = 'Next buffer' })
+keymap.set('n', '<S-Tab>', ':bprev<Return>', { desc = 'Previous buffer' })
+keymap.set('n', '<Leader>b[', ':bprev<Return>', { desc = 'Previous buffer' })
+keymap.set('n', '<Leader>b]', ':bnext<Return>', { desc = 'Next buffer' })
 keymap.set('n', '<Leader>bd', ':bdelete<Return>', { desc = 'Delete buffer' })
 keymap.set('n', '<Leader>bl', ':buffers<Return>', { desc = 'List buffers' })
 
@@ -116,14 +118,14 @@ keymap.set('n', '<Leader>cp', ':let @+ = expand("%:p")<Return>', { desc = 'Copy 
 -- 現在の行をコピー
 keymap.set('n', '<Leader>cl', ':let @+ = getline(".")<Return>', { desc = 'Copy current line' })
 
--- ファイル内容を整形
-keymap.set('n', '<Leader>f', 'gg=G', { desc = 'Format entire file' })
+-- ファイル内容を整形（Vim標準）
+keymap.set('n', '<Leader>=', 'gg=G', { desc = 'Format entire file (Vim)' })
 
 -- QuickFixリスト
-keymap.set('n', '<Leader>co', ':copen<Return>', { desc = 'Open quickfix' })
-keymap.set('n', '<Leader>cc', ':cclose<Return>', { desc = 'Close quickfix' })
-keymap.set('n', '<Leader>cn', ':cnext<Return>', { desc = 'Next quickfix item' })
-keymap.set('n', '<Leader>cp', ':cprev<Return>', { desc = 'Previous quickfix item' })
+keymap.set('n', '<Leader>qo', ':copen<Return>', { desc = 'Open quickfix' })
+keymap.set('n', '<Leader>qc', ':cclose<Return>', { desc = 'Close quickfix' })
+keymap.set('n', '<Leader>qn', ':cnext<Return>', { desc = 'Next quickfix item' })
+keymap.set('n', '<Leader>qp', ':cprev<Return>', { desc = 'Previous quickfix item' })
 
 -- ===============================================
 -- Flutter開発専用キーマップ
@@ -151,36 +153,14 @@ keymap.set('n', '<Leader>FL', ':split | terminal flutter logs<Return>', { desc =
 -- ===============================================
 -- LSP (Language Server Protocol)
 -- ===============================================
-
--- LSP Navigation
-keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to declaration' })
-keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to definition' })
-keymap.set('n', 'gi', vim.lsp.buf.implementation, { desc = 'Go to implementation' })
-keymap.set('n', 'gr', vim.lsp.buf.references, { desc = 'Show references' })
-keymap.set('n', 'K', vim.lsp.buf.hover, { desc = 'Show hover documentation' })
-keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, { desc = 'Show signature help' })
-
--- LSP Actions
-keymap.set('n', '<Leader>rn', vim.lsp.buf.rename, { desc = 'LSP rename symbol' })
-keymap.set('n', '<Leader>ca', vim.lsp.buf.code_action, { desc = 'LSP code actions' })
-keymap.set('v', '<Leader>ca', vim.lsp.buf.code_action, { desc = 'LSP code actions (visual)' })
-
--- LSP Diagnostics
-keymap.set('n', '<Leader>e', vim.diagnostic.open_float, { desc = 'Show line diagnostics' })
-keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Previous diagnostic' })
-keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Next diagnostic' })
-keymap.set('n', '<Leader>dl', vim.diagnostic.setloclist, { desc = 'Diagnostics to location list' })
-
--- LSP Workspace
-keymap.set('n', '<Leader>wa', vim.lsp.buf.add_workspace_folder, { desc = 'Add workspace folder' })
-keymap.set('n', '<Leader>wr', vim.lsp.buf.remove_workspace_folder, { desc = 'Remove workspace folder' })
-keymap.set('n', '<Leader>wl', function()
-  print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-end, { desc = 'List workspace folders' })
+-- Note: LSPキーマップはLspAttach自動コマンドで動的に設定されるため、
+-- ここではLSP管理コマンドのみを定義します
 
 -- LSP Info
 keymap.set('n', '<Leader>li', ':LspInfo<Return>', { desc = 'LSP information' })
 keymap.set('n', '<Leader>lr', ':LspRestart<Return>', { desc = 'Restart LSP' })
+keymap.set('n', '<Leader>ls', ':LspStart<Return>', { desc = 'Start LSP' })
+keymap.set('n', '<Leader>lS', ':LspStop<Return>', { desc = 'Stop LSP' })
 
 -- ===============================================
 -- GitHub Copilot
@@ -213,5 +193,5 @@ keymap.set('n', '<Leader>if', ':StartFlutterIDE<Return>', { desc = 'Start Flutte
 keymap.set('n', '<Leader>ir', ':ResetLayout<Return>', { desc = 'Reset window layout' })
 
 -- ファイルツリー操作
-keymap.set('n', '<Leader>e', ':Lexplore<Return>', { desc = 'Toggle file explorer' })
-keymap.set('n', '<Leader>E', ':Explore<Return>', { desc = 'Open file explorer in current window' })
+keymap.set('n', '<Leader>v', ':Lexplore<Return>', { desc = 'Toggle file explorer' })
+keymap.set('n', '<Leader>V', ':Explore<Return>', { desc = 'Open file explorer in current window' })

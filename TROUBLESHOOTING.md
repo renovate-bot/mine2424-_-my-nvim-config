@@ -1,6 +1,7 @@
 # Flutter開発環境トラブルシューティングガイド 🔧
 
 Flutter + Neovim開発環境で発生する一般的な問題とその解決方法を説明します。
+Neovim 0.11+に対応した最新のトラブルシューティング情報を含みます。
 
 ## 📋 目次
 
@@ -142,8 +143,8 @@ Flutter + Neovim開発環境で発生する一般的な問題とその解決方�
 
 3. **診断情報の確認**
    ```
-   <leader>xx          # Troubleでエラー一覧
-   <leader>e           # 診断詳細
+   <leader>xx          # Troubleでエラー一覧（Troubleプラグイン使用時）
+   <leader>de          # 診断詳細（最新キーバインド）
    ```
 
 4. **段階的なビルド**
@@ -238,6 +239,30 @@ Flutter + Neovim開発環境で発生する一般的な問題とその解決方�
 ---
 
 ## LSP関連の問題
+
+### ❌ Neovim 0.11+ LSP設定エラー
+
+**症状**: LspAttach自動コマンドが動作しない
+
+**解決方法**:
+
+1. **Neovimバージョン確認**
+   ```bash
+   nvim --version
+   # 0.11.0以上であることを確認
+   ```
+
+2. **LspAttachイベント確認**
+   ```vim
+   :au LspAttach
+   # 登録された自動コマンドを確認
+   ```
+
+3. **手動でLSPアタッチテスト**
+   ```vim
+   :lua vim.lsp.buf.hover()
+   # エラーが出る場合はLSPがアタッチされていない
+   ```
 
 ### ❌ Dart LSPが起動しない
 
@@ -479,6 +504,31 @@ Flutter + Neovim開発環境で発生する一般的な問題とその解決方�
 
 ## 設定・環境問題
 
+### ❌ キーバインドの競合
+
+**症状**: キーバインドが期待通り動作しない
+
+**解決方法**:
+
+1. **競合するキーマップの確認**
+   ```vim
+   :verbose map <Tab>
+   :verbose map <leader>e
+   # 複数のマッピングがある場合は競合
+   ```
+
+2. **最新のキーバインド確認**
+   - `<Tab>`/`<S-Tab>`: バッファ切り替え
+   - `<leader>e`: nvim-treeトグル
+   - `<leader>de`: 診断フロート
+   - `<leader>Q`: 終了（大文字Q）
+
+3. **キーマップリセット**
+   ```vim
+   :mapclear
+   :source ~/.config/nvim/init.lua
+   ```
+
 ### ❌ キーバインドが効かない
 
 **症状**: `<leader>` キーが反応しない
@@ -528,6 +578,84 @@ Flutter + Neovim開発環境で発生する一般的な問題とその解決方�
    ```
 
 ---
+
+## 新機能・拡張機能の問題
+
+### ❌ Treesitterエラー
+
+**症状**: 構文ハイライトが機能しない
+
+**解決方法**:
+
+1. **Treesitterパーサーインストール**
+   ```vim
+   :TSInstall dart
+   :TSInstall flutter
+   :TSUpdate
+   ```
+
+2. **パーサー状態確認**
+   ```vim
+   :checkhealth nvim-treesitter
+   :TSInstallInfo
+   ```
+
+3. **キャッシュクリア**
+   ```bash
+   rm -rf ~/.local/share/nvim/tree-sitter
+   ```
+
+### ❌ Telescope検索が遅い
+
+**症状**: ファイル検索が非常に遅い
+
+**解決方法**:
+
+1. **telescope-fzf-native確認**
+   ```vim
+   :Telescope
+   # Extensionsにfzfがあるか確認
+   ```
+
+2. **ビルド確認**
+   ```bash
+   cd ~/.local/share/nvim/lazy/telescope-fzf-native.nvim
+   make
+   ```
+
+3. **検索除外設定**
+   ```lua
+   -- file_ignore_patternsに大きなフォルダを追加
+   file_ignore_patterns = {
+     "node_modules",
+     ".git/",
+     "build/",
+     "%.lock",
+   }
+   ```
+
+### ❌ nvim-treeが開かない
+
+**症状**: `<leader>e`でファイルツリーが開かない
+
+**解決方法**:
+
+1. **手動起動**
+   ```vim
+   :NvimTreeToggle
+   :NvimTreeOpen
+   ```
+
+2. **設定確認**
+   ```vim
+   :checkhealth nvim-tree
+   ```
+
+3. **キーマップ確認**
+   ```vim
+   :map <leader>e
+   # NvimTreeToggleがマップされているか確認
+   ```
 
 ## 緊急時の対処法
 
@@ -594,6 +722,8 @@ echo "Neovim: $(nvim --version | head -1)"
 echo "Flutter: $(flutter --version | head -1)"
 echo "Dart: $(dart --version)"
 echo "Git: $(git --version)"
+echo "ripgrep: $(rg --version | head -1)"
+echo "fd: $(fd --version)"
 
 echo "2. 環境変数"
 echo "PATH: $PATH"
@@ -617,9 +747,9 @@ nvim --headless -c "Lazy! show" -c "qa"
 ```
 ## 環境情報
 - OS: macOS 14.0
-- Neovim: 0.9.5
+- Neovim: 0.11.2
 - Flutter: 3.16.0
-- 設定ファイル: flutter-dev-minimal.lua
+- 設定ファイル: flutter-dev-with-dap.lua
 
 ## 症状
 具体的な症状を記述

@@ -47,7 +47,7 @@ function M.start_ide_layout()
 end
 
 -- ===============================================
--- シンプルなIDE風レイアウト（ターミナルなし）
+-- シンプルなIDEレイアウト（NvimTree + エディタ）
 -- ===============================================
 
 function M.start_simple_ide()
@@ -56,23 +56,34 @@ function M.start_simple_ide()
     vim.cmd('enew')
   end
 
-  -- 左側にファイルツリー（netrw）を開く
-  vim.cmd('Lexplore')
-
-  -- ファイルツリーのサイズを調整
-  vim.cmd('vertical resize 35')
-
-  -- メインエディタエリアに移動
-  vim.cmd('wincmd l')
+  -- 1. NvimTreeを左側に開く
+  local nvimtree_ok = pcall(require, 'nvim-tree')
+  if nvimtree_ok then
+    -- NvimTreeが利用可能な場合
+    vim.cmd('NvimTreeOpen')
+    vim.cmd('wincmd l')  -- メインエディタにフォーカス
+  else
+    -- netrwをフォールバックとして使用
+    vim.cmd('Lexplore')
+    vim.cmd('vertical resize 30')
+    vim.cmd('wincmd l')
+  end
   
-  -- Copilotを自動起動（遅延実行で確実に有効化）
+  -- 2. 右側に新しいエディタを分割
+  vim.cmd('vsplit')
+  
+  -- 3. ウィンドウサイズを調整
+  vim.cmd('wincmd h')  -- 中央のエディタに戻る
+  vim.cmd('wincmd =')  -- ウィンドウサイズを均等化
+  
+  -- ファイルツリーのサイズを再調整
+  vim.cmd('wincmd h')  -- ファイルツリーに移動
+  vim.cmd('vertical resize 30')  -- ファイルツリーを30列に
+  vim.cmd('wincmd l')  -- 中央のエディタに戻る
+  
+  -- シンプルな通知
   vim.defer_fn(function()
-    local copilot_ok = pcall(require, 'copilot')
-    if copilot_ok then
-      vim.notify('Simple IDE layout activated with Copilot enabled!', vim.log.levels.INFO)
-    else
-      vim.notify('Simple IDE layout activated! (Copilot not available)', vim.log.levels.INFO)
-    end
+    vim.notify('3分割IDEレイアウトを起動しました (ファイルツリー | エディタ | エディタ)', vim.log.levels.INFO)
   end, 500)
 end
 
@@ -230,17 +241,12 @@ function M.detect_project_type()
 end
 
 -- ===============================================
--- スマートIDE起動（プロジェクトタイプに応じて最適なレイアウト）
+-- スマートIDE起動（シンプルなレイアウトを優先）
 -- ===============================================
 
 function M.start_smart_ide()
-  local project_type = M.detect_project_type()
-
-  if project_type == 'flutter' then
-    M.start_flutter_ide()
-  else
-    M.start_ide_layout()
-  end
+  -- シンプルなレイアウトをデフォルトに
+  M.start_simple_ide()
 end
 
 -- ===============================================
