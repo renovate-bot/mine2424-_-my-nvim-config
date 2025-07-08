@@ -22,6 +22,11 @@ keymap.set('n', '<Leader>w', ':w<Return>', { desc = 'Save file' })
 keymap.set('n', '<Leader>Q', ':q<Return>', { desc = 'Quit' })
 keymap.set('n', '<Leader>wq', ':wq<Return>', { desc = 'Save and quit' })
 
+-- IDE全体を一発で閉じる
+keymap.set('n', '<Leader>qq', ':qa<Return>', { desc = 'Quit all windows' })
+keymap.set('n', '<Leader>qa', ':qa!<Return>', { desc = 'Force quit all windows' })
+keymap.set('n', '<Leader>wqa', ':wqa<Return>', { desc = 'Save all and quit' })
+
 -- ===============================================
 -- ウィンドウ・タブ操作
 -- ===============================================

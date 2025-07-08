@@ -48,9 +48,15 @@ This document contains all keybindings for the Flutter development environment i
 | `:q` | Quit |
 | `:wq` | Save and quit |
 | `:q!` | Quit without saving |
+| `:qa` | Quit all windows |
+| `:qa!` | Force quit all windows |
+| `:wqa` | Save all and quit |
 | `<leader>w` | Save file |
 | `<leader>Q` | Quit |
 | `<leader>wq` | Save and quit |
+| `<leader>qq` | Quit all windows (IDE exit) |
+| `<leader>qa` | Force quit all windows |
+| `<leader>wqa` | Save all and quit |
 
 ## Flutter Development
 
@@ -319,9 +325,26 @@ For explicit clipboard operations:
 |-----|----------|
 | `<leader>ide` | Start smart IDE layout |
 | `<leader>I` | Start full IDE layout |
-| `<leader>is` | Start simple IDE layout |
+| `<leader>is` | Start simple IDE layout (3-panel) |
 | `<leader>if` | Start Flutter IDE layout |
 | `<leader>ir` | Reset window layout |
+
+### Three-Panel IDE Window Management
+| Key | Function |
+|-----|----------|
+| `<leader>w1` | Go to window 1 (file tree) |
+| `<leader>w2` | Go to window 2 (main editor) |
+| `<leader>w3` | Go to window 3 (second editor) |
+| `<leader>w=` | Rebalance windows |
+| `<leader>wd` | Duplicate buffer to right window |
+| `<C-h>` | Move to left window |
+| `<C-j>` | Move to lower window |
+| `<C-k>` | Move to upper window |
+| `<C-l>` | Move to right window |
+| `<C-Up>` | Increase window height |
+| `<C-Down>` | Decrease window height |
+| `<C-Left>` | Decrease window width |
+| `<C-Right>` | Increase window width |
 
 ## VSCode Tasks Integration
 

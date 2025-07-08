@@ -8,7 +8,8 @@ This is a comprehensive Flutter development environment configuration for Neovim
 
 - **Main Configuration**: `lua/flutter-dev-with-dap.lua` - Full-featured Flutter dev environment with DAP debugging
 - **Alternative**: `lua/plugins.lua` - Lightweight configuration (reference only)
-- **Core Files**: `init.lua`, `lua/base.lua`, `lua/maps.lua`, `lua/ide-layout.lua`
+- **Core Files**: `init.lua`, `lua/base.lua`, `lua/maps.lua`, `lua/ide-layout.lua`, `lua/simple-ide.lua`
+- **3-Panel IDE Layout**: Simplified IDE with file tree | editor | editor split
 - **Zsh Configuration**: Modern shell setup based on wasabeef/dotfiles with plugins and aliases
 - **Terminal Integration**: Ghostty terminal with modern configuration
 - **Shell Enhancement**: Starship prompt with Flutter-specific features
@@ -21,10 +22,11 @@ This is a comprehensive Flutter development environment configuration for Neovim
 ### Configuration Loading Order
 1. `init.lua` - Entry point that loads all modules
 2. `lua/base.lua` - Basic Vim settings and autocommands  
-3. `lua/maps.lua` - Keybinding definitions
+3. `lua/maps.lua` - Keybinding definitions (includes new IDE exit shortcuts)
 4. `lua/plugins.lua` - Plugin management (currently inactive)
-5. `lua/ide-layout.lua` - IDE-style layout setup
-6. `lua/flutter-dev-with-dap.lua` - Main Flutter development configuration with full plugin ecosystem
+5. `lua/ide-layout.lua` - IDE-style layout setup (includes 3-panel layout)
+6. `lua/simple-ide.lua` - Simplified IDE configuration with auto-layout
+7. `lua/flutter-dev-with-dap.lua` - Main Flutter development configuration with full plugin ecosystem
 
 ### Plugin Management
 - Uses **lazy.nvim** as the plugin manager
@@ -38,13 +40,37 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Git Integration**: `lewis6991/gitsigns.nvim` with extensive hunk management
 - **AI Assistance**: `zbirenbaum/copilot.lua` with cmp integration
 - **Debugging**: nvim-dap with Flutter DAP support
-- **UI**: lualine, bufferline, nvim-tree, telescope
+- **UI**: lualine, nvim-tree, telescope (bufferline disabled for simplicity)
 - **Code Quality**: hlchunk.nvim for visual code structure
 - **Search Enhancement**: `folke/flash.nvim` for advanced search and navigation
 - **Claude Code Integration**: `sivchari/claude-code.nvim` for Neovim-Claude Code integration
 - **Syntax Highlighting**: `nvim-treesitter` with text objects support
 - **Fuzzy Finding**: `telescope-fzf-native` for performance
 - **File Explorer**: `nvim-tree` with git integration
+
+## Three-Panel IDE Layout
+
+The configuration includes a simplified 3-panel IDE layout that provides an efficient development environment:
+
+### Layout Structure
+```
+[File Tree | Main Editor | Secondary Editor]
+   30 cols      Equal          Equal
+```
+
+### IDE Management
+- **Start IDE**: `<leader>is` or `:StartSimpleIDE` (auto-starts on empty Neovim)
+- **Window Navigation**: 
+  - `<leader>w1` - Jump to file tree
+  - `<leader>w2` - Jump to main editor
+  - `<leader>w3` - Jump to secondary editor
+- **Window Management**:
+  - `<leader>w=` - Rebalance windows (keeps file tree at 30 columns)
+  - `<leader>wd` - Duplicate current buffer to right window
+- **Quick Exit**:
+  - `<leader>qq` - Exit all windows and quit Neovim
+  - `<leader>qa` - Force quit without saving
+  - `<leader>wqa` - Save all and quit
 
 ## Development Commands
 

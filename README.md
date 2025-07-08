@@ -8,7 +8,8 @@
 - 🤖 **AI統合**: GitHub Copilot完全統合、Claude Code連携
 - 🔌 **MCP統合**: Claude Code用MCP（GitHub、Context7、Playwright）サーバー
 - 📊 **Git統合**: リアルタイム差分表示、インラインステージング（Gitsigns）
-- 🎨 **モダンUI**: Treesitter構文ハイライト、Telescope検索、NvimTree、Bufferline
+- 🎨 **モダンUI**: Treesitter構文ハイライト、Telescope検索、NvimTree
+- 🖼️ **シンプルな3分割IDE**: ファイルツリー | エディタ | エディタ レイアウト
 - 📝 **LSP**: Neovim 0.11+対応の強化されたLSP設定、インレイヒント対応
 - 🖥️ **ターミナル統合**: Ghostty モダンターミナル設定
 - 🐚 **モダンZsh**: wasabeef/dotfiles ベースの高機能Zsh設定
@@ -61,6 +62,12 @@ cd my_app && nvim .
 - `<leader>fd` - 診断検索
 - `s` - Flash 2文字ジャンプ
 - `<leader>e` - ファイルツリー
+
+### IDE操作
+- `<leader>is` - 3分割IDEレイアウト起動
+- `<leader>w1/2/3` - ウィンドウ1/2/3へ移動
+- `<leader>qq` - IDE全体を終了
+- `<leader>wqa` - 全て保存して終了
 
 ## 📚 詳細ドキュメント
 
