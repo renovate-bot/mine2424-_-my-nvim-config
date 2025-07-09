@@ -426,11 +426,15 @@ local plugins = {
       require("mason-lspconfig").setup({
         ensure_installed = { "dartls" },
         automatic_installation = true,
-        -- sqlls を自動セットアップから除外
+        -- sqlls と markdown LSP を自動セットアップから除外
         handlers = {
           -- デフォルトハンドラー
           function(server_name)
-            if server_name ~= "sqlls" then
+            -- sqlls と markdown 関連の LSP を除外
+            if server_name ~= "sqlls" and 
+               server_name ~= "marksman" and 
+               server_name ~= "remark_ls" and
+               server_name ~= "remark-language-server" then
               require("lspconfig")[server_name].setup({})
             end
           end,
@@ -451,6 +455,14 @@ local plugins = {
       local lspconfig = require("lspconfig")
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
+      -- markdownファイルでLSPを無効化
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "markdown",
+        callback = function()
+          vim.b.lsp_disabled = true
+        end,
+      })
+      
       -- LSP診断設定
       vim.diagnostic.config({
         virtual_text = {
@@ -498,6 +510,18 @@ local plugins = {
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('UserLspConfig', {}),
         callback = function(ev)
+          -- markdownファイルの場合はLSPを適切に停止して終了
+          if vim.bo[ev.buf].filetype == "markdown" then
+            local client = vim.lsp.get_client_by_id(ev.data.client_id)
+            if client then
+              -- 変更追跡を無効化してからクライアントを停止
+              pcall(function()
+                client.stop()
+              end)
+            end
+            return
+          end
+          
           -- バッファローカルマッピングを有効化
           local opts = { buffer = ev.buf }
           
@@ -880,7 +904,16 @@ local plugins = {
         auto_install = true,
         highlight = {
           enable = true,
-          additional_vim_regex_highlighting = false,
+          -- Disable treesitter for markdown files to avoid remark error
+          disable = function(lang, buf)
+            local filetype = vim.api.nvim_buf_get_option(buf, "filetype")
+            -- Disable for markdown files but keep markdown_inline
+            if lang == "markdown" or filetype == "markdown" then
+              return true
+            end
+            return false
+          end,
+          additional_vim_regex_highlighting = { "markdown" },
         },
         indent = {
           enable = true,
