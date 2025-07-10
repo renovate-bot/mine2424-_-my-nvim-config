@@ -424,7 +424,7 @@ local plugins = {
     dependencies = { "williamboman/mason.nvim" },
     config = function()
       require("mason-lspconfig").setup({
-        ensure_installed = { "dartls" },
+        ensure_installed = { "dartls", "tsserver", "eslint" },
         automatic_installation = true,
         -- sqlls と markdown LSP を自動セットアップから除外
         handlers = {
@@ -582,6 +582,46 @@ local plugins = {
             showTodos = true,
           }
         }
+      })
+
+      -- TypeScript/JavaScript LSP設定
+      lspconfig.tsserver.setup({
+        capabilities = capabilities,
+        settings = {
+          typescript = {
+            inlayHints = {
+              includeInlayParameterNameHints = 'all',
+              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+              includeInlayFunctionParameterTypeHints = true,
+              includeInlayVariableTypeHints = true,
+              includeInlayPropertyDeclarationTypeHints = true,
+              includeInlayFunctionLikeReturnTypeHints = true,
+              includeInlayEnumMemberValueHints = true,
+            }
+          },
+          javascript = {
+            inlayHints = {
+              includeInlayParameterNameHints = 'all',
+              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+              includeInlayFunctionParameterTypeHints = true,
+              includeInlayVariableTypeHints = true,
+              includeInlayPropertyDeclarationTypeHints = true,
+              includeInlayFunctionLikeReturnTypeHints = true,
+              includeInlayEnumMemberValueHints = true,
+            }
+          }
+        }
+      })
+
+      -- ESLint LSP設定
+      lspconfig.eslint.setup({
+        capabilities = capabilities,
+        on_attach = function(client, bufnr)
+          vim.api.nvim_create_autocmd("BufWritePre", {
+            buffer = bufnr,
+            command = "EslintFixAll",
+          })
+        end,
       })
 
       -- SQL LSP設定を無効化（エラー回避）

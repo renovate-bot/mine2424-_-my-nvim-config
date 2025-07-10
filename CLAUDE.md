@@ -36,7 +36,10 @@ This is a comprehensive Flutter development environment configuration for Neovim
 
 ### Core Plugin Stack
 - **Flutter Tools**: `akinsho/flutter-tools.nvim` for Flutter development
-- **LSP**: Mason + lspconfig for language servers (Dart, TypeScript, etc.)
+- **LSP**: Mason + lspconfig for language servers (Dart, TypeScript, JavaScript, etc.)
+  - **Dart**: `dartls` for Flutter/Dart development
+  - **TypeScript/JavaScript**: `tsserver` with inlay hints support
+  - **ESLint**: `eslint` for linting with auto-fix on save
 - **Git Integration**: `lewis6991/gitsigns.nvim` with extensive hunk management
 - **AI Assistance**: `zbirenbaum/copilot.lua` with cmp integration
 - **Debugging**: nvim-dap with Flutter DAP support
@@ -282,6 +285,10 @@ See `MCP_SETUP.md` for detailed configuration and usage instructions.
 - Added inlay hints support with toggle functionality
 - Improved hover and signature help with custom handlers
 - Document highlight on cursor hold for better code navigation
+- **JavaScript/TypeScript Support**: Full LSP support with `tsserver` and `eslint`
+  - Inlay hints for parameter names, types, and return values
+  - ESLint auto-fix on save for code quality
+  - Full IntelliSense, go-to-definition, and refactoring support
 
 ### Enhanced Plugin Stack
 - **nvim-treesitter**: Syntax highlighting and advanced text objects
