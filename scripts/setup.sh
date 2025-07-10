@@ -30,10 +30,12 @@ MODE_FULL="full"
 MODE_QUICK="quick"
 MODE_CONFIG_ONLY="config-only"
 MODE_STARSHIP_ONLY="starship-only"
+MODE_PNPM_ONLY="pnpm-only"
 
 # Default settings
 INSTALL_STARSHIP=true
 INSTALL_FLUTTER=true
+INSTALL_PNPM=true
 BACKUP_EXISTING=true
 DRY_RUN=false
 
@@ -153,10 +155,12 @@ MODES:
   quick               Config files only (assumes dependencies installed)
   config-only         Only copy configuration files
   starship-only       Install and configure Starship only
+  pnpm-only           Install and configure pnpm only
 
 OPTIONS:
   --no-starship       Skip Starship installation
   --no-flutter        Skip Flutter installation
+  --no-pnpm           Skip pnpm installation
   --no-backup         Skip backing up existing configs
   --dry-run           Show what would be done without executing
   --help, -h          Show this help message
@@ -166,6 +170,7 @@ EXAMPLES:
   $0 quick                    # Quick setup (configs only)
   $0 config-only --no-backup # Copy configs without backup
   $0 starship-only            # Install Starship only
+  $0 pnpm-only                # Install pnpm only
   $0 full --no-flutter        # Full setup without Flutter
 
 EOF
@@ -450,6 +455,28 @@ install_claude_config() {
     fi
 }
 
+install_pnpm_config() {
+    log_step "Installing pnpm configuration..."
+    
+    # Check if pnpm setup script exists
+    if [[ -f "$PROJECT_ROOT/scripts/setup-pnpm.sh" ]]; then
+        if [[ ! "$DRY_RUN" == "true" ]]; then
+            "$PROJECT_ROOT/scripts/setup-pnpm.sh"
+        fi
+        log_success "pnpm installed and configured"
+    else
+        log_warning "pnpm setup script not found"
+    fi
+    
+    # Copy pnpm configuration files
+    if [[ ! "$DRY_RUN" == "true" ]]; then
+        if [[ -f "$PROJECT_ROOT/.npmrc" ]]; then
+            cp "$PROJECT_ROOT/.npmrc" "$HOME/.npmrc"
+            log_success "pnpm configuration (.npmrc) installed"
+        fi
+    fi
+}
+
 install_zsh_config() {
     log_step "Installing Zsh configuration..."
     
@@ -644,6 +671,9 @@ show_completion_message() {
     echo "• Claude Desktop safety configuration"
     echo "• Claude Code safety features (command blocking)"
     echo "• Claude Code MCP servers (GitHub, context7, Playwright)"
+    if [[ "$INSTALL_PNPM" == "true" ]]; then
+        echo "• pnpm package manager with workspace support"
+    fi
     echo "• Modern CLI tools (eza, bat, dust, etc.)"
     echo "• Optimized key bindings and development workflow"
     echo ""
@@ -662,7 +692,7 @@ main() {
     
     while [[ $# -gt 0 ]]; do
         case $1 in
-            full|quick|config-only|starship-only)
+            full|quick|config-only|starship-only|pnpm-only)
                 mode="$1"
                 shift
                 ;;
@@ -672,6 +702,10 @@ main() {
                 ;;
             --no-flutter)
                 INSTALL_FLUTTER=false
+                shift
+                ;;
+            --no-pnpm)
+                INSTALL_PNPM=false
                 shift
                 ;;
             --no-backup)
@@ -745,6 +779,7 @@ main() {
             install_starship_config
             install_ghostty_config
             install_claude_config
+            install_pnpm_config
             ;;
             
         "$MODE_QUICK")
@@ -755,6 +790,7 @@ main() {
             install_starship_config
             install_ghostty_config
             install_claude_config
+            install_pnpm_config
             ;;
             
         "$MODE_CONFIG_ONLY")
@@ -769,10 +805,15 @@ main() {
             # Starship only
             install_starship_config
             ;;
+            
+        "$MODE_PNPM_ONLY")
+            # pnpm only
+            install_pnpm_config
+            ;;
     esac
     
     # Verify installation
-    if [[ "$mode" != "$MODE_STARSHIP_ONLY" ]]; then
+    if [[ "$mode" != "$MODE_STARSHIP_ONLY" ]] && [[ "$mode" != "$MODE_PNPM_ONLY" ]]; then
         verify_installation
     fi
     

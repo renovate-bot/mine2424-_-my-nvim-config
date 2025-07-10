@@ -16,6 +16,7 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Safety Configuration**: Claude Desktop with prohibited command blocking
 - **Claude Code Safety**: Command deny list with preToolUse hooks for safe execution
 - **MCP Integration**: Model Context Protocol servers for GitHub, Context7, and Playwright
+- **pnpm Support**: Package manager configuration with workspace support for JavaScript/TypeScript projects
 
 ## Key Architecture
 
@@ -79,14 +80,23 @@ The configuration includes a simplified 3-panel IDE layout that provides an effi
 
 ### Setup and Installation
 ```bash
-# Full automated setup
+# Full automated setup (includes all components)
 ./scripts/setup.sh
+
+# Component-specific setup
+./scripts/setup.sh pnpm-only      # pnpm only
+./scripts/setup.sh starship-only  # Starship only
+./scripts/setup.sh config-only    # Config files only
+./scripts/setup.sh quick          # Quick setup (configs only)
 
 # Manual verification
 ./scripts/verify-setup.sh
 
 # Flutter project creation
 ./scripts/create-flutter-project.sh <project-name>
+
+# Migrate existing project to pnpm
+./scripts/migrate-to-pnpm.sh
 ```
 
 ### Flutter Development Workflow
@@ -129,6 +139,10 @@ The configuration includes a simplified 3-panel IDE layout that provides an effi
 - `claude/claude_desktop_config.json` is Claude Desktop safety configuration
 - `claude/mcp_config.json` and `claude/mcp_servers_detailed.json` are MCP server configurations
 - `scripts/setup-mcp.sh` is the MCP setup script
+- `.npmrc` is the pnpm configuration file
+- `pnpm-workspace.yaml` defines pnpm workspace structure
+- `scripts/setup-pnpm.sh` is the pnpm installation and setup script
+- `scripts/migrate-to-pnpm.sh` is the npm/yarn to pnpm migration script
 
 ### Flutter Development
 - Flutter projects should be opened at the project root (where `pubspec.yaml` exists)
@@ -147,6 +161,8 @@ No specific test framework is used for this configuration. Verification is done 
 - Running `./scripts/verify-setup.sh` to check all dependencies
 - Opening a Flutter project and testing LSP functionality
 - Verifying plugin loading with `:Lazy` command in Neovim
+- Running `./scripts/setup-pnpm.sh` to install and configure pnpm
+- Testing pnpm workspace functionality with `pnpm install` and `pnpm workspace` commands
 
 ## Shell and Terminal Integration
 
@@ -177,6 +193,8 @@ The configuration includes a modern Zsh setup based on wasabeef/dotfiles:
 - `fl`, `flr`, `flb`: Flutter command shortcuts
 - `lg`: Launch lazygit
 - `?`, `??`: GitHub Copilot CLI helpers
+- `pi`, `pa`, `pr`: pnpm shortcuts (install, add, run)
+- `pw`, `pwa`, `pwr`: pnpm workspace commands
 
 ### Ghostty Terminal Configuration
 - **Theme**: Ayu color scheme for comfortable viewing
@@ -259,6 +277,19 @@ The MCP configuration is automatically installed with the main setup script:
 ./scripts/setup.sh  # Includes MCP setup
 # or
 ./scripts/setup-mcp.sh  # MCP setup only
+```
+
+### pnpm Setup
+pnpm is integrated into the main setup workflow:
+```bash
+# Install pnpm with full setup
+./scripts/setup.sh
+
+# Install pnpm only
+./scripts/setup.sh pnpm-only
+
+# Migrate existing npm/yarn project to pnpm
+./scripts/migrate-to-pnpm.sh
 ```
 
 ### GitHub Token Configuration

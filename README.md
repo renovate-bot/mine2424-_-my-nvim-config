@@ -14,6 +14,7 @@
 - 🖥️ **ターミナル統合**: Ghostty モダンターミナル設定
 - 🐚 **モダンZsh**: wasabeef/dotfiles ベースの高機能Zsh設定
 - 🛠️ **CLIツール**: eza, bat, lazygit等のモダンCLIツール
+- 📦 **pnpm**: 高速パッケージマネージャーとワークスペース対応
 - ⚡ **高性能**: 遅延読み込み、最適化済み設定
 
 ## 🚀 クイックスタート
@@ -23,8 +24,13 @@
 git clone https://github.com/your-repo/my-nvim-config.git
 cd my-nvim-config
 
-# 2. 自動セットアップ
+# 2. 自動セットアップ（全機能）
 ./scripts/setup.sh
+
+# または個別セットアップ
+./scripts/setup.sh pnpm-only      # pnpmのみ
+./scripts/setup.sh starship-only  # Starshipのみ
+./scripts/setup.sh quick          # 設定ファイルのみ
 
 # 3. 検証
 ./scripts/verify-setup.sh
@@ -85,6 +91,7 @@ cd my_app && nvim .
 - **Node.js** 16.0.0+ (Copilot用)
 - **ripgrep** (高速検索用)
 - **fd** (ファイル検索用)
+- **pnpm** 8.0.0+ (オプション、JavaScript開発用)
 
 ## 📦 含まれる設定
 
@@ -94,7 +101,34 @@ cd my_app && nvim .
 - **Starship**: Flutter特化プロンプト
 - **Claude Desktop**: 安全なコマンド実行設定
 - **Claude Code MCP**: GitHub、Context7、Playwright統合
-- **Scripts**: 自動セットアップツール
+- **pnpm**: ワークスペース対応パッケージマネージャー設定
+- **Scripts**: 統合セットアップツール（全機能を1つのスクリプトで管理）
+
+## 🔧 セットアップオプション
+
+`setup.sh`は以下のモードをサポート：
+- `full` - 全機能インストール（デフォルト）
+- `quick` - 設定ファイルのみ（依存関係インストール済みを想定）
+- `config-only` - 設定ファイルのみコピー
+- `starship-only` - Starshipのみインストール
+- `pnpm-only` - pnpmのみインストール
+
+オプション：
+- `--no-starship` - Starshipをスキップ
+- `--no-flutter` - Flutterをスキップ
+- `--no-pnpm` - pnpmをスキップ
+- `--no-backup` - 既存設定のバックアップをスキップ
+- `--dry-run` - 実行内容の確認のみ
+
+## 📦 pnpmワークスペース
+
+JavaScript/TypeScriptプロジェクト用のワークスペース構造：
+```
+packages/    # 共有パッケージ
+apps/        # アプリケーション
+tools/       # 開発ツール
+examples/    # サンプルプロジェクト
+```
 
 ## 🤝 貢献
 
