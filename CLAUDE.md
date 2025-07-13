@@ -15,7 +15,7 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Shell Enhancement**: Starship prompt with Flutter-specific features
 - **Safety Configuration**: Claude Desktop with prohibited command blocking
 - **Claude Code Safety**: Command deny list with preToolUse hooks for safe execution
-- **MCP Integration**: Model Context Protocol servers for GitHub, Context7, and Playwright
+- **MCP Integration**: Model Context Protocol servers for GitHub, Context7, Playwright, and Debug Thinking
 - **pnpm Support**: Package manager configuration with workspace support for JavaScript/TypeScript projects
 
 ## Key Architecture
@@ -265,6 +265,7 @@ The project includes MCP server configurations for extending Claude Code capabil
 - **GitHub MCP**: Repository operations, issues, PRs, GitHub API access
 - **Context7 MCP**: Enhanced context management and memory persistence
 - **Playwright MCP**: Web automation, scraping, and browser testing
+- **Debug Thinking MCP**: Enhanced debugging and thought process visualization
 
 ### MCP Configuration Files
 - `claude/mcp_config.json` - Basic MCP server definitions

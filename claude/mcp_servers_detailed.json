@@ -46,6 +46,21 @@
         "Screenshot capture",
         "Page interaction"
       ]
+    },
+    "debug-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-debug-thinking"
+      ],
+      "description": "Debug Thinking MCP server for enhanced debugging and thought process visualization",
+      "capabilities": [
+        "Thought process debugging",
+        "Step-by-step reasoning display",
+        "Debug information visualization",
+        "Problem-solving trace",
+        "Cognitive process monitoring"
+      ]
     }
   },
   "settings": {

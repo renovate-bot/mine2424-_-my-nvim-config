@@ -99,11 +99,11 @@ EOF
 fi
 
 # Install dependencies if package.json exists
-if [ -f "package.json" ]; then
-    echo -e "${YELLOW}Installing dependencies...${NC}"
-    pnpm install
-    echo -e "${GREEN}✓ Dependencies installed${NC}"
-fi
+# if [ -f "package.json" ]; then
+#     echo -e "${YELLOW}Installing dependencies...${NC}"
+#     pnpm install
+#     echo -e "${GREEN}✓ Dependencies installed${NC}"
+# fi
 
 # Setup pnpm aliases
 echo -e "${YELLOW}Setting up pnpm aliases...${NC}"

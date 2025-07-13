@@ -4,11 +4,12 @@ This guide explains how to set up and use MCP servers with Claude Code in this p
 
 ## Overview
 
-MCP (Model Context Protocol) servers extend Claude Code's capabilities by providing access to external tools and services. This project includes configuration for three MCP servers:
+MCP (Model Context Protocol) servers extend Claude Code's capabilities by providing access to external tools and services. This project includes configuration for four MCP servers:
 
 - **GitHub MCP**: Repository operations, issues, PRs, and GitHub API access
 - **Context7 MCP**: Enhanced context management and memory persistence
 - **Playwright MCP**: Web automation, scraping, and browser testing
+- **Debug Thinking MCP**: Enhanced debugging and thought process visualization
 
 ## Installation
 
@@ -106,6 +107,20 @@ Playwright enables web automation:
 - "Fill out and submit this web form"
 - "Test the login flow of my web app"
 ```
+
+### Debug Thinking MCP
+
+Debug Thinking provides enhanced debugging capabilities:
+
+```
+# Examples of what you can ask Claude Code:
+- "Show me your thinking process for solving this problem"
+- "Debug this code with step-by-step reasoning"
+- "Explain your thought process while analyzing this issue"
+- "Visualize the problem-solving steps for this algorithm"
+```
+
+This server helps visualize Claude's cognitive process and provides detailed debugging information for complex problem-solving tasks.
 
 ## Troubleshooting
 

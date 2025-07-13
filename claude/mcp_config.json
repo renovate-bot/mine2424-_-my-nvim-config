@@ -23,6 +23,13 @@
         "-y",
         "@automatalabs/mcp-server-playwright"
       ]
+    },
+    "debug-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-debug-thinking"
+      ]
     }
   }
 }

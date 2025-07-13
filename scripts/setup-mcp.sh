@@ -44,34 +44,65 @@ backup_file() {
     fi
 }
 
-# Function to merge MCP configuration into Claude settings
-merge_mcp_config() {
-    local mcp_config="$PROJECT_ROOT/claude/mcp_config.json"
+# Function to check if server is already configured
+is_server_configured() {
+    local server_name="$1"
+    claude mcp list 2>/dev/null | grep -q "^$server_name\s"
+}
+
+# Function to add MCP servers using Claude CLI
+add_mcp_servers() {
+    echo -e "${GREEN}Adding MCP servers to Claude Code...${NC}"
     
-    # Create Claude directory if it doesn't exist
-    mkdir -p "$CLAUDE_DIR"
-    
-    # Check if settings file exists
-    if [ -f "$CLAUDE_SETTINGS_FILE" ]; then
-        backup_file "$CLAUDE_SETTINGS_FILE"
-        
-        # Read existing settings
-        local existing_settings=$(cat "$CLAUDE_SETTINGS_FILE")
-        
-        # Read MCP configuration
-        local mcp_servers=$(cat "$mcp_config" | jq '.mcpServers')
-        
-        # Merge MCP servers into existing settings
-        local merged_settings=$(echo "$existing_settings" | jq --argjson mcp "$mcp_servers" '.mcpServers = $mcp')
-        
-        # Write merged settings
-        echo "$merged_settings" | jq '.' > "$CLAUDE_SETTINGS_FILE"
-        echo -e "${GREEN}✓ Merged MCP configuration into existing settings${NC}"
-    else
-        # Create new settings file with MCP configuration
-        cat "$mcp_config" | jq '.' > "$CLAUDE_SETTINGS_FILE"
-        echo -e "${GREEN}✓ Created new Claude settings with MCP configuration${NC}"
+    # Check if claude command exists
+    if ! command -v claude &> /dev/null; then
+        echo -e "${RED}Error: Claude Code CLI is not installed${NC}"
+        echo -e "${YELLOW}Please install Claude Code first: https://claude.ai/code${NC}"
+        return 1
     fi
+    
+    # Add GitHub MCP server
+    if is_server_configured "github"; then
+        echo -e "${GREEN}✓ GitHub MCP server already configured${NC}"
+    else
+        echo -e "${YELLOW}Adding GitHub MCP server...${NC}"
+        if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
+            claude mcp add github -e GITHUB_PERSONAL_ACCESS_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN" -- npx -y @modelcontextprotocol/server-github
+        else
+            claude mcp add github -- npx -y @modelcontextprotocol/server-github
+            echo -e "${YELLOW}Note: GitHub MCP server added without token. Set GITHUB_PERSONAL_ACCESS_TOKEN to enable full functionality.${NC}"
+        fi
+    fi
+    
+    # Add Context7 MCP server
+    if is_server_configured "context7"; then
+        echo -e "${GREEN}✓ Context7 MCP server already configured${NC}"
+    else
+        echo -e "${YELLOW}Adding Context7 MCP server...${NC}"
+        claude mcp add context7 -- npx -y @context7/mcp-server
+    fi
+    
+    # Add Playwright MCP server
+    if is_server_configured "playwright"; then
+        echo -e "${GREEN}✓ Playwright MCP server already configured${NC}"
+    else
+        echo -e "${YELLOW}Adding Playwright MCP server...${NC}"
+        claude mcp add playwright -- npx -y @automatalabs/mcp-server-playwright
+    fi
+    
+    # Add Debug Thinking MCP server
+    if is_server_configured "debug-thinking"; then
+        echo -e "${GREEN}✓ Debug Thinking MCP server already configured${NC}"
+    else
+        echo -e "${YELLOW}Adding Debug Thinking MCP server...${NC}"
+        claude mcp add debug-thinking -- npx -y mcp-server-debug-thinking
+    fi
+    
+    echo -e "${GREEN}✓ All MCP servers have been configured${NC}"
+    
+    # List configured servers
+    echo -e "${GREEN}Configured MCP servers:${NC}"
+    claude mcp list
 }
 
 # Function to validate GitHub token
@@ -171,14 +202,11 @@ main() {
     # Check dependencies
     check_jq
     
-    # Merge MCP configuration
-    merge_mcp_config
+    # Add MCP servers using Claude CLI
+    add_mcp_servers
     
     # Validate GitHub token
     validate_github_token
-    
-    # Test MCP servers (non-blocking)
-    test_mcp_servers
     
     # Create environment template
     create_env_template
@@ -196,6 +224,7 @@ main() {
     echo "   - GitHub: Repository operations, issues, PRs"
     echo "   - Context7: Enhanced context management"
     echo "   - Playwright: Web automation and testing"
+    echo "   - Debug Thinking: Enhanced debugging and thought process visualization"
     echo ""
     echo -e "${GREEN}Happy coding with MCP! 🚀${NC}"
 }
