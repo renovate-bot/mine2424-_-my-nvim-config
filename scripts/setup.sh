@@ -173,6 +173,30 @@ EXAMPLES:
   $0 pnpm-only                # Install pnpm only
   $0 full --no-flutter        # Full setup without Flutter
 
+ENVIRONMENT VARIABLES FOR MCP:
+  Before running setup, you can set these environment variables to customize MCP:
+  
+  GitHub MCP Server:
+    GITHUB_PERSONAL_ACCESS_TOKEN  - Personal access token for GitHub API
+    GITHUB_API_URL               - Custom GitHub API endpoint (for GitHub Enterprise)
+    MCP_GITHUB_PATH              - Custom path to local GitHub MCP server
+  
+  Context7 MCP Server:
+    CONTEXT7_DATA_DIR            - Custom context storage location
+    MCP_CONTEXT7_PATH            - Custom path to local Context7 MCP server
+  
+  Playwright MCP Server:
+    PLAYWRIGHT_BROWSERS_PATH     - Custom browser download location
+    PLAYWRIGHT_HEADLESS          - Headless mode (true/false)
+    MCP_PLAYWRIGHT_PATH          - Custom path to local Playwright MCP server
+  
+  Debug Thinking MCP Server:
+    DEBUG_THINKING_LOG_LEVEL     - Log level (debug, info, warn, error)
+    DEBUG_THINKING_DATA_DIR      - Custom debug data directory
+    MCP_DEBUG_THINKING_PATH      - Custom path to local Debug Thinking MCP server
+
+  These can be set in ~/.zshrc.local or ~/.bashrc.local for persistence.
+
 EOF
 }
 
@@ -448,6 +472,16 @@ install_claude_config() {
     # Install MCP (Model Context Protocol) configuration
     if [[ -f "$PROJECT_ROOT/scripts/setup-mcp.sh" ]]; then
         log_step "Installing MCP configuration..."
+        
+        # Load local environment configuration if exists
+        if [[ -f "$HOME/.zshrc.local" ]]; then
+            log_info "Loading local environment from ~/.zshrc.local"
+            source "$HOME/.zshrc.local"
+        elif [[ -f "$HOME/.bashrc.local" ]]; then
+            log_info "Loading local environment from ~/.bashrc.local"
+            source "$HOME/.bashrc.local"
+        fi
+        
         if [[ ! "$DRY_RUN" == "true" ]]; then
             "$PROJECT_ROOT/scripts/setup-mcp.sh"
         fi
@@ -503,9 +537,43 @@ install_zsh_config() {
         
         # Create local zshrc for user customizations
         if [[ ! -f "$HOME/.zshrc.local" ]]; then
-            touch "$HOME/.zshrc.local"
-            echo "# Local zsh customizations" > "$HOME/.zshrc.local"
-            echo "# Add your personal configurations here" >> "$HOME/.zshrc.local"
+            cat > "$HOME/.zshrc.local" << 'EOF'
+# Local zsh customizations
+# Add your personal configurations here
+
+# ===== MCP Environment Variables =====
+# Uncomment and configure as needed for your environment
+
+# GitHub MCP Server
+# export GITHUB_PERSONAL_ACCESS_TOKEN='your-github-token-here'
+# export GITHUB_API_URL='https://api.github.com'  # For GitHub Enterprise
+
+# Context7 MCP Server
+# export CONTEXT7_DATA_DIR="$HOME/.context7/data"
+
+# Playwright MCP Server
+# export PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/playwright"
+# export PLAYWRIGHT_HEADLESS=true
+
+# Debug Thinking MCP Server
+# export DEBUG_THINKING_LOG_LEVEL=info
+# export DEBUG_THINKING_DATA_DIR="$HOME/.debug-thinking-mcp"
+
+# Custom MCP Server Paths (if using local installations)
+# export MCP_GITHUB_PATH="/path/to/local/github-mcp-server"
+# export MCP_CONTEXT7_PATH="/path/to/local/context7-mcp-server"
+# export MCP_PLAYWRIGHT_PATH="/path/to/local/playwright-mcp-server"
+# export MCP_DEBUG_THINKING_PATH="/path/to/local/debug-thinking-mcp-server"
+
+# Proxy Configuration (if behind corporate proxy)
+# export HTTP_PROXY="http://proxy.example.com:8080"
+# export HTTPS_PROXY="http://proxy.example.com:8080"
+# export NO_PROXY="localhost,127.0.0.1"
+
+# ===== Your Personal Customizations =====
+
+EOF
+            log_success "Created ~/.zshrc.local with MCP environment template"
         fi
     fi
     
