@@ -315,6 +315,68 @@ export GITHUB_PERSONAL_ACCESS_TOKEN='your-token-here'
 
 See `MCP_SETUP.md` for detailed configuration and usage instructions.
 
+## Claude Code Usage Monitor Integration
+
+The configuration includes Claude Code Usage Monitor for real-time token usage tracking and analytics.
+
+### Installation
+Claude Code Usage Monitor is automatically installed via pipx during setup:
+```bash
+pipx install claude-monitor
+```
+
+### Available Commands
+The monitor provides several command aliases:
+- `claude-monitor` - Standard monitor
+- `cmonitor` - Short alias
+- `ccm` - Compact alias
+- `ccmonitor` - Claude Code monitor
+- `claude-code-monitor` - Full name
+
+### Terminal Usage with Zsh Aliases
+The following aliases are available in your terminal:
+
+#### Usage Monitor Aliases
+- **`cm`** - Open Claude usage monitor with default settings
+- **`cmp`** - Open Claude monitor for Pro plan users  
+- **`cmx`** - Open Claude monitor for Max20 plan users
+- **`cm5`** - Open Claude monitor for Max5 plan users
+- **`cmc`** - Open Claude monitor for custom plan users
+
+### Monitor Features
+- **Real-time tracking**: Live token consumption monitoring
+- **Plan-specific analytics**: Supports Pro, Max5, Max20, and custom plans
+- **ML predictions**: Machine learning-based session limit predictions
+- **Cost analysis**: Token cost calculation and trending
+- **Rich UI**: Beautiful terminal interface with WCAG compliance
+- **Auto-detection**: Intelligent usage pattern recognition
+
+### Usage Examples
+```bash
+# Basic monitoring
+claude-monitor
+
+# Specify your subscription plan
+claude-monitor --plan pro
+claude-monitor --plan max20
+
+# Custom refresh rate and timezone
+claude-monitor --refresh-rate 2 --timezone "America/New_York"
+
+# Enable debug logging
+claude-monitor --debug
+```
+
+### Configuration
+The monitor automatically saves user preferences and supports:
+- Custom subscription plans
+- Timezone configuration
+- Refresh rate adjustment
+- Theme customization
+- Display preferences
+
+For advanced configuration and troubleshooting, refer to the [Claude Code Usage Monitor documentation](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor).
+
 ## Key Customization Points
 
 - Leader key is set to Space (`<leader> = Space`)

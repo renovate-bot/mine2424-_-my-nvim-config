@@ -261,6 +261,13 @@ alias yolo='claude --dangerously-skip-permissions'
 alias ryolo='claude --dangerously-skip-permissions --resume'
 alias cl-cost='npx ccusage@latest'
 
+# Claude Usage Monitor
+alias cm='claude-monitor'
+alias cmp='claude-monitor --plan pro'
+alias cmx='claude-monitor --plan max20'
+alias cm5='claude-monitor --plan max5'
+alias cmc='claude-monitor --plan custom'
+
 # ========================================
 # Functions
 # ========================================
