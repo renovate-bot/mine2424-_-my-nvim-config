@@ -39,7 +39,7 @@ This is a comprehensive Flutter development environment configuration for Neovim
 - **Flutter Tools**: `akinsho/flutter-tools.nvim` for Flutter development
 - **LSP**: Mason + lspconfig for language servers (Dart, TypeScript, JavaScript, etc.)
   - **Dart**: `dartls` for Flutter/Dart development
-  - **TypeScript/JavaScript**: `tsserver` with inlay hints support
+  - **TypeScript/JavaScript**: `ts_ls` with inlay hints support
   - **ESLint**: `eslint` for linting with auto-fix on save
 - **Git Integration**: `lewis6991/gitsigns.nvim` with extensive hunk management
 - **AI Assistance**: `zbirenbaum/copilot.lua` with cmp integration
@@ -80,13 +80,16 @@ The configuration includes a simplified 3-panel IDE layout that provides an effi
 
 ### Setup and Installation
 ```bash
-# Full automated setup (includes all components)
+# Default setup (config files only - safe default)
 ./scripts/setup.sh
+
+# Full automated setup (includes all components)
+./scripts/setup.sh --full
 
 # Component-specific setup
 ./scripts/setup.sh pnpm-only      # pnpm only
 ./scripts/setup.sh starship-only  # Starship only
-./scripts/setup.sh config-only    # Config files only
+./scripts/setup.sh config-only    # Config files only (same as default)
 ./scripts/setup.sh quick          # Quick setup (configs only)
 
 # Manual verification
@@ -138,7 +141,8 @@ The configuration includes a simplified 3-panel IDE layout that provides an effi
 - `ghostty/config` and `starship.toml` are terminal/prompt configurations
 - `claude/claude_desktop_config.json` is Claude Desktop safety configuration
 - `claude/mcp_config.json` and `claude/mcp_servers_detailed.json` are MCP server configurations
-- `scripts/setup-mcp.sh` is the MCP setup script
+- `scripts/setup-mcp-adaptive.sh` is the adaptive MCP setup script with intelligent path detection
+- `scripts/setup-mcp.sh` is the legacy MCP setup script
 - `.npmrc` is the pnpm configuration file
 - `pnpm-workspace.yaml` defines pnpm workspace structure
 - `scripts/setup-pnpm.sh` is the pnpm installation and setup script
@@ -273,12 +277,22 @@ The project includes MCP server configurations for extending Claude Code capabil
 - `scripts/setup-mcp.sh` - Automated MCP setup script
 
 ### MCP Setup
-The MCP configuration is automatically installed with the main setup script:
+The adaptive MCP configuration is automatically installed with the main setup script:
 ```bash
-./scripts/setup.sh  # Includes MCP setup
+./scripts/setup.sh  # Includes adaptive MCP setup (config-only mode)
+./scripts/setup.sh --full  # Includes adaptive MCP setup with full installation
 # or
-./scripts/setup-mcp.sh  # MCP setup only
+./scripts/setup-mcp-adaptive.sh  # Adaptive MCP setup only (recommended)
+./scripts/setup-mcp.sh  # Legacy MCP setup (fallback)
 ```
+
+The adaptive MCP setup intelligently detects MCP server installations:
+- Environment variable overrides (MCP_*_PATH)
+- Executables in PATH
+- npm global installations
+- Homebrew installations
+- Local npm installations
+- Falls back to npx for dynamic installation
 
 ### pnpm Setup
 pnpm is integrated into the main setup workflow:
@@ -317,7 +331,7 @@ See `MCP_SETUP.md` for detailed configuration and usage instructions.
 - Added inlay hints support with toggle functionality
 - Improved hover and signature help with custom handlers
 - Document highlight on cursor hold for better code navigation
-- **JavaScript/TypeScript Support**: Full LSP support with `tsserver` and `eslint`
+- **JavaScript/TypeScript Support**: Full LSP support with `ts_ls` and `eslint`
   - Inlay hints for parameter names, types, and return values
   - ESLint auto-fix on save for code quality
   - Full IntelliSense, go-to-definition, and refactoring support
@@ -328,6 +342,7 @@ See `MCP_SETUP.md` for detailed configuration and usage instructions.
 - **nvim-tree**: Modern file explorer with git integration
 - **lualine**: Informative and customizable statusline
 - **bufferline**: Visual buffer management with tab-like interface
+- **render-markdown.nvim**: Beautiful markdown rendering with support for headings, code blocks, tables, checkboxes, and callouts
 
 ### Keybinding Refactoring
 - Resolved conflicts between buffer and tab navigation

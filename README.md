@@ -6,9 +6,9 @@
 
 - 🚀 **Flutter開発**: DAP統合デバッグ、ホットリロード、デバイス管理
 - 🤖 **AI統合**: GitHub Copilot完全統合、Claude Code連携
-- 🔌 **MCP統合**: Claude Code用MCP（GitHub、Context7、Playwright）サーバー
+- 🔌 **アダプティブMCP統合**: 環境に応じて自動検出・設定されるMCPサーバー（GitHub、Context7、Playwright、Debug Thinking）
 - 📊 **Git統合**: リアルタイム差分表示、インラインステージング（Gitsigns）
-- 🎨 **モダンUI**: Treesitter構文ハイライト、Telescope検索、NvimTree
+- 🎨 **モダンUI**: Treesitter構文ハイライト、Telescope検索、NvimTree、Markdownレンダリング
 - 🖼️ **シンプルな3分割IDE**: ファイルツリー | エディタ | エディタ レイアウト
 - 📝 **LSP**: Neovim 0.11+対応の強化されたLSP設定、インレイヒント対応
 - 🖥️ **ターミナル統合**: Ghostty モダンターミナル設定
@@ -24,13 +24,16 @@
 git clone https://github.com/your-repo/my-nvim-config.git
 cd my-nvim-config
 
-# 2. 自動セットアップ（全機能）
+# 2. 自動セットアップ（設定ファイルのみ - 安全なデフォルト）
 ./scripts/setup.sh
+
+# フル機能インストール（ツール含む）
+./scripts/setup.sh --full
 
 # または個別セットアップ
 ./scripts/setup.sh pnpm-only      # pnpmのみ
 ./scripts/setup.sh starship-only  # Starshipのみ
-./scripts/setup.sh quick          # 設定ファイルのみ
+./scripts/setup.sh quick          # 設定ファイルのみ（依存関係は手動インストール済みと仮定）
 
 # 3. 検証
 ./scripts/verify-setup.sh
@@ -75,6 +78,11 @@ cd my_app && nvim .
 - `<leader>qq` - IDE全体を終了
 - `<leader>wqa` - 全て保存して終了
 
+### Markdown
+- `<leader>mr` - Markdownレンダリング切り替え
+- `<leader>me` - Markdownレンダリング有効化
+- `<leader>md` - Markdownレンダリング無効化
+
 ## 📚 詳細ドキュメント
 
 - **[DOCS.md](DOCS.md)** - 完全ガイド（セットアップ、ワークフロー、キーバインド）
@@ -117,7 +125,6 @@ cd my_app && nvim .
 - `--no-starship` - Starshipをスキップ
 - `--no-flutter` - Flutterをスキップ
 - `--no-pnpm` - pnpmをスキップ
-- `--no-backup` - 既存設定のバックアップをスキップ
 - `--dry-run` - 実行内容の確認のみ
 
 ## 📦 pnpmワークスペース

@@ -187,6 +187,15 @@ keymap.set('n', '<Leader>Ca', ':Copilot auth<Return>', { desc = 'Copilot authent
 keymap.set('n', '<Leader>Cp', ':Copilot panel<Return>', { desc = 'Copilot suggestions panel' })
 
 -- ===============================================
+-- Markdown
+-- ===============================================
+
+-- Markdown rendering toggle
+keymap.set('n', '<Leader>mr', ':RenderMarkdown toggle<Return>', { desc = 'Toggle markdown rendering' })
+keymap.set('n', '<Leader>me', ':RenderMarkdown enable<Return>', { desc = 'Enable markdown rendering' })
+keymap.set('n', '<Leader>md', ':RenderMarkdown disable<Return>', { desc = 'Disable markdown rendering' })
+
+-- ===============================================
 -- IDE風レイアウト
 -- ===============================================
 
