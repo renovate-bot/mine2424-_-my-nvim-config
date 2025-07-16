@@ -424,7 +424,7 @@ local plugins = {
     dependencies = { "williamboman/mason.nvim" },
     config = function()
       require("mason-lspconfig").setup({
-        ensure_installed = { "dartls", "tsserver", "eslint" },
+        ensure_installed = { "dartls", "ts_ls", "eslint" },
         automatic_installation = true,
         -- sqlls と markdown LSP を自動セットアップから除外
         handlers = {
@@ -455,13 +455,6 @@ local plugins = {
       local lspconfig = require("lspconfig")
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-      -- markdownファイルでLSPを無効化
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "markdown",
-        callback = function()
-          vim.b.lsp_disabled = true
-        end,
-      })
       
       -- LSP診断設定
       vim.diagnostic.config({
@@ -510,17 +503,6 @@ local plugins = {
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('UserLspConfig', {}),
         callback = function(ev)
-          -- markdownファイルの場合はLSPを適切に停止して終了
-          if vim.bo[ev.buf].filetype == "markdown" then
-            local client = vim.lsp.get_client_by_id(ev.data.client_id)
-            if client then
-              -- 変更追跡を無効化してからクライアントを停止
-              pcall(function()
-                client.stop()
-              end)
-            end
-            return
-          end
           
           -- バッファローカルマッピングを有効化
           local opts = { buffer = ev.buf }
@@ -585,7 +567,7 @@ local plugins = {
       })
 
       -- TypeScript/JavaScript LSP設定
-      lspconfig.tsserver.setup({
+      lspconfig.ts_ls.setup({
         capabilities = capabilities,
         settings = {
           typescript = {
@@ -692,7 +674,7 @@ local plugins = {
         },
         lsp = {
           color = {
-            enabled = true,
+            enabled = false,
             background = false,
             background_color = nil,
             foreground = false,
@@ -716,6 +698,13 @@ local plugins = {
     end,
   },
 
+  -- render-markdown.nvim (Markdown rendering in Neovim)
+  {
+    "MeanderingProgrammer/render-markdown.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
+    ft = { "markdown" },
+    opts = {},
+  },
   -- hlchunk.nvim (コードチャンクハイライト)
   {
     "shellRaining/hlchunk.nvim",
@@ -944,16 +933,8 @@ local plugins = {
         auto_install = true,
         highlight = {
           enable = true,
-          -- Disable treesitter for markdown files to avoid remark error
-          disable = function(lang, buf)
-            local filetype = vim.api.nvim_buf_get_option(buf, "filetype")
-            -- Disable for markdown files but keep markdown_inline
-            if lang == "markdown" or filetype == "markdown" then
-              return true
-            end
-            return false
-          end,
-          additional_vim_regex_highlighting = { "markdown" },
+          -- Enable treesitter for all files including markdown
+          additional_vim_regex_highlighting = false,
         },
         indent = {
           enable = true,

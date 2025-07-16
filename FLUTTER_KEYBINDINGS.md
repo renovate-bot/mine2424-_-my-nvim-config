@@ -187,6 +187,14 @@ This document contains all keybindings for the Flutter development environment i
 | `<leader>Cp` | Panel |
 | `<leader>Cs` | Status |
 
+## Markdown Rendering
+
+| Key | Function |
+|-----|----------|
+| `<leader>mr` | Toggle markdown rendering |
+| `<leader>me` | Enable markdown rendering |
+| `<leader>md` | Disable markdown rendering |
+
 ## Debugging (DAP)
 
 | Key | Function |

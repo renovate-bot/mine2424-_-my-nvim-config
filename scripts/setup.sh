@@ -37,7 +37,6 @@ MODE_MCP_ONLY="mcp-only"
 INSTALL_STARSHIP=true
 INSTALL_FLUTTER=true
 INSTALL_PNPM=true
-BACKUP_EXISTING=true
 DRY_RUN=false
 
 # ===============================================
@@ -111,19 +110,6 @@ command_exists() {
     command -v "$1" &> /dev/null
 }
 
-# Backup existing file/directory
-backup_file() {
-    local file="$1"
-    if [[ -e "$file" ]]; then
-        local backup="${file}.backup.$(date +%Y%m%d_%H%M%S)"
-        log_step "Backing up $file to $backup"
-        if [[ ! "$DRY_RUN" == "true" ]]; then
-            mv "$file" "$backup"
-        fi
-        log_success "Backup created: $backup"
-    fi
-}
-
 # ===============================================
 # Display Functions
 # ===============================================
@@ -152,9 +138,11 @@ show_help() {
 Usage: $0 [MODE] [OPTIONS]
 
 MODES:
-  full                Complete setup (default)
+  (no argument)       Only copy configuration files (default)
+  --full              Complete setup with all installations
+  full                Complete setup with all installations (legacy)
   quick               Config files only (assumes dependencies installed)
-  config-only         Only copy configuration files
+  config-only         Only copy configuration files (same as default)
   starship-only       Install and configure Starship only
   pnpm-only           Install and configure pnpm only
   mcp-only            Install and configure MCP servers only
@@ -163,17 +151,18 @@ OPTIONS:
   --no-starship       Skip Starship installation
   --no-flutter        Skip Flutter installation
   --no-pnpm           Skip pnpm installation
-  --no-backup         Skip backing up existing configs
   --dry-run           Show what would be done without executing
   --help, -h          Show this help message
 
 EXAMPLES:
-  $0                          # Full setup with all components
+  $0                          # Copy configs only (safe default)
+  $0 --full                   # Full setup with all components
+  $0 full                     # Full setup (legacy syntax)
   $0 quick                    # Quick setup (configs only)
-  $0 config-only --no-backup # Copy configs without backup
+  $0 config-only              # Copy configs only (explicit)
   $0 starship-only            # Install Starship only
   $0 pnpm-only                # Install pnpm only
-  $0 full --no-flutter        # Full setup without Flutter
+  $0 --full --no-flutter      # Full setup without Flutter
   $0 mcp-only                 # Install MCP servers only
 
 ENVIRONMENT VARIABLES FOR MCP:
@@ -359,11 +348,6 @@ setup_directories() {
 install_neovim_config() {
     log_step "Installing Neovim configuration..."
     
-    # Backup existing config
-    if [[ "$BACKUP_EXISTING" == "true" ]]; then
-        backup_file "$HOME/.config/nvim"
-    fi
-    
     # Copy configuration files
     if [[ ! "$DRY_RUN" == "true" ]]; then
         mkdir -p "$HOME/.config/nvim/lua"
@@ -387,11 +371,6 @@ install_starship_config() {
     # Install Starship if not installed
     install_starship
     
-    # Backup existing config
-    if [[ "$BACKUP_EXISTING" == "true" ]]; then
-        backup_file "$HOME/.config/starship.toml"
-    fi
-    
     # Copy Starship config
     if [[ ! "$DRY_RUN" == "true" ]]; then
         mkdir -p "$HOME/.config"
@@ -406,11 +385,6 @@ install_starship_config() {
 
 install_ghostty_config() {
     log_step "Installing Ghostty configuration..."
-    
-    # Backup existing config
-    if [[ "$BACKUP_EXISTING" == "true" ]]; then
-        backup_file "$HOME/.config/ghostty/config"
-    fi
     
     # Copy Ghostty config
     if [[ ! "$DRY_RUN" == "true" ]]; then
@@ -441,11 +415,6 @@ install_claude_config() {
             ;;
     esac
     
-    # Backup existing config
-    if [[ "$BACKUP_EXISTING" == "true" ]] && [[ -f "$claude_config_dir/claude_desktop_config.json" ]]; then
-        backup_file "$claude_config_dir/claude_desktop_config.json"
-    fi
-    
     # Copy Claude config
     if [[ ! "$DRY_RUN" == "true" ]]; then
         mkdir -p "$claude_config_dir"
@@ -456,11 +425,6 @@ install_claude_config() {
     
     # Install Claude safety configuration
     log_step "Installing Claude safety configuration..."
-    
-    # Backup existing Claude settings
-    if [[ "$BACKUP_EXISTING" == "true" ]]; then
-        backup_file "$HOME/.claude/settings.json"
-    fi
     
     # Copy Claude safety configuration
     if [[ ! "$DRY_RUN" == "true" ]]; then
@@ -473,8 +437,24 @@ install_claude_config() {
     log_success "Claude safety configuration installed"
     
     # Install MCP (Model Context Protocol) configuration
-    if [[ -f "$PROJECT_ROOT/scripts/setup-mcp.sh" ]]; then
-        log_step "Installing MCP configuration..."
+    if [[ -f "$PROJECT_ROOT/scripts/setup-mcp-adaptive.sh" ]]; then
+        log_step "Installing adaptive MCP configuration..."
+        
+        # Load local environment configuration if exists
+        if [[ -f "$HOME/.zshrc.local" ]]; then
+            log_info "Loading local environment from ~/.zshrc.local"
+            source "$HOME/.zshrc.local"
+        elif [[ -f "$HOME/.bashrc.local" ]]; then
+            log_info "Loading local environment from ~/.bashrc.local"
+            source "$HOME/.bashrc.local"
+        fi
+        
+        if [[ ! "$DRY_RUN" == "true" ]]; then
+            "$PROJECT_ROOT/scripts/setup-mcp-adaptive.sh"
+        fi
+        log_success "Adaptive MCP configuration installed"
+    elif [[ -f "$PROJECT_ROOT/scripts/setup-mcp.sh" ]]; then
+        log_step "Installing MCP configuration (legacy)..."
         
         # Load local environment configuration if exists
         if [[ -f "$HOME/.zshrc.local" ]]; then
@@ -553,12 +533,6 @@ install_zsh_config() {
     if ! command_exists zsh; then
         log_warning "Zsh is not installed. Please install zsh first."
         return 1
-    fi
-    
-    # Backup existing zshrc
-    if [[ "$BACKUP_EXISTING" == "true" ]]; then
-        backup_file "$HOME/.zshrc"
-        backup_file "$HOME/.config/sheldon"
     fi
     
     # Copy zsh configuration
@@ -773,7 +747,7 @@ show_completion_message() {
     echo "• Ghostty terminal configuration"
     echo "• Claude Desktop safety configuration"
     echo "• Claude Code safety features (command blocking)"
-    echo "• Claude Code MCP servers (GitHub, context7, Playwright)"
+    echo "• Claude Code adaptive MCP servers (GitHub, context7, Playwright, Debug Thinking)"
     if [[ "$INSTALL_PNPM" == "true" ]]; then
         echo "• pnpm package manager with workspace support"
     fi
@@ -791,10 +765,14 @@ main() {
     show_banner
     
     # Parse arguments
-    local mode="$MODE_FULL"
+    local mode="$MODE_CONFIG_ONLY"
     
     while [[ $# -gt 0 ]]; do
         case $1 in
+            --full)
+                mode="$MODE_FULL"
+                shift
+                ;;
             full|quick|config-only|starship-only|pnpm-only|mcp-only)
                 mode="$1"
                 shift
@@ -809,10 +787,6 @@ main() {
                 ;;
             --no-pnpm)
                 INSTALL_PNPM=false
-                shift
-                ;;
-            --no-backup)
-                BACKUP_EXISTING=false
                 shift
                 ;;
             --dry-run)
