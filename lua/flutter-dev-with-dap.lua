@@ -674,7 +674,7 @@ local plugins = {
         },
         lsp = {
           color = {
-            enabled = true,
+            enabled = false,
             background = false,
             background_color = nil,
             foreground = false,
