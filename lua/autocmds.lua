@@ -44,9 +44,9 @@ autocmd('FileType', {
   callback = function()
     vim.opt_local.wrap = true
     vim.opt_local.conceallevel = 2
-    -- Disable treesitter for markdown to avoid "can't change language without remark" error
-    vim.bo.syntax = 'markdown'
-    vim.cmd('TSDisable highlight')
+    -- Enable treesitter for markdown (required by render-markdown.nvim)
+    -- vim.bo.syntax = 'markdown'  -- Commented out to use treesitter
+    -- vim.cmd('TSDisable highlight')  -- Commented out to use treesitter
   end,
   desc = 'Markdown settings'
 })

@@ -455,13 +455,6 @@ local plugins = {
       local lspconfig = require("lspconfig")
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-      -- markdownファイルでLSPを無効化
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "markdown",
-        callback = function()
-          vim.b.lsp_disabled = true
-        end,
-      })
       
       -- LSP診断設定
       vim.diagnostic.config({
@@ -510,17 +503,6 @@ local plugins = {
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('UserLspConfig', {}),
         callback = function(ev)
-          -- markdownファイルの場合はLSPを適切に停止して終了
-          if vim.bo[ev.buf].filetype == "markdown" then
-            local client = vim.lsp.get_client_by_id(ev.data.client_id)
-            if client then
-              -- 変更追跡を無効化してからクライアントを停止
-              pcall(function()
-                client.stop()
-              end)
-            end
-            return
-          end
           
           -- バッファローカルマッピングを有効化
           local opts = { buffer = ev.buf }
@@ -720,153 +702,8 @@ local plugins = {
   {
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
-    ft = { "markdown", "vimwiki" },
-    config = function()
-      require("render-markdown").setup({
-        -- Enable/disable the plugin
-        enabled = true,
-        -- Maximum file size (in MB) to render
-        max_file_size = 10.0,
-        -- Capture groups for markdown rendering
-        capture_groups = {
-          -- Code blocks
-          code = "RenderMarkdownCode",
-          code_inline = "RenderMarkdownCodeInline",
-          -- Headings
-          heading = {
-            "RenderMarkdownH1",
-            "RenderMarkdownH2",
-            "RenderMarkdownH3",
-            "RenderMarkdownH4",
-            "RenderMarkdownH5",
-            "RenderMarkdownH6",
-          },
-          -- Horizontal rules
-          dash = "RenderMarkdownDash",
-          -- Bullet points
-          bullet = "RenderMarkdownBullet",
-          -- Checkboxes
-          checkbox = {
-            unchecked = "RenderMarkdownUnchecked",
-            checked = "RenderMarkdownChecked",
-          },
-          -- Tables
-          table = {
-            head = "RenderMarkdownTableHead",
-            row = "RenderMarkdownTableRow",
-          },
-          -- LaTeX
-          latex = "RenderMarkdownMath",
-          -- Links
-          link = "RenderMarkdownLink",
-          -- Default fallback
-          default = "RenderMarkdownNormal",
-        },
-        -- Icons for various elements
-        signs = {
-          enabled = true,
-          icons = {
-            heading = {
-              "󰉫 ", -- H1
-              "󰉬 ", -- H2
-              "󰉭 ", -- H3
-              "󰉮 ", -- H4
-              "󰉯 ", -- H5
-              "󰉰 ", -- H6
-            },
-            code = "󰅬 ",
-            dash = "─",
-            bullet = "•",
-            checkbox = {
-              unchecked = "󰄱 ",
-              checked = "󰄵 ",
-            },
-            table = "󰓦 ",
-            quote = "󰝗 ",
-          },
-        },
-        -- Heading configuration
-        headings = {
-          -- Add background highlighting to headings
-          backgrounds = {
-            "RenderMarkdownH1Bg",
-            "RenderMarkdownH2Bg",
-            "RenderMarkdownH3Bg",
-            "RenderMarkdownH4Bg",
-            "RenderMarkdownH5Bg",
-            "RenderMarkdownH6Bg",
-          },
-          -- Add foreground highlighting to headings
-          foregrounds = {
-            "RenderMarkdownH1",
-            "RenderMarkdownH2",
-            "RenderMarkdownH3",
-            "RenderMarkdownH4",
-            "RenderMarkdownH5",
-            "RenderMarkdownH6",
-          },
-        },
-        -- Code block configuration
-        code_blocks = {
-          -- Enable code block rendering
-          enabled = true,
-          -- Width of the code block
-          width = "full",
-          -- Left padding
-          left_pad = 0,
-          -- Right padding
-          right_pad = 0,
-          -- Minimum width
-          min_width = 0,
-          -- Language icon
-          language_icon = "󰅬 ",
-        },
-        -- Inline code configuration
-        inline_code = {
-          -- Enable inline code rendering
-          enabled = true,
-          -- Highlight group
-          highlight = "RenderMarkdownCodeInline",
-        },
-        -- Pipe table configuration
-        pipe_table = {
-          -- Enable table rendering
-          enabled = true,
-          -- Table border characters
-          head = "─",
-          row = "─",
-          filler = "│",
-        },
-        -- Callout configuration
-        callouts = {
-          note = { raw = "[!NOTE]", rendered = "󰋽 Note", highlight = "RenderMarkdownInfo" },
-          tip = { raw = "[!TIP]", rendered = "󰌶 Tip", highlight = "RenderMarkdownSuccess" },
-          important = { raw = "[!IMPORTANT]", rendered = "󰅾 Important", highlight = "RenderMarkdownHint" },
-          warning = { raw = "[!WARNING]", rendered = "󰀪 Warning", highlight = "RenderMarkdownWarn" },
-          caution = { raw = "[!CAUTION]", rendered = "󰳦 Caution", highlight = "RenderMarkdownError" },
-        },
-        -- Link configuration
-        links = {
-          -- Enable link rendering
-          enabled = true,
-          -- Link icon
-          icon = "󰌹 ",
-          -- Highlight group
-          highlight = "RenderMarkdownLink",
-        },
-        -- Window options
-        win_options = {
-          conceallevel = {
-            default = vim.o.conceallevel,
-            rendered = 3,
-          },
-          concealcursor = {
-            default = vim.o.concealcursor,
-            rendered = "",
-          },
-        },
-      })
-    end,
+    ft = { "markdown" },
+    opts = {},
   },
   -- hlchunk.nvim (コードチャンクハイライト)
   {
@@ -1096,16 +933,8 @@ local plugins = {
         auto_install = true,
         highlight = {
           enable = true,
-          -- Disable treesitter for markdown files to avoid remark error
-          disable = function(lang, buf)
-            local filetype = vim.api.nvim_buf_get_option(buf, "filetype")
-            -- Disable for markdown files but keep markdown_inline
-            if lang == "markdown" or filetype == "markdown" then
-              return true
-            end
-            return false
-          end,
-          additional_vim_regex_highlighting = { "markdown" },
+          -- Enable treesitter for all files including markdown
+          additional_vim_regex_highlighting = false,
         },
         indent = {
           enable = true,
