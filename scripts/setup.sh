@@ -31,6 +31,7 @@ MODE_QUICK="quick"
 MODE_CONFIG_ONLY="config-only"
 MODE_STARSHIP_ONLY="starship-only"
 MODE_PNPM_ONLY="pnpm-only"
+MODE_MCP_ONLY="mcp-only"
 
 # Default settings
 INSTALL_STARSHIP=true
@@ -156,6 +157,7 @@ MODES:
   config-only         Only copy configuration files
   starship-only       Install and configure Starship only
   pnpm-only           Install and configure pnpm only
+  mcp-only            Install and configure MCP servers only
 
 OPTIONS:
   --no-starship       Skip Starship installation
@@ -172,6 +174,7 @@ EXAMPLES:
   $0 starship-only            # Install Starship only
   $0 pnpm-only                # Install pnpm only
   $0 full --no-flutter        # Full setup without Flutter
+  $0 mcp-only                 # Install MCP servers only
 
 ENVIRONMENT VARIABLES FOR MCP:
   Before running setup, you can set these environment variables to customize MCP:
@@ -511,6 +514,38 @@ install_pnpm_config() {
     fi
 }
 
+install_mcp_only() {
+    log_step "Installing MCP servers..."
+    
+    # Check for Claude CLI
+    if ! command_exists claude; then
+        log_warning "Claude Code CLI not found. Installing..."
+        if [[ ! "$DRY_RUN" == "true" ]]; then
+            npm install -g @anthropic-ai/claude-code
+        fi
+    fi
+    
+    # Run MCP setup script
+    if [[ -f "$PROJECT_ROOT/scripts/setup-mcp.sh" ]]; then
+        # Load local environment configuration if exists
+        if [[ -f "$HOME/.zshrc.local" ]]; then
+            log_info "Loading local environment from ~/.zshrc.local"
+            source "$HOME/.zshrc.local"
+        elif [[ -f "$HOME/.bashrc.local" ]]; then
+            log_info "Loading local environment from ~/.bashrc.local"
+            source "$HOME/.bashrc.local"
+        fi
+        
+        if [[ ! "$DRY_RUN" == "true" ]]; then
+            "$PROJECT_ROOT/scripts/setup-mcp.sh"
+        fi
+        log_success "MCP servers configured"
+    else
+        log_error "MCP setup script not found"
+        return 1
+    fi
+}
+
 install_zsh_config() {
     log_step "Installing Zsh configuration..."
     
@@ -760,7 +795,7 @@ main() {
     
     while [[ $# -gt 0 ]]; do
         case $1 in
-            full|quick|config-only|starship-only|pnpm-only)
+            full|quick|config-only|starship-only|pnpm-only|mcp-only)
                 mode="$1"
                 shift
                 ;;
@@ -878,10 +913,15 @@ main() {
             # pnpm only
             install_pnpm_config
             ;;
+            
+        "$MODE_MCP_ONLY")
+            # MCP only
+            install_mcp_only
+            ;;
     esac
     
     # Verify installation
-    if [[ "$mode" != "$MODE_STARSHIP_ONLY" ]] && [[ "$mode" != "$MODE_PNPM_ONLY" ]]; then
+    if [[ "$mode" != "$MODE_STARSHIP_ONLY" ]] && [[ "$mode" != "$MODE_PNPM_ONLY" ]] && [[ "$mode" != "$MODE_MCP_ONLY" ]]; then
         verify_installation
     fi
     
