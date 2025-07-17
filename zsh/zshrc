@@ -229,6 +229,7 @@ alias flpu='flutter pub upgrade'
 alias fld='flutter doctor'
 alias fldev='flutter devices'
 alias flem='flutter emulators'
+alias jjjfr='flutter run --flavor=dev --dart-define-from-file=define/flavor/dev/common.json --dart-define-from-file=define/flavor/dev/tracking.json'
 
 # Melos (monorepo management)
 if command -v melos &> /dev/null; then
