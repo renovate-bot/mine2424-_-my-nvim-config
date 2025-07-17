@@ -34,6 +34,24 @@ This document contains all keybindings for the Flutter development environment i
 | `p` | Paste after cursor |
 | `P` | Paste before cursor |
 
+### Line Copying (Yank)
+| Key | Function |
+|-----|----------|
+| `yy` or `Y` | Copy (yank) entire current line |
+| `3yy` | Copy 3 lines starting from current line |
+| `p` | Paste copied line(s) after current line |
+| `P` | Paste copied line(s) before current line |
+| `yyp` | Copy current line and paste immediately after (duplicate line) |
+| `3yyp` | Copy 3 lines and paste them immediately after |
+
+#### Visual Mode Line Copying
+1. Press `Shift+v` to enter line-based visual mode
+2. Select desired lines with `j`/`k` or other movement commands
+3. Press `y` to copy (yank) the selected lines
+4. Move cursor to desired location and press `p` to paste
+
+**Note**: In Vim, "yank" (やんく) is the term for copying. This allows efficient text duplication without using the mouse.
+
 ### Visual Mode
 | Key | Function |
 |-----|----------|
