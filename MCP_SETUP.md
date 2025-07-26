@@ -26,7 +26,7 @@ The MCP configuration is automatically installed when you run the main setup scr
 To install only the MCP configuration:
 
 ```bash
-./scripts/setup-mcp.sh
+./scripts/mcp.sh
 ```
 
 ## Configuration Files

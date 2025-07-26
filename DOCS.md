@@ -27,14 +27,17 @@ Neovim 0.11+対応の高度なFlutter開発環境の詳細ドキュメントで�
 git clone https://github.com/your-repo/my-nvim-config.git
 cd my-nvim-config
 
-# 全て一括インストール
+# 設定ファイルのみ（安全なデフォルト）
 ./scripts/setup.sh
+
+# 全て一括インストール
+./scripts/setup.sh --full
 
 # 手動検証
 ./scripts/verify-setup.sh
 
 # Flutter プロジェクト作成
-./scripts/create-flutter-project.sh <project-name>
+./scripts/flutter.sh create my_app
 ```
 
 ### 📦 手動インストール手順
@@ -95,7 +98,7 @@ cd my-nvim-config
 
 ```bash
 # プロジェクト作成
-./scripts/create-flutter-project.sh my_app
+./scripts/flutter.sh create my_app --org com.example
 
 # VSCode統合（launch.json自動読み込み）
 cd my_app

@@ -39,7 +39,7 @@ cd my-nvim-config
 ./scripts/verify-setup.sh
 
 # 4. Flutter プロジェクト開始
-./scripts/create-flutter-project.sh my_app
+./scripts/flutter.sh create my_app
 cd my_app && nvim .
 ```
 
@@ -110,22 +110,41 @@ cd my_app && nvim .
 - **Claude Desktop**: 安全なコマンド実行設定
 - **Claude Code MCP**: GitHub、Context7、Playwright統合
 - **pnpm**: ワークスペース対応パッケージマネージャー設定
-- **Scripts**: 統合セットアップツール（全機能を1つのスクリプトで管理）
+- **Scripts**: 整理された開発ツール（setup.sh、flutter.sh、pnpm.sh、mcp.sh）
 
 ## 🔧 セットアップオプション
 
-`setup.sh`は以下のモードをサポート：
-- `full` - 全機能インストール（デフォルト）
-- `quick` - 設定ファイルのみ（依存関係インストール済みを想定）
-- `config-only` - 設定ファイルのみコピー
-- `starship-only` - Starshipのみインストール
-- `pnpm-only` - pnpmのみインストール
+### メインセットアップ（setup.sh）
+```bash
+./scripts/setup.sh              # 設定ファイルのみ（安全なデフォルト）
+./scripts/setup.sh --full       # 全機能インストール
+./scripts/setup.sh quick        # 設定ファイルのみ
+./scripts/setup.sh starship-only # Starshipのみ
+./scripts/setup.sh pnpm-only    # pnpmのみ
+./scripts/setup.sh mcp-only     # MCPサーバーのみ
+```
 
 オプション：
 - `--no-starship` - Starshipをスキップ
 - `--no-flutter` - Flutterをスキップ
 - `--no-pnpm` - pnpmをスキップ
 - `--dry-run` - 実行内容の確認のみ
+
+### ユーティリティスクリプト
+```bash
+# Flutter開発
+./scripts/flutter.sh create myapp  # 新規プロジェクト作成
+./scripts/flutter.sh setup         # 既存プロジェクトセットアップ
+./scripts/flutter.sh test          # テスト実行
+./scripts/flutter.sh build apk     # ビルド
+
+# パッケージマネージャー
+./scripts/pnpm.sh install   # pnpmインストール
+./scripts/pnpm.sh migrate   # npm/yarnからの移行
+
+# MCP設定
+./scripts/mcp.sh            # アダプティブMCPセットアップ
+```
 
 ## 📦 pnpmワークスペース
 

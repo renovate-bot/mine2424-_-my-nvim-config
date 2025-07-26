@@ -158,6 +158,8 @@ The configuration includes a simplified 3-panel IDE layout that provides an effi
 - `FLUTTER_KEYBINDINGS.md` contains complete keymap reference
 - `TROUBLESHOOTING.md` has common issues and solutions
 - `MCP_SETUP.md` contains MCP server configuration and usage guide
+- `FUTURE_IMPROVEMENTS.md` lists potential major enhancements
+- `scripts/README.md` explains the script organization
 
 ## Testing and Verification
 
@@ -165,7 +167,7 @@ No specific test framework is used for this configuration. Verification is done 
 - Running `./scripts/verify-setup.sh` to check all dependencies
 - Opening a Flutter project and testing LSP functionality
 - Verifying plugin loading with `:Lazy` command in Neovim
-- Running `./scripts/setup-pnpm.sh` to install and configure pnpm
+- Running `./scripts/pnpm.sh install` to install and configure pnpm
 - Testing pnpm workspace functionality with `pnpm install` and `pnpm workspace` commands
 
 ## Shell and Terminal Integration
