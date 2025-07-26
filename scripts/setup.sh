@@ -26,18 +26,22 @@ BOLD='\033[1m'
 NC='\033[0m' # No Color
 
 # Setup modes
-MODE_FULL="full"
-MODE_QUICK="quick"
-MODE_CONFIG_ONLY="config-only"
-MODE_STARSHIP_ONLY="starship-only"
-MODE_PNPM_ONLY="pnpm-only"
-MODE_MCP_ONLY="mcp-only"
+readonly MODE_FULL="full"
+readonly MODE_QUICK="quick"
+readonly MODE_CONFIG_ONLY="config-only"
+readonly MODE_STARSHIP_ONLY="starship-only"
+readonly MODE_PNPM_ONLY="pnpm-only"
+readonly MODE_MCP_ONLY="mcp-only"
 
 # Default settings
 INSTALL_STARSHIP=true
 INSTALL_FLUTTER=true
 INSTALL_PNPM=true
 DRY_RUN=false
+
+# Error handling
+set -euo pipefail
+trap 'log_error "Script failed on line $LINENO"' ERR
 
 # ===============================================
 # Utility Functions
@@ -210,7 +214,7 @@ install_homebrew() {
 
 install_packages_macos() {
     log_step "Installing packages via Homebrew..."
-    
+    # Essential packages only - removed btop (resource heavy)
     local packages=(
         "neovim"
         "git"
@@ -222,13 +226,8 @@ install_packages_macos() {
         "sheldon"     # Plugin manager for zsh
         "eza"         # Modern replacement for ls
         "bat"         # Modern replacement for cat
-        "dust"        # Modern replacement for du
-        "duf"         # Modern replacement for df
-        "procs"       # Modern replacement for ps
-        "btop"        # Modern replacement for top
         "lazygit"     # Terminal UI for git
         "mise"        # Runtime version manager (formerly rtx)
-        "direnv"      # Directory-based environment management
     )
     
     
@@ -280,7 +279,13 @@ install_packages_debian() {
         
         # Install modern CLI tools via cargo
         log_step "Installing modern CLI tools..."
-        cargo install eza bat dust duf procs btop
+        # Install tools one by one to handle failures gracefully
+        local rust_tools=("eza" "bat" "dust" "duf" "procs")
+        for tool in "${rust_tools[@]}"; do
+            if ! command_exists "$tool"; then
+                cargo install "$tool" || log_warning "Failed to install $tool"
+            fi
+        done
         
         # Install sheldon
         if ! command_exists sheldon; then
@@ -347,6 +352,13 @@ setup_directories() {
 
 install_neovim_config() {
     log_step "Installing Neovim configuration..."
+    
+    # Backup existing configuration
+    if [[ -d "$HOME/.config/nvim" ]] && [[ ! "$DRY_RUN" == "true" ]]; then
+        local backup_dir="$HOME/.config/nvim.backup.$(date +%Y%m%d_%H%M%S)"
+        log_info "Backing up existing Neovim config to $backup_dir"
+        mv "$HOME/.config/nvim" "$backup_dir"
+    fi
     
     # Copy configuration files
     if [[ ! "$DRY_RUN" == "true" ]]; then
@@ -436,53 +448,54 @@ install_claude_config() {
     
     log_success "Claude safety configuration installed"
     
-    # Install MCP (Model Context Protocol) configuration
-    if [[ -f "$PROJECT_ROOT/scripts/setup-mcp-adaptive.sh" ]]; then
-        log_step "Installing adaptive MCP configuration..."
-        
-        # Load local environment configuration if exists
-        if [[ -f "$HOME/.zshrc.local" ]]; then
-            log_info "Loading local environment from ~/.zshrc.local"
-            source "$HOME/.zshrc.local"
-        elif [[ -f "$HOME/.bashrc.local" ]]; then
-            log_info "Loading local environment from ~/.bashrc.local"
-            source "$HOME/.bashrc.local"
-        fi
-        
+    # Install MCP configuration
+    install_mcp_config
+}
+
+# Separate function for MCP installation
+install_mcp_config() {
+    # Load local environment configuration if exists
+    load_local_env
+    
+    # Install MCP configuration
+    if [[ -f "$PROJECT_ROOT/scripts/mcp.sh" ]]; then
+        log_step "Installing MCP configuration..."
         if [[ ! "$DRY_RUN" == "true" ]]; then
-            "$PROJECT_ROOT/scripts/setup-mcp-adaptive.sh"
-        fi
-        log_success "Adaptive MCP configuration installed"
-    elif [[ -f "$PROJECT_ROOT/scripts/setup-mcp.sh" ]]; then
-        log_step "Installing MCP configuration (legacy)..."
-        
-        # Load local environment configuration if exists
-        if [[ -f "$HOME/.zshrc.local" ]]; then
-            log_info "Loading local environment from ~/.zshrc.local"
-            source "$HOME/.zshrc.local"
-        elif [[ -f "$HOME/.bashrc.local" ]]; then
-            log_info "Loading local environment from ~/.bashrc.local"
-            source "$HOME/.bashrc.local"
-        fi
-        
-        if [[ ! "$DRY_RUN" == "true" ]]; then
-            "$PROJECT_ROOT/scripts/setup-mcp.sh"
+            "$PROJECT_ROOT/scripts/mcp.sh"
         fi
         log_success "MCP configuration installed"
+    else
+        log_warning "MCP script not found"
+    fi
+}
+
+# Helper function to load local environment
+load_local_env() {
+    if [[ -f "$HOME/.zshrc.local" ]]; then
+        log_info "Loading local environment from ~/.zshrc.local"
+        set +u  # Temporarily allow unset variables
+        source "$HOME/.zshrc.local" || true
+        set -u
+    elif [[ -f "$HOME/.bashrc.local" ]]; then
+        log_info "Loading local environment from ~/.bashrc.local"
+        set +u  # Temporarily allow unset variables
+        source "$HOME/.bashrc.local" || true
+        set -u
     fi
 }
 
 install_pnpm_config() {
     log_step "Installing pnpm configuration..."
     
-    # Check if pnpm setup script exists
-    if [[ -f "$PROJECT_ROOT/scripts/setup-pnpm.sh" ]]; then
+    # Check if pnpm script exists
+    if [[ -f "$PROJECT_ROOT/scripts/pnpm.sh" ]]; then
         if [[ ! "$DRY_RUN" == "true" ]]; then
-            "$PROJECT_ROOT/scripts/setup-pnpm.sh"
+            "$PROJECT_ROOT/scripts/pnpm.sh" install
+            "$PROJECT_ROOT/scripts/pnpm.sh" setup
         fi
         log_success "pnpm installed and configured"
     else
-        log_warning "pnpm setup script not found"
+        log_warning "pnpm script not found"
     fi
     
     # Copy pnpm configuration files
@@ -501,29 +514,15 @@ install_mcp_only() {
     if ! command_exists claude; then
         log_warning "Claude Code CLI not found. Installing..."
         if [[ ! "$DRY_RUN" == "true" ]]; then
-            npm install -g @anthropic-ai/claude-code
+            npm install -g @anthropic-ai/claude-code || {
+                log_error "Failed to install Claude Code CLI"
+                return 1
+            }
         fi
     fi
     
-    # Run MCP setup script
-    if [[ -f "$PROJECT_ROOT/scripts/setup-mcp.sh" ]]; then
-        # Load local environment configuration if exists
-        if [[ -f "$HOME/.zshrc.local" ]]; then
-            log_info "Loading local environment from ~/.zshrc.local"
-            source "$HOME/.zshrc.local"
-        elif [[ -f "$HOME/.bashrc.local" ]]; then
-            log_info "Loading local environment from ~/.bashrc.local"
-            source "$HOME/.bashrc.local"
-        fi
-        
-        if [[ ! "$DRY_RUN" == "true" ]]; then
-            "$PROJECT_ROOT/scripts/setup-mcp.sh"
-        fi
-        log_success "MCP servers configured"
-    else
-        log_error "MCP setup script not found"
-        return 1
-    fi
+    # Install MCP configuration
+    install_mcp_config
 }
 
 install_zsh_config() {
@@ -639,6 +638,9 @@ configure_starship_shell() {
     
     # Add initialization to shell config
     if [[ ! "$DRY_RUN" == "true" ]]; then
+        # Create backup of shell config
+        cp "$shell_rc" "${shell_rc}.backup.$(date +%Y%m%d_%H%M%S)" || true
+        
         echo "" >> "$shell_rc"
         echo "# Starship prompt initialization" >> "$shell_rc"
         echo "$init_command" >> "$shell_rc"
@@ -739,22 +741,22 @@ show_completion_message() {
     fi
     echo ""
     echo -e "${CYAN}Key features installed:${NC}"
-    echo "• Neovim with LSP, Copilot, and Flutter tools"
-    echo "• Modern Zsh configuration with plugins and aliases"
+    echo "• Neovim with optimized LSP, Copilot, and Flutter tools"
+    echo "• Performance-tuned configuration with lazy loading"
+    echo "• Modern Zsh configuration with fast plugin management"
     if [[ "$INSTALL_STARSHIP" == "true" ]]; then
         echo "• Starship prompt with Flutter/Dart integration"
     fi
     echo "• Ghostty terminal configuration"
     echo "• Claude Desktop safety configuration"
-    echo "• Claude Code safety features (command blocking)"
-    echo "• Claude Code adaptive MCP servers (GitHub, context7, Playwright, Debug Thinking)"
+    echo "• Claude Code adaptive MCP servers"
     if [[ "$INSTALL_PNPM" == "true" ]]; then
         echo "• pnpm package manager with workspace support"
     fi
-    echo "• Modern CLI tools (eza, bat, dust, etc.)"
-    echo "• Optimized key bindings and development workflow"
+    echo "• Essential CLI tools (eza, bat, lazygit)"
     echo ""
     echo -e "${PURPLE}Documentation: Check SETUP_GUIDE.md and FLUTTER_KEYBINDINGS.md${NC}"
+    echo -e "${PURPLE}Future improvements: See FUTURE_IMPROVEMENTS.md${NC}"
 }
 
 # ===============================================
@@ -820,8 +822,8 @@ main() {
     log_info "Setup Mode: $mode"
     echo ""
     
-    # Confirm before proceeding
-    if [[ "$DRY_RUN" != "true" ]]; then
+    # Confirm before proceeding (skip for config-only mode)
+    if [[ "$DRY_RUN" != "true" ]] && [[ "$mode" != "$MODE_CONFIG_ONLY" ]]; then
         echo -e "${YELLOW}This will modify your system and configuration files.${NC}"
         read -p "Continue? (y/N): " -n 1 -r
         echo

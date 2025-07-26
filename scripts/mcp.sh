@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Adaptive MCP (Model Context Protocol) setup script for Claude Code
-# This script intelligently detects and configures MCP servers based on local environment
+# MCP (Model Context Protocol) Setup for Claude Code
+# ===============================================
+# Adaptive installation with intelligent path detection
+# Replaces both setup-mcp.sh and setup-mcp-adaptive.sh
 
 set +e  # Don't exit on error for non-critical operations
 
