@@ -121,6 +121,12 @@ local plugins = {
   -- nvim-dap (Debug Adapter Protocol)
   {
     'mfussenegger/nvim-dap',
+    lazy = true,
+    cmd = { "DapContinue", "DapToggleBreakpoint" },
+    keys = {
+      { "<F5>", desc = "Debug: Start/Continue" },
+      { "<Leader>b", desc = "Debug: Toggle Breakpoint" },
+    },
     config = function()
       local dap = require('dap')
 
@@ -155,6 +161,12 @@ local plugins = {
   -- vs-tasks.nvim (VSCode tasks.json統合)
   {
     'EthanJWright/vs-tasks.nvim',
+    lazy = true,
+    cmd = { "VstaskInfo", "VstaskRun" },
+    keys = {
+      { "<Leader>vt", desc = 'VSCode Tasks Info' },
+      { "<Leader>vr", desc = 'Run VSCode Task' },
+    },
     dependencies = {
       'nvim-lua/popup.nvim',
       'nvim-lua/plenary.nvim',
@@ -242,76 +254,32 @@ local plugins = {
     opts = {
       labels = "asdfghjklqwertyuiopzxcvbnm",
       search = {
-        -- 検索時の設定
         multi_window = true,
         forward = true,
         wrap = true,
-        mode = "exact",
-        incremental = false,
-        exclude = {
-          "notify",
-          "cmp_menu",
-          "noice",
-          "flash_prompt",
-          function(win)
-            return not vim.api.nvim_win_get_config(win).focusable
-          end,
-        },
+        mode = "fuzzy",
+        incremental = true,
       },
       jump = {
-        -- ジャンプ時の設定
         jumplist = true,
         pos = "start",
-        history = false,
-        register = false,
-        nohlsearch = false,
-        autojump = false,
+        history = true,
+        register = true,
+        nohlsearch = true,
       },
       modes = {
-        -- 検索モードの設定
         search = {
           enabled = true,
           highlight = { backdrop = false },
-          jump = { history = true, register = true, nohlsearch = true },
-          search = {
-            mode = "fuzzy",
-            incremental = true,
-          },
         },
         char = {
           enabled = true,
-          config = function(opts)
-            opts.autohide = vim.fn.mode(true):find("no") and vim.v.operator == "y"
-            opts.jump_labels = opts.jump_labels and vim.v.count == 0
-          end,
-          highlight = { backdrop = true },
-          jump = { register = false },
-          search = { wrap = false },
           multi_line = true,
           keys = { "f", "F", "t", "T", ";", "," },
         },
         treesitter = {
           labels = "abcdefghijklmnopqrstuvwxyz",
           jump = { pos = "range" },
-          highlight = {
-            label = { before = true, after = true, style = "inline" },
-            backdrop = false,
-            matches = false,
-          },
-        },
-        remote = {
-          remote_op = { restore = true, motion = true },
-        },
-      },
-      highlight = {
-        backdrop = true,
-        matches = true,
-        priority = 5000,
-        groups = {
-          match = "FlashMatch",
-          current = "FlashCurrent",
-          backdrop = "FlashBackdrop",
-          label = "FlashLabel",
         },
       },
     },
@@ -542,12 +510,15 @@ local plugins = {
 
           -- Enable word highlighting on cursor hold
           if client and client.server_capabilities.documentHighlightProvider then
+            local group = vim.api.nvim_create_augroup("LspDocumentHighlight" .. ev.buf, { clear = true })
             vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+              group = group,
               buffer = ev.buf,
               callback = vim.lsp.buf.document_highlight,
             })
 
             vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+              group = group,
               buffer = ev.buf,
               callback = vim.lsp.buf.clear_references,
             })
@@ -606,15 +577,6 @@ local plugins = {
         end,
       })
 
-      -- SQL LSP設定を無効化（エラー回避）
-      -- sqlls が自動的にアタッチされている場合は明示的に無効化
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "sql",
-        callback = function()
-          -- SQL ファイルで LSP を無効化
-          vim.lsp.stop_client(vim.lsp.get_active_clients({ name = "sqlls" }))
-        end,
-      })
     end,
   },
 
@@ -713,75 +675,18 @@ local plugins = {
       require("hlchunk").setup({
         chunk = {
           enable = true,
-          notify = true,
           use_treesitter = true,
-          style = {
-            "#806d9c",
-            "#c21f30",
-          },
-          chars = {
-            horizontal_line = "─",
-            vertical_line = "│",
-            left_top = "╭",
-            left_bottom = "╰",
-            right_arrow = "─",
-          },
-          textobject = "",
+          style = { "#806d9c" },
           max_file_size = 1024 * 1024,
-          error_sign = true,
         },
         indent = {
-          enable = true,
-          use_treesitter = false,
-          style = {
-            "#434C5E",
-            "#4C566A",
-            "#5E81AC",
-            "#88C0D0",
-            "#81A1C1",
-            "#8FBCBB",
-          },
-          chars = {
-            "│",
-          },
-          exclude_filetypes = {
-            aerial = true,
-            dashboard = true,
-            help = true,
-            lspinfo = true,
-            packer = true,
-            checkhealth = true,
-            man = true,
-            gitcommit = true,
-            TelescopePrompt = true,
-            [""] = true,
-          },
+          enable = false,  -- パフォーマンス向上のため無効化
         },
         line_num = {
-          enable = true,
-          style = "#806d9c",
-          use_treesitter = true,
+          enable = false,  -- パフォーマンス向上のため無効化
         },
         blank = {
-          enable = true,
-          style = {
-            "#434C5E",
-          },
-          chars = {
-            "․",
-          },
-          exclude_filetypes = {
-            aerial = true,
-            dashboard = true,
-            help = true,
-            lspinfo = true,
-            packer = true,
-            checkhealth = true,
-            man = true,
-            gitcommit = true,
-            TelescopePrompt = true,
-            [""] = true,
-          },
+          enable = false,  -- パフォーマンス向上のため無効化
         },
       })
     end,
@@ -1149,6 +1054,21 @@ require("lazy").setup(plugins, {
   ui = {
     border = "rounded",
   },
+  performance = {
+    rtp = {
+      disabled_plugins = {
+        "gzip",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+        "netrwPlugin",  -- nvim-treeを使用
+        "matchit",
+        "matchparen",
+      },
+    },
+  },
+  checker = {
+    enabled = false,  -- 自動アップデートチェックを無効化
+  },
 })
-
-print("Simple VSCode launch.json integration loaded! 🚀")

@@ -62,10 +62,18 @@ autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI' }, {
   desc = 'Auto reload files'
 })
 
--- Remove trailing whitespace on save
+-- Remove trailing whitespace on save (exclude specific filetypes)
 autocmd('BufWritePre', {
   pattern = '*',
-  command = '%s/\\s\\+$//e',
+  callback = function()
+    local ft = vim.bo.filetype
+    -- Skip for filetypes where trailing whitespace might be significant
+    if ft ~= 'markdown' and ft ~= 'diff' then
+      local save_cursor = vim.fn.getpos(".")
+      vim.cmd([[%s/\s\+$//e]])
+      vim.fn.setpos(".", save_cursor)
+    end
+  end,
   desc = 'Remove trailing whitespace on save'
 })
 

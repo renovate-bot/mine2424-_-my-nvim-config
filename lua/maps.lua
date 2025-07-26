@@ -42,11 +42,6 @@ keymap.set('n', 'sk', '<C-w>k', { desc = 'Move to upper window' })
 keymap.set('n', 'sj', '<C-w>j', { desc = 'Move to lower window' })
 keymap.set('n', 'sl', '<C-w>l', { desc = 'Move to right window' })
 
--- ウィンドウリサイズ
-keymap.set('n', '<C-w><left>', '<C-w><', { desc = 'Decrease window width' })
-keymap.set('n', '<C-w><right>', '<C-w>>', { desc = 'Increase window width' })
-keymap.set('n', '<C-w><up>', '<C-w>+', { desc = 'Increase window height' })
-keymap.set('n', '<C-w><down>', '<C-w>-', { desc = 'Decrease window height' })
 
 -- タブ操作
 keymap.set('n', '<Leader>tn', ':tabnew<Return>', { desc = 'New tab' })
@@ -192,8 +187,6 @@ keymap.set('n', '<Leader>Cp', ':Copilot panel<Return>', { desc = 'Copilot sugges
 
 -- Markdown rendering toggle
 keymap.set('n', '<Leader>mr', ':RenderMarkdown toggle<Return>', { desc = 'Toggle markdown rendering' })
-keymap.set('n', '<Leader>me', ':RenderMarkdown enable<Return>', { desc = 'Enable markdown rendering' })
-keymap.set('n', '<Leader>md', ':RenderMarkdown disable<Return>', { desc = 'Disable markdown rendering' })
 
 -- ===============================================
 -- IDE風レイアウト
@@ -206,6 +199,3 @@ keymap.set('n', '<Leader>is', ':StartSimpleIDE<Return>', { desc = 'Start simple 
 keymap.set('n', '<Leader>if', ':StartFlutterIDE<Return>', { desc = 'Start Flutter IDE layout' })
 keymap.set('n', '<Leader>ir', ':ResetLayout<Return>', { desc = 'Reset window layout' })
 
--- ファイルツリー操作
-keymap.set('n', '<Leader>v', ':Lexplore<Return>', { desc = 'Toggle file explorer' })
-keymap.set('n', '<Leader>V', ':Explore<Return>', { desc = 'Open file explorer in current window' })
