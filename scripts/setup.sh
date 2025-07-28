@@ -228,6 +228,7 @@ install_packages_macos() {
         "bat"         # Modern replacement for cat
         "lazygit"     # Terminal UI for git
         "mise"        # Runtime version manager (formerly rtx)
+        "rust"        # Rust toolchain for building avante.nvim
     )
     
     
@@ -262,9 +263,9 @@ install_packages_debian() {
             fd-find \
             fzf \
             tmux \
+            cargo \       # For building avante.nvim
             nodejs \
             npm \
-            cargo \       # For installing Rust-based tools
             direnv        # Directory-based environment management
             
         # Install Neovim (latest version)

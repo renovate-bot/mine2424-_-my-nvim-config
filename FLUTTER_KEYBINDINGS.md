@@ -313,6 +313,47 @@ This document contains all keybindings for the Flutter development environment i
 | `<leader>clm` | Monitor Claude sessions |
 | `<leader>clw` | Switch Claude worktree |
 
+## Avante.nvim (Cursor AI-like Experience)
+
+| Key | Function |
+|-----|----------|
+| `<leader>aa` | Ask AI about code (normal/visual mode) |
+| `<leader>ar` | Refresh AI response |
+| `<leader>ae` | Edit with AI (visual mode) |
+| `<leader>at` | Toggle Avante sidebar |
+| `<leader>af` | Focus on Avante window |
+| `<leader>ac` | Clear conversation |
+| `<leader>ab` | Build/apply AI suggested changes |
+| `<leader>as` | Switch AI provider |
+| `<leader>ax` | Close Avante |
+
+### Avante Diff Navigation
+| Key | Function |
+|-----|----------|
+| `co` | Choose ours (current) |
+| `ct` | Choose theirs (AI suggestion) |
+| `ca` | Accept all AI suggestions |
+| `cb` | Choose both versions |
+| `cc` | Choose at cursor |
+| `]x` | Next conflict |
+| `[x` | Previous conflict |
+
+### Avante Suggestions
+| Key | Function |
+|-----|----------|
+| `Alt+l` | Accept suggestion |
+| `Alt+]` | Next suggestion |
+| `Alt+[` | Previous suggestion |
+| `Ctrl+]` | Dismiss suggestion |
+
+### Avante Navigation
+| Key | Function |
+|-----|----------|
+| `]]` | Jump to next section |
+| `[[` | Jump to previous section |
+| `Tab` | Switch windows in sidebar |
+| `Shift+Tab` | Reverse switch windows |
+
 ## Clipboard Operations
 
 All yank, delete, and change operations are automatically synced with the system clipboard. This means:

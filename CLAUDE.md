@@ -42,7 +42,9 @@ This is a comprehensive Flutter development environment configuration for Neovim
   - **TypeScript/JavaScript**: `ts_ls` with inlay hints support
   - **ESLint**: `eslint` for linting with auto-fix on save
 - **Git Integration**: `lewis6991/gitsigns.nvim` with extensive hunk management
-- **AI Assistance**: `zbirenbaum/copilot.lua` with cmp integration
+- **AI Assistance**: 
+  - `zbirenbaum/copilot.lua` with cmp integration
+  - `yetone/avante.nvim` for Cursor AI-like experience with Claude integration
 - **Debugging**: nvim-dap with Flutter DAP support
 - **UI**: lualine, nvim-tree, telescope (bufferline disabled for simplicity)
 - **Code Quality**: hlchunk.nvim for visual code structure
@@ -84,6 +86,7 @@ The configuration includes a simplified 3-panel IDE layout that provides an effi
 ./scripts/setup.sh
 
 # Full automated setup (includes all components)
+# Note: This now includes Rust/cargo for building avante.nvim
 ./scripts/setup.sh --full
 
 # Component-specific setup
@@ -101,6 +104,8 @@ The configuration includes a simplified 3-panel IDE layout that provides an effi
 # Migrate existing project to pnpm
 ./scripts/migrate-to-pnpm.sh
 ```
+
+**Note**: The full setup now installs Rust/cargo which is required for building avante.nvim. If you're using config-only mode, ensure you have Rust installed manually.
 
 ### Flutter Development Workflow
 - **Device Management**: `<leader>fd` (list devices), `<leader>fe` (start emulator)
@@ -130,6 +135,23 @@ The configuration includes a simplified 3-panel IDE layout that provides an effi
 - **Session Management**: `<leader>cll` (show sessions), `<leader>clm` (monitor sessions)
 - **Worktree**: `<leader>clw` (switch Claude worktree)
 - **Features**: Per-worktree session management, real-time monitoring
+
+### Avante.nvim Integration (Cursor AI-like experience)
+- **Ask AI**: `<leader>aa` (ask AI about code in normal/visual mode)
+- **Refresh**: `<leader>ar` (refresh AI response)
+- **Edit**: `<leader>ae` (edit with AI in visual mode)
+- **Toggle**: `<leader>at` (toggle Avante sidebar)
+- **Focus**: `<leader>af` (focus on Avante window)
+- **Clear**: `<leader>ac` (clear conversation)
+- **Build**: `<leader>ab` (build/apply changes)
+- **Switch Provider**: `<leader>as` (switch between AI providers)
+- **Close**: `<leader>ax` (close Avante)
+- **Features**: 
+  - Cursor AI-like interface within Neovim
+  - Claude integration with API support
+  - Inline code suggestions and edits
+  - Diff view for proposed changes
+  - Multiple AI provider support
 
 ## Important File Patterns
 
