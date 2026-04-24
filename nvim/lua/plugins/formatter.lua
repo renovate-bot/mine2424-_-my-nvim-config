@@ -40,7 +40,10 @@ return {
         
         -- System programming
         rust = { "rustfmt" },
-        go = { "gofmt", "goimports" },
+        go = { "gofumpt", "goimports" },
+        gomod = { "gofumpt" },
+        gowork = { "gofumpt" },
+        gotmpl = { "gofumpt" },
         c = { "clang_format" },
         cpp = { "clang_format" },
         

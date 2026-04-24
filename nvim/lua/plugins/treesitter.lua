@@ -25,7 +25,8 @@ return {
         "dart", "kotlin", "java", "swift",
         
         -- System programming
-        "rust", "go", "c", "cpp",
+        "rust", "go", "gomod", "gosum", "gowork", "c", "cpp",
+        "templ",
         
         -- Scripting languages
         "python", "ruby",

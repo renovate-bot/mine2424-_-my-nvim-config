@@ -33,6 +33,9 @@ return {
         -- YAML
         yaml = { "yamllint" },
         
+        -- Go
+        go = { "golangcilint" },
+
         -- Dockerfile
         dockerfile = { "hadolint" },
       }

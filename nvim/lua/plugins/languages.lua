@@ -156,7 +156,7 @@ return {
       "neovim/nvim-lspconfig",
       "nvim-treesitter/nvim-treesitter",
     },
-    ft = { "go", "gomod" },
+    ft = { "go", "gomod", "gosum", "gowork", "gotmpl" },
     build = ':lua require("go.install").update_all_sync()',
     opts = {
       disable_defaults = false,
@@ -166,20 +166,73 @@ return {
       gofmt = "gofumpt",
       max_line_len = 120,
       tag_transform = false,
+      tag_options = "json=omitempty",
       test_template = "",
       test_template_dir = "",
       comment_placeholder = "",
-      lsp_cfg = true,
+      lsp_cfg = false, -- managed by lsp.lua via mason-lspconfig
       lsp_gofumpt = true,
       lsp_on_attach = true,
       dap_debug = true,
+      dap_debug_gui = true,
+      icons = { breakpoint = "🔴", currentpos = "👉" },
+      run_in_floaterm = true,
+      trouble = true,
+      luasnip = true,
     },
     keys = {
+      -- Run & Build
       { "<leader>Gr", "<cmd>GoRun<cr>", desc = "Go Run" },
-      { "<leader>Gt", "<cmd>GoTest<cr>", desc = "Go Test" },
+      { "<leader>Gb", "<cmd>GoBuild<cr>", desc = "Go Build" },
+      -- Test
+      { "<leader>Gt", "<cmd>GoTest<cr>", desc = "Go Test (package)" },
+      { "<leader>GT", "<cmd>GoTestFunc<cr>", desc = "Go Test (function)" },
+      { "<leader>Gtt", "<cmd>GoTestFile<cr>", desc = "Go Test (file)" },
       { "<leader>Gc", "<cmd>GoCoverage<cr>", desc = "Go Coverage" },
+      -- Code generation
       { "<leader>Gf", "<cmd>GoFmt<cr>", desc = "Go Format" },
-      { "<leader>Gi", "<cmd>GoImport<cr>", desc = "Go Import" },
+      { "<leader>Gi", "<cmd>GoImports<cr>", desc = "Go Imports" },
+      { "<leader>Ge", "<cmd>GoIfErr<cr>", desc = "Go If Err" },
+      { "<leader>Gs", "<cmd>GoFillStruct<cr>", desc = "Go Fill Struct" },
+      { "<leader>Gw", "<cmd>GoFillSwitch<cr>", desc = "Go Fill Switch" },
+      { "<leader>Gg", "<cmd>GoGenerate<cr>", desc = "Go Generate" },
+      { "<leader>Gm", "<cmd>GoImpl<cr>", desc = "Go Implement Interface" },
+      -- Tags
+      { "<leader>Gta", "<cmd>GoAddTag json<cr>", desc = "Go Add Tags (json)" },
+      { "<leader>Gtr", "<cmd>GoRmTag<cr>", desc = "Go Remove Tags" },
+      -- Debug
+      { "<leader>Gd", "<cmd>GoDebug<cr>", desc = "Go Debug" },
+      { "<leader>Gdt", "<cmd>GoDebug -t<cr>", desc = "Go Debug Test" },
+      { "<leader>Gds", "<cmd>GoDebug -s<cr>", desc = "Go Debug Stop" },
+      -- Misc
+      { "<leader>Ga", "<cmd>GoAlt!<cr>", desc = "Go Alt File (impl/test)" },
+      { "<leader>Gx", "<cmd>GoDoc<cr>", desc = "Go Doc" },
+      { "<leader>Gl", "<cmd>GoLint<cr>", desc = "Go Lint" },
+    },
+  },
+
+  -- Go test runner for neotest
+  {
+    "fredrikaverpil/neotest-golang",
+    dependencies = {
+      "nvim-neotest/neotest",
+    },
+  },
+
+  -- neotest with Go adapter
+  {
+    "nvim-neotest/neotest",
+    optional = true,
+    dependencies = {
+      "fredrikaverpil/neotest-golang",
+    },
+    opts = {
+      adapters = {
+        ["neotest-golang"] = {
+          go_test_args = { "-v", "-race", "-count=1" },
+          dap_go_enabled = true,
+        },
+      },
     },
   },
 

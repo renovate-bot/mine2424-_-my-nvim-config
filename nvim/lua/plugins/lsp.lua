@@ -20,6 +20,27 @@ return {
     },
   },
 
+  -- Mason tool installer: ensure formatters, linters, and DAP adapters
+  {
+    "WhoIsSethDaniel/mason-tool-installer.nvim",
+    dependencies = { "mason-org/mason.nvim" },
+    opts = {
+      ensure_installed = {
+        -- Go tools
+        "gofumpt",
+        "goimports",
+        "golangci-lint",
+        "delve",
+        "gotests",
+        "gomodifytags",
+        "impl",
+        "iferr",
+      },
+      auto_update = false,
+      run_on_start = true,
+    },
+  },
+
   -- Mason-LSPConfig: ensure servers are installed
   {
     "mason-org/mason-lspconfig.nvim",
@@ -138,9 +159,35 @@ return {
               analyses = {
                 unusedparams = true,
                 shadow = true,
+                nilness = true,
+                unusedwrite = true,
+                useany = true,
               },
               staticcheck = true,
               gofumpt = true,
+              usePlaceholders = true,
+              completeUnimported = true,
+              directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
+              semanticTokens = true,
+              hints = {
+                assignVariableTypes = true,
+                compositeLiteralFields = true,
+                compositeLiteralTypes = true,
+                constantValues = true,
+                functionTypeParameters = true,
+                parameterNames = true,
+                rangeVariableTypes = true,
+              },
+              codelenses = {
+                gc_details = true,
+                generate = true,
+                regenerate_cgo = true,
+                run_govulncheck = true,
+                test = true,
+                tidy = true,
+                upgrade_dependency = true,
+                vendor = true,
+              },
             },
           },
         },
